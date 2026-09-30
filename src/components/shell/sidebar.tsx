@@ -1,0 +1,77 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Search, Settings } from "lucide-react";
+import { cn } from "@/components/ui/cn";
+import { Kbd } from "@/components/ui/kbd";
+import { LogoMark } from "@/components/ui/logo";
+import { NAV } from "./nav";
+import { ContextSwitcher, type SwitcherProps } from "./context-switcher";
+import { UserMenu } from "./user-menu";
+
+export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: SwitcherProps; user: { name: string; email: string }; counts: { followUpsDue: number; toReview: number }; aiConnected: boolean }) {
+  const pathname = usePathname();
+  return (
+    <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r border-border bg-surface-2/60 md:flex">
+      <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
+        <LogoMark size={26} />
+        <span className="text-[15px] font-semibold tracking-[-0.01em]">Sales Scout</span>
+      </div>
+      <div className="px-3">
+        <ContextSwitcher {...switcher} />
+      </div>
+      <nav aria-label="Main" className="mt-4 flex flex-col gap-0.5 px-3">
+        {NAV.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
+          const badge = href === "/follow-ups" ? counts.followUpsDue : href === "/prospects" ? counts.toReview : 0;
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "group flex h-9 items-center gap-3 rounded-md px-2.5 text-[14px] font-medium transition-colors",
+                active ? "bg-surface text-text shadow-sm ring-1 ring-border" : "text-muted hover:bg-surface hover:text-text",
+              )}
+            >
+              <Icon className={cn("size-[18px]", active ? "text-accent" : "text-subtle group-hover:text-muted")} aria-hidden />
+              <span className="flex-1">{label}</span>
+              {badge > 0 && (
+                <span className={cn("rounded-full px-1.5 text-xs tabular-nums", href === "/follow-ups" ? "bg-moderate-soft text-moderate" : "bg-info-soft text-info")}>
+                  {badge}
+                  <span className="sr-only">{href === "/follow-ups" ? " follow-ups due" : " prospects to review"}</span>
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="mt-auto flex flex-col gap-0.5 px-3 pb-3">
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("open-command"))}
+          className="flex h-9 items-center gap-3 rounded-md px-2.5 text-[14px] font-medium text-muted hover:bg-surface hover:text-text"
+        >
+          <Search className="size-[18px] text-subtle" aria-hidden />
+          <span className="flex-1 text-left">Search & actions</span>
+          <Kbd>⌘K</Kbd>
+        </button>
+        <Link
+          href="/settings"
+          aria-current={pathname.startsWith("/settings") ? "page" : undefined}
+          className={cn(
+            "flex h-9 items-center gap-3 rounded-md px-2.5 text-[14px] font-medium",
+            pathname.startsWith("/settings") ? "bg-surface text-text shadow-sm ring-1 ring-border" : "text-muted hover:bg-surface hover:text-text",
+          )}
+        >
+          <Settings className="size-[18px] text-subtle" aria-hidden />
+          Settings
+          {!aiConnected && <span className="ml-auto size-1.5 rounded-full bg-moderate" title="AI not connected" />}
+        </Link>
+        <div className="mt-2 border-t border-border pt-2">
+          <UserMenu user={user} />
+        </div>
+      </div>
+    </aside>
+  );
+}
