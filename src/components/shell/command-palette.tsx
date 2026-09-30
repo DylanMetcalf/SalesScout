@@ -57,7 +57,7 @@ export function CommandPalette({ prospects, companies }: { prospects: Prospect[]
         <Command label="What would you like to do?" className="overflow-hidden rounded-xl border border-border bg-surface shadow-lg animate-rise">
           <div className="flex items-center gap-3 border-b border-border px-4">
             <Search className="size-4 text-subtle" aria-hidden />
-            <Command.Input autoFocus placeholder="What would you like to do?" className="h-13 flex-1 bg-transparent text-[15px] outline-none placeholder:text-subtle" />
+            <Command.Input autoFocus placeholder="What would you like to do?" className="h-13 flex-1 bg-transparent text-[15px] outline-none placeholder:text-subtle focus-visible:shadow-none" />
             <Kbd>Esc</Kbd>
           </div>
           <Command.List className="max-h-[min(420px,60vh)] overflow-y-auto py-1 scrollbar-thin">
