@@ -96,7 +96,7 @@ export function startBrainAnalysis(tenant: CompanyTenant): string {
     // 5. Understand.
     p.start("understand");
     const userNote = company.description?.trim();
-    if (!aiConfigured()) {
+    if (!aiConfigured(tenant.account.id)) {
       const facts = basicExtraction(tenant, userNote);
       replaceGeneratedFacts(tenant, facts);
       db.update(t.companies).set({ brainStatus: "review", brainAnalysedAt: new Date(), summary: userNote || null }).where(eq(t.companies.id, company.id)).run();

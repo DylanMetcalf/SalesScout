@@ -75,6 +75,11 @@ export const accounts = sqliteTable("accounts", {
   name: text("name").notNull(),
   /** Account-level memory: general preferences shared across workspaces. */
   preferences: json<Record<string, unknown>>("preferences").notNull().default({}),
+  /** The account's own Anthropic API key, AES-256-GCM encrypted. Never sent to the browser. */
+  anthropicKeyEnc: text("anthropic_key_enc"),
+  /** Last few characters, so people can recognise which key is saved. */
+  anthropicKeyHint: text("anthropic_key_hint"),
+  anthropicKeyUpdatedAt: integer("anthropic_key_updated_at", { mode: "timestamp_ms" }),
   createdAt: createdAt(),
 });
 

@@ -2,7 +2,9 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type * as z from "zod/v4";
+import { eq } from "drizzle-orm";
 import { db, t } from "@/lib/db";
+import { decryptSecret } from "@/lib/security/secrets";
 import { newId } from "@/lib/ids";
 
 export const MODEL = process.env.SALES_SCOUT_MODEL || "claude-opus-5-5";
@@ -15,20 +17,61 @@ export type AiContext = { accountId: string; workspaceId: string; companyId: str
 
 export class AiUnavailableError extends Error {
   constructor() {
-    super("AI isn't connected. Add an ANTHROPIC_API_KEY to enable this.");
+    super("AI isn't connected. Paste an Anthropic API key in Settings, or set ANTHROPIC_API_KEY on the server.");
   }
 }
 export class AiFailedError extends Error {}
 
-export function aiConfigured(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+export type KeySource = "account" | "server";
+
+/**
+ * Which API key to use for an account:
+ *   1. the account's own key, pasted in Settings (stored encrypted), else
+ *   2. the server-wide key from the environment (ANTHROPIC_API_KEY), used
+ *      for everyone on this installation.
+ */
+export function resolveKey(accountId: string): { key: string; source: KeySource } | null {
+  const row = db.select({ enc: t.accounts.anthropicKeyEnc }).from(t.accounts).where(eq(t.accounts.id, accountId)).get();
+  if (row?.enc) {
+    const key = decryptSecret(row.enc);
+    if (key) return { key, source: "account" };
+  }
+  const server = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN;
+  return server ? { key: server, source: "server" } : null;
 }
 
-let client: Anthropic | null = null;
-function getClient(): Anthropic {
-  if (!aiConfigured()) throw new AiUnavailableError();
-  client ??= new Anthropic({ maxRetries: 3, timeout: 10 * 60_000 });
+export function aiConfigured(accountId: string): boolean {
+  return resolveKey(accountId) !== null;
+}
+
+const clients = new Map<string, Anthropic>();
+function getClient(ctx: AiContext): Anthropic {
+  const resolved = resolveKey(ctx.accountId);
+  if (!resolved) throw new AiUnavailableError();
+  let client = clients.get(resolved.key);
+  if (!client) {
+    const useAuthToken = resolved.source === "server" && !process.env.ANTHROPIC_API_KEY;
+    client = new Anthropic({
+      ...(useAuthToken ? { authToken: resolved.key, apiKey: null } : { apiKey: resolved.key }),
+      maxRetries: 3,
+      timeout: 10 * 60_000,
+    });
+    clients.set(resolved.key, client);
+  }
   return client;
+}
+
+/** Checks a key works without spending tokens (a model lookup). */
+export async function testKey(key: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await new Anthropic({ apiKey: key, maxRetries: 0, timeout: 20_000 }).models.retrieve(MODEL);
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof Anthropic.AuthenticationError) return { ok: false, error: "Anthropic rejected this key. Check you copied all of it." };
+    if (err instanceof Anthropic.PermissionDeniedError) return { ok: false, error: `This key doesn't have access to ${MODEL}.` };
+    if (err instanceof Anthropic.NotFoundError) return { ok: false, error: `The model ${MODEL} isn't available to this key.` };
+    return { ok: false, error: describeError(err) };
+  }
 }
 
 function record(
@@ -77,7 +120,7 @@ type GenerateArgs<S extends z.ZodType> = {
 
 /** One structured call: returns data validated against `schema`, or throws. */
 export async function generate<S extends z.ZodType>({ ctx, agent, purpose, system, prompt, schema, effort = "medium" }: GenerateArgs<S>): Promise<z.infer<S>> {
-  const anthropic = getClient();
+  const anthropic = getClient(ctx);
   const started = Date.now();
   try {
     const res = await anthropic.beta.messages.parse({
@@ -140,7 +183,7 @@ export async function research({
   maxSearches?: number;
   maxFetches?: number;
 }): Promise<ResearchResult> {
-  const anthropic = getClient();
+  const anthropic = getClient(ctx);
   const started = Date.now();
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: prompt }];
   const sources = new Map<string, ResearchSource>();

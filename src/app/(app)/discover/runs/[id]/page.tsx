@@ -37,7 +37,7 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
           requested: run.requested, discovered: run.discovered, duplicates: run.duplicates, relevant: run.relevant, rejected: run.rejected, mode: run.mode,
         }}
         prospects={prospects}
-        aiConnected={aiConfigured()}
+        aiConnected={aiConfigured(tenant.account.id)}
       />
     </Page>
   );

@@ -20,7 +20,7 @@ export default async function Markets() {
       <Prompt title="Here's who I think you could sell to.">
         Pick the directions that make sense. Each one becomes a lead strategy you can refine — I won&apos;t set your strategy for you.
       </Prompt>
-      <MarketDiscovery opportunities={opps} aiConnected={aiConfigured()} onboarding />
+      <MarketDiscovery opportunities={opps} aiConnected={aiConfigured(tenant.account.id)} onboarding />
       <div className="mt-10 flex flex-col items-start gap-3 rounded-xl border border-border bg-surface p-5 sm:flex-row sm:items-center">
         <div className="flex-1">
           <p className="font-semibold">Let&apos;s find some companies.</p>

@@ -46,7 +46,7 @@ export default async function ProspectPage({ params, searchParams }: { params: P
       followUps={followUps.map((f) => ({ id: f.id, title: f.title, notes: f.notes, dueAt: f.dueAt.getTime(), completedAt: f.completedAt?.getTime() ?? null }))}
       drafts={draftsFor(tenant, id).map((d) => ({ id: d.id, channel: d.channel, subject: d.subject, body: d.body, status: d.status, generatedBy: d.generatedBy, contactId: d.contactId, createdAt: d.createdAt.getTime() }))}
       audit={audit.map((a) => ({ id: a.id, summary: a.summary, source: a.source, createdAt: a.createdAt.getTime() }))}
-      aiConnected={aiConfigured()}
+      aiConnected={aiConfigured(tenant.account.id)}
       jobId={pendingJob?.id ?? null}
       initialTab={sp.tab}
       sender={{ name: tenant.user.name, company: tenant.company.name }}

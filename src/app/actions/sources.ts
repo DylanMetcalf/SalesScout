@@ -12,6 +12,7 @@ import { extractText, isAllowedFile, MAX_UPLOAD_BYTES } from "@/lib/research/doc
 import { detectPlatform, PLATFORMS } from "@/components/ui/platform-icon";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { audit } from "@/lib/audit";
+import { dataDir } from "@/lib/db/connection";
 import { attempt } from "./result";
 
 export async function setWebsiteAction(url: string) {
@@ -92,7 +93,7 @@ export async function uploadDocumentsAction(form: FormData) {
     if (!rateLimit(`upload:${tenant.user.id}`, 60, 3_600_000)) throw new Error("Too many uploads. Try again later.");
     const files = form.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
     if (!files.length) throw new Error("Choose at least one file.");
-    const dir = path.join(process.cwd(), "data", "uploads", tenant.workspace.id, tenant.company.id);
+    const dir = path.join(dataDir(), "uploads", tenant.workspace.id, tenant.company.id);
     await fs.mkdir(dir, { recursive: true });
     const results: { name: string; ok: boolean; detail: string }[] = [];
     for (const file of files) {

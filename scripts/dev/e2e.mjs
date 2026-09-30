@@ -11,6 +11,7 @@ async function newUser(label) {
   page.setDefaultTimeout(90000);
   page.on("console", (m) => m.type() === "error" && errors.push(`${label}: ${m.text()}`));
   page.on("pageerror", (e) => errors.push(`${label} PAGEERROR ${e.message}`));
+  page.on("response", (r) => r.status() === 404 && errors.push(`${label} 404 ${r.url()}`));
   return { ctx, page };
 }
 const shot = (page, n) => OUT && page.screenshot({ path: `${OUT}/e2e_${n}.png`, fullPage: false });

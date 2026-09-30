@@ -31,7 +31,7 @@ export default async function Understand() {
       {tenant.company.summary && (
         <blockquote className="mb-6 border-l-2 border-accent pl-4 text-lg leading-8 text-text/90">{tenant.company.summary}</blockquote>
       )}
-      {!aiConfigured() && (
+      {!aiConfigured(tenant.account.id) && (
         <Notice tone="moderate" className="mb-6" title="Basic analysis only">
           AI isn&apos;t connected, so I only captured what your sources state directly. Add the rest yourself — or connect AI later and re-analyse.
         </Notice>

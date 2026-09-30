@@ -23,7 +23,13 @@ const SignupSchema = z.object({
   password: z.string().min(8, "Use at least 8 characters").max(200),
 });
 
+/** Sign-ups are open unless ALLOW_SIGNUPS=false. Close them on a hosted instance once your account exists. */
+function signupsOpen() {
+  return process.env.ALLOW_SIGNUPS !== "false";
+}
+
 export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
+  if (!signupsOpen()) return { error: "Sign-ups are closed on this installation. Ask the owner for access." };
   const raw = { name: String(form.get("name") ?? ""), email: String(form.get("email") ?? "").trim(), password: String(form.get("password") ?? "") };
   if (!rateLimit(`signup:${await clientKey()}`, 10, 3_600_000)) return { error: "Too many attempts. Please try again later.", fields: raw };
   const parsed = SignupSchema.safeParse(raw);

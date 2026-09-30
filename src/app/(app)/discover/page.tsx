@@ -16,7 +16,7 @@ export default async function Discover({ searchParams }: { searchParams: Promise
   const sp = await searchParams;
   const strategies = db.select().from(t.leadStrategies).where(inCompany(t.leadStrategies, tenant, eq(t.leadStrategies.status, "active"))).orderBy(desc(t.leadStrategies.updatedAt)).all();
   const runs = db.select().from(t.searchRuns).where(inCompany(t.searchRuns, tenant)).orderBy(desc(t.searchRuns.createdAt)).limit(30).all();
-  const ai = aiConfigured();
+  const ai = aiConfigured(tenant.account.id);
 
   return (
     <Page width="narrow" className="sm:py-14">

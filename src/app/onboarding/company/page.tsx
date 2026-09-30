@@ -1,5 +1,6 @@
 import { db, t } from "@/lib/db";
 import { requireTenant, inCompany, type CompanyTenant } from "@/lib/tenant";
+import { aiConfigured } from "@/lib/ai/core";
 import { CompanyWizard, type WizardStep } from "./wizard";
 
 export const metadata = { title: "Tell us about your business" };
@@ -19,6 +20,8 @@ export default async function OnboardingCompany({ searchParams }: { searchParams
       pages={lite.filter((s) => s.kind === "page")}
       profiles={lite.filter((s) => s.kind === "social")}
       documents={lite.filter((s) => s.kind === "document")}
+      aiConnected={aiConfigured(tenant.account.id)}
+      canEditKey={tenant.role !== "member"}
     />
   );
 }

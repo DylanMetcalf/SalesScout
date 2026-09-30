@@ -18,7 +18,7 @@ export const MARKET_STEPS = [
 
 /** "Discover My Market": suggests where to look. Never changes strategy on its own. */
 export function startMarketDiscovery(tenant: CompanyTenant) {
-  if (!aiConfigured()) throw new Error("Market discovery needs AI to be connected.");
+  if (!aiConfigured(tenant.account.id)) throw new Error("Market discovery needs AI to be connected.");
   const facts = getFacts(tenant);
   if (!facts.some((f) => f.knowledge !== "unknown") && !tenant.company.description) {
     throw new Error("Tell Sales Scout about your business first, so there's something to reason from.");

@@ -10,10 +10,9 @@ export function AiUnavailable({ feature, className }: { feature: string; classNa
       <div className="text-sm">
         <p className="font-medium text-text">AI isn&apos;t connected yet</p>
         <p className="mt-0.5 text-muted">
-          {feature} needs the AI research layer. Add an <code className="rounded bg-surface-3 px-1 font-mono text-xs">ANTHROPIC_API_KEY</code> to the server environment to switch it on.
-          Nothing here will be simulated in the meantime.{" "}
+          {feature} needs the AI research layer. Nothing here will be simulated in the meantime.{" "}
           <Link href="/settings#ai" className="font-medium text-accent-text hover:underline">
-            Learn more
+            Paste your API key in Settings
           </Link>
         </p>
       </div>

@@ -82,7 +82,7 @@ export async function createSearchRun(
     (strategy ? `Find companies that fit my "${strategy.name}" strategy` : "Find companies that could need what we sell");
 
   let interpretation: SearchInterpretation;
-  if (aiConfigured()) {
+  if (aiConfigured(tenant.account.id)) {
     const exclusionNames = knownCompanies(tenant).industryExclusions;
     interpretation = await interpretQuery(aiCtx(tenant), getDigest(tenant), query, strategy ? strategyText(strategy) : null);
     interpretation.exclusions = [...new Set([...interpretation.exclusions, ...exclusionNames])];
@@ -178,7 +178,7 @@ export const DISCOVERY_STEPS = [
 export function startDiscovery(tenant: CompanyTenant, runId: string, edited?: SearchInterpretation) {
   const run = db.select().from(t.searchRuns).where(inCompany(t.searchRuns, tenant, eq(t.searchRuns.id, runId))).get();
   if (!run) throw new Error("Search not found.");
-  if (!aiConfigured()) throw new Error("Prospect discovery needs live web research, which requires AI to be connected.");
+  if (!aiConfigured(tenant.account.id)) throw new Error("Prospect discovery needs live web research, which requires AI to be connected.");
   const interp = edited ?? run.interpretation!;
   const jobId = createJob(aiCtx(tenant), "discovery", DISCOVERY_STEPS);
   db.update(t.searchRuns).set({ status: "running", interpretation: interp, requested: interp.requested, jobId }).where(eq(t.searchRuns.id, run.id)).run();
@@ -389,7 +389,7 @@ export const DEEP_STEPS = [
 export function startDeepResearch(tenant: CompanyTenant, prospectId: string) {
   const p = db.select().from(t.prospects).where(inCompany(t.prospects, tenant, eq(t.prospects.id, prospectId))).get();
   if (!p) throw new Error("Prospect not found.");
-  if (!aiConfigured()) throw new Error("Deep research needs AI to be connected.");
+  if (!aiConfigured(tenant.account.id)) throw new Error("Deep research needs AI to be connected.");
   const run = p.searchRunId ? db.select().from(t.searchRuns).where(inCompany(t.searchRuns, tenant, eq(t.searchRuns.id, p.searchRunId))).get() : undefined;
   const jobId = createJob(aiCtx(tenant), "deep_research", DEEP_STEPS);
   runInBackground(jobId, async (job) => {
@@ -420,7 +420,7 @@ export function startManualProspect(tenant: CompanyTenant, input: { name: string
     .run();
   db.insert(t.activities).values({ id: newId("act"), ...tenantCols(tenant), prospectId: id, userId: tenant.user.id, type: "created", title: "Added by you" }).run();
   audit(tenant, { entityType: "prospect", entityId: id, action: "created", source: "user", summary: `Added ${input.name} manually` });
-  if (!aiConfigured()) return { id, jobId: null };
+  if (!aiConfigured(tenant.account.id)) return { id, jobId: null };
   const jobId = createJob(aiCtx(tenant), "prospect_research", DEEP_STEPS.slice(0, 1).concat(DEEP_STEPS.slice(2)));
   runInBackground(jobId, async (job) => {
     job.start("read");

@@ -1,7 +1,8 @@
 import { and, count, desc, eq, gte, sum } from "drizzle-orm";
 import { db, t } from "@/lib/db";
 import { requireTenant } from "@/lib/tenant";
-import { aiConfigured, MODEL } from "@/lib/ai/core";
+import { MODEL, resolveKey } from "@/lib/ai/core";
+import { ApiKeyForm } from "@/components/settings/api-key-form";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +30,8 @@ export default async function Settings() {
     .where(eq(t.workspaceMembers.workspaceId, ws.id))
     .all();
   const exportsLog = db.select().from(t.exportsLog).where(eq(t.exportsLog.workspaceId, ws.id)).orderBy(desc(t.exportsLog.createdAt)).limit(5).all();
-  const ai = aiConfigured();
+  const resolved = resolveKey(tenant.account.id);
+  const ai = resolved !== null;
 
   return (
     <Page width="narrow">
@@ -49,11 +51,20 @@ export default async function Settings() {
             action={ai ? <Badge tone="strong" dot>Connected</Badge> : <Badge tone="moderate" dot>Not connected</Badge>}
           />
           <div className="flex flex-col gap-4 px-5 pb-5 text-[14.5px]">
+            <ApiKeyForm
+              status={{
+                source: resolved?.source ?? null,
+                hint: tenant.account.anthropicKeyHint,
+                updatedAt: tenant.account.anthropicKeyUpdatedAt?.getTime() ?? null,
+                serverKey: Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN),
+                canEdit: tenant.role !== "member",
+              }}
+            />
             {ai ? (
-              <p className="text-muted">Using <span className="font-mono text-sm text-text">{MODEL}</span> with live web search and page reading. Keys stay on the server and are never sent to the browser.</p>
+              <p className="text-sm text-muted">Model: <span className="font-mono text-text">{MODEL}</span>, with live web search and page reading.</p>
             ) : (
-              <div className="text-muted">
-                <p>Set <code className="rounded bg-surface-3 px-1 font-mono text-xs">ANTHROPIC_API_KEY</code> in the server environment (e.g. <code className="rounded bg-surface-3 px-1 font-mono text-xs">.env.local</code>) and restart. Until then:</p>
+              <div className="text-sm text-muted">
+                <p>Until a key is connected:</p>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
                   <li>Company Brain analysis records only what your sources state directly.</li>
                   <li>Market discovery, prospect discovery and deep research are switched off — never simulated.</li>

@@ -191,7 +191,7 @@ export async function createDraft(tenant: CompanyTenant, input: { prospectId: st
   let body: string;
   let generatedBy: "ai" | "template" = "ai";
 
-  if (aiConfigured()) {
+  if (aiConfigured(tenant.account.id)) {
     const r = await draftOutreach(aiCtx(tenant), {
       digest: getDigest(tenant),
       prospect: `${p.name} (${p.website ?? "no website"})\nWhat they do: ${p.whatTheyDo ?? "?"}\nWhy relevant: ${p.whyRelevant ?? "?"}\nPotential opportunity: ${p.potentialOpportunity ?? "?"}\nConfirmed facts: ${p.confirmedFacts.join("; ") || "none"}\nUnknowns: ${p.unknowns.join("; ") || "none"}`,

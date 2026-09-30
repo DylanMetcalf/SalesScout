@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/toast";
 import { JobProgress } from "@/components/ai/job-progress";
 import { DocumentUploader, PagesInput, SocialInput, WebsiteInput, type SourceLite } from "@/components/company/source-inputs";
 import { createCompanyAction } from "@/app/actions/workspace";
+import { ApiKeyForm } from "@/components/settings/api-key-form";
 import { analyseCompanyAction } from "@/app/actions/brain";
 import { Prompt, StepDots } from "../steps";
 
@@ -25,7 +26,16 @@ const ANALYSIS_STEPS = [
   { key: "save", label: "Preparing your Company Brain" },
 ];
 
-export function CompanyWizard(props: { step: WizardStep; companyName: string; website: string | null; pages: SourceLite[]; profiles: SourceLite[]; documents: SourceLite[] }) {
+export function CompanyWizard(props: {
+  step: WizardStep;
+  companyName: string;
+  website: string | null;
+  pages: SourceLite[];
+  profiles: SourceLite[];
+  documents: SourceLite[];
+  aiConnected: boolean;
+  canEditKey: boolean;
+}) {
   const nextHref = `/onboarding/company?step=${ORDER[ORDER.indexOf(props.step) + 1]}`;
   const idx = ORDER.indexOf(props.step) + 1;
 
@@ -83,6 +93,15 @@ export function CompanyWizard(props: { step: WizardStep; companyName: string; we
             Brochures, case studies, proposals, product catalogues, price lists or presentations. They stay private to this company.
           </Prompt>
           <DocumentUploader documents={props.documents} />
+          {!props.aiConnected && props.canEditKey && (
+            <div className="mt-8 rounded-xl border border-border bg-surface p-5">
+              <p className="font-semibold">Connect AI before I analyse <span className="font-normal text-subtle">(recommended)</span></p>
+              <p className="mt-1 mb-4 text-sm text-muted">
+                With an Anthropic API key I can properly understand your business, suggest markets and research real companies. Without one I&apos;ll only record what your sources say directly — you can add a key later in Settings.
+              </p>
+              <ApiKeyForm status={{ source: null, hint: null, updatedAt: null, serverKey: false, canEdit: true }} />
+            </div>
+          )}
           <Nav label="Analyse everything" canSkip={false} />
         </div>
       )}

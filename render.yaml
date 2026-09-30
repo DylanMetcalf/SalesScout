@@ -1,0 +1,35 @@
+# Render Blueprint for Sales Scout.
+# In Render: New + → Blueprint → pick this GitHub repo → Apply.
+#
+# Sales Scout stores its data in SQLite and runs research jobs inside the web
+# process, so it runs as ONE instance with a persistent disk. Persistent disks
+# need a paid instance type (Starter or above) — on the free plan all data is
+# wiped on every deploy or restart.
+services:
+  - type: web
+    name: sales-scout
+    runtime: node
+    plan: starter
+    region: frankfurt # change to the region closest to you
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true # redeploys when you push to the connected branch
+    disk:
+      name: sales-scout-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_PATH
+        value: /var/data/salesscout.db
+      # Encrypts API keys that people paste into Settings. Generated once by Render; never change it.
+      - key: APP_ENCRYPTION_KEY
+        generateValue: true
+      # Server-wide AI key: used for every account that hasn't pasted its own. You enter it in the dashboard.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Set to "false" once you've created your account, so strangers can't sign up and use your key.
+      - key: ALLOW_SIGNUPS
+        value: "true"

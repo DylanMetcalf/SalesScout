@@ -1,0 +1,22 @@
+// Checks the Settings API-key flow: form renders, a bad key is rejected with a clear message.
+import { chromium } from "playwright";
+const OUT = process.env.OUT;
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
+page.setDefaultTimeout(60000);
+await page.goto("http://localhost:3000/login");
+await page.fill("input[name=email]", "demo@salesscout.app");
+await page.fill("input[name=password]", "salesscout-demo");
+await page.click("button[type=submit]");
+await page.waitForURL(/home/);
+await page.goto("http://localhost:3000/settings#ai");
+await page.getByLabel("Paste your Anthropic API key").fill("not-a-key-at-all-but-long-enough");
+await page.getByRole("button", { name: "Save & test" }).click();
+console.log("format check:", await page.getByText(/doesn't look like an Anthropic API key/).first().textContent());
+await page.getByLabel("Paste your Anthropic API key").fill("sk-ant-api03-" + "x".repeat(40));
+await page.getByRole("button", { name: "Save & test" }).click();
+await page.waitForTimeout(8000);
+console.log("fake key:", await page.locator('[role="alert"]').last().innerText());
+await page.locator("#ai").scrollIntoViewIfNeeded();
+await page.screenshot({ path: `${OUT}/settings_key.png` });
+await browser.close();

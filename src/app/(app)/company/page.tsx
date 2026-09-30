@@ -43,7 +43,7 @@ export default async function CompanyPage({ searchParams }: { searchParams: Prom
         preferences={preferencesFor(tenant).map((p) => ({ id: p.id, rule: p.rule, scope: p.scope }))}
         history={brainEdits.map((a) => ({ id: a.id, summary: a.summary, source: a.source, createdAt: a.createdAt.getTime() }))}
         providers={PROVIDERS.map((p) => ({ key: p.key, name: p.name, category: p.category, description: p.description, available: p.available, requires: p.requires, connectable: p.connectable(env) }))}
-        aiConnected={aiConfigured()}
+        aiConnected={aiConfigured(tenant.account.id)}
       />
     </Page>
   );

@@ -35,7 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2 focus:shadow-md">
         Skip to content
       </a>
-      <Sidebar switcher={switcher} user={user} counts={{ followUpsDue, toReview }} aiConnected={aiConfigured()} />
+      <Sidebar switcher={switcher} user={user} counts={{ followUpsDue, toReview }} aiConnected={aiConfigured(tenant.account.id)} />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileTopBar switcher={switcher} user={user} />
         {c?.isDemo && (

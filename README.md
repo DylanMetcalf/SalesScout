@@ -4,11 +4,13 @@
 
 Sales Scout is an AI sales-intelligence and prospect-discovery app with a lightweight CRM. It learns what your business does (the *Company Brain*), suggests markets worth exploring, finds and vets real companies with live web research, identifies the people worth speaking to, explains *why* each prospect appeared, and helps you manage the relationship through to a decision.
 
+> **New here? Read [`docs/SETUP.md`](docs/SETUP.md)** for a step-by-step guide: local use, connecting AI, putting it online with Render, and the improvement agent.
+
 ## Quick start
 
 ```bash
 npm install
-cp .env.example .env.local     # add ANTHROPIC_API_KEY to switch on the AI layer
+cp .env.example .env.local     # optional; you can also paste your API key in the app
 npm run db:seed                 # optional: demo login with a fully populated example company
 npm run dev                     # http://localhost:3000
 ```
@@ -24,13 +26,16 @@ The SQLite database is created and migrated automatically in `data/` on first ru
 | `npm run typecheck` | TypeScript check |
 | `npm test` | Tenant-isolation, duplicate-protection, demo-data and SSRF-guard tests |
 | `npm run db:seed` / `db:reset` | Create the demo login / wipe and recreate the database |
+| `/evolve` (Claude Code) | Runs the `platform-steward` agent to audit, fix, enhance and evolve the app |
 | `node scripts/dev/e2e.mjs` | Browser walkthrough of first run → CRM → exports → cross-tenant checks (needs a running server) |
 
 ## What works with and without AI
 
 Sales Scout never shows fake results. When a capability isn't available it says so plainly.
 
-| Capability | Without `ANTHROPIC_API_KEY` | With it |
+AI is on when an Anthropic key is available: either pasted in **Settings → AI & research** (encrypted, per account) or set as `ANTHROPIC_API_KEY` on the server (used for every account that hasn't pasted its own).
+
+| Capability | Without a key | With it |
 | --- | --- | --- |
 | Accounts, workspaces, companies, onboarding | ✅ | ✅ |
 | Website reading, document text extraction (PDF, DOCX, XLSX, CSV, PPTX, TXT) | ✅ | ✅ |
@@ -60,7 +65,7 @@ Social profiles are saved as sources and shown as **Requires permission**: readi
 
 ## Configuration
 
-See `.env.example`. `SALES_SCOUT_MODEL` overrides the model (default `claude-opus-5-5`). Research calls enable the API's server-side refusal fallback.
+See `.env.example`. Hosting: `render.yaml` (Render Blueprint, one instance plus a persistent disk). `ALLOW_SIGNUPS=false` closes sign-ups. `SALES_SCOUT_MODEL` overrides the model (default `claude-opus-5-5`). Research calls enable the API's server-side refusal fallback.
 
 ## Scope
 
