@@ -37,7 +37,7 @@ export function JobProgress({
   const running = !job || job.status === "running" || job.status === "queued";
 
   return (
-    <div className="rounded-xl border border-insight-border bg-insight p-5 sm:p-6 animate-rise">
+    <div className="theme-ink brand-hero rounded-xl p-5 shadow-lg sm:p-6 animate-rise">
       <div className="mb-4 flex items-center gap-3">
         <LogoMark size={30} working={running} label={running ? "Working" : "Done"} />
         <p className="font-medium" aria-live="polite">{!running && job?.status !== "failed" && doneTitle ? doneTitle : title}</p>

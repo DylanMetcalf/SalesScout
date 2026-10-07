@@ -111,13 +111,18 @@ export default async function Home() {
 
   return (
     <Page className="sm:py-12">
-      <header className="max-w-3xl animate-rise">
-        <p className="text-sm font-medium text-subtle">{dateLine}</p>
+      <div className="theme-ink brand-hero -mx-1 rounded-2xl px-6 py-7 shadow-lg sm:px-9 sm:py-9 animate-rise">
+      <header className="max-w-3xl">
+        <p className="text-sm font-medium text-accent-text">{dateLine}</p>
         <h1 className="mt-1 text-[32px] leading-tight sm:text-[40px]">
           {greeting()}, {tenant.user.name.split(" ")[0]}.
         </h1>
         <p className="mt-2 text-lg text-muted">{summary}</p>
       </header>
+        <div className="mt-7 max-w-3xl">
+          <AskBox examples={examples} aiConnected={aiConfigured(tenant.account.id)} />
+        </div>
+      </div>
 
       {(brainNeedsWork || brainNeedsReview) && (
         <Link
@@ -135,8 +140,6 @@ export default async function Home() {
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12">
         <div className="flex min-w-0 flex-col gap-10">
-          <AskBox examples={examples} aiConnected={aiConfigured(tenant.account.id)} />
-
           <section aria-labelledby="h-today">
             <div className="mb-3 flex items-baseline justify-between">
               <h2 id="h-today" className="text-xl">Today</h2>

@@ -12,90 +12,98 @@
  * Status colours carry meaning only (fit levels, knowledge, CRM state).
  */
 :root {
-  --bg: #f6f5f1;
-  --surface: #ffffff;
-  --surface-2: #f0efea;
-  --surface-3: #e6e5df;
-  --border: #e3e1da;
-  --border-strong: #cfcdc4;
-  --text: #121815;
-  --text-muted: #555c58;
-  --text-subtle: #858b87;
+  /* Tinted workspace, not white: surfaces float on a soft green-slate ground. */
+  --bg: #e7efea;
+  --surface: #fbfdfc;
+  --surface-2: #eef5f1;
+  --surface-3: #dce9e2;
+  --border: #d0dfd7;
+  --border-strong: #b6cdc1;
+  --text: #0f1f19;
+  --text-muted: #4a5d55;
+  --text-subtle: #778a82;
+  --heading: #0b3b2e;
 
-  --brand-tile: #121815;
-  --brand-tile-fg: #f6f5f1;
-  /* Where Sales Scout shows its reasoning: a faint pine tint, never a gradient. */
-  --insight: #eef5f1;
-  --insight-border: #cfe2d8;
-  --sidebar: #eceee8;
+  --brand-tile: #0b3b2e;
+  --brand-tile-fg: #f2faf6;
+  /* Where Sales Scout shows its reasoning. */
+  --insight: #e0f3ea;
+  --insight-border: #a8dbc4;
+  --sidebar: #0b2f25;
 
-  --accent: #17604b;
-  --accent-hover: #114d3c;
-  --accent-soft: #e3efe9;
-  --accent-text: #145442;
+  /* Scout green: deep → primary → bright, plus tints. */
+  --brand-deep: #0b3b2e;
+  --accent: #0e7a5a;
+  --accent-bright: #13a47a;
+  --accent-hover: #0b6249;
+  --accent-soft: #d3efe2;
+  --accent-text: #0a5f46;
   --accent-fg: #ffffff;
 
-  --signal: #d9701f;
-  --signal-soft: #fbecdf;
-  --signal-text: #9e4f0e;
+  --signal: #f08a24;
+  --signal-soft: #fdead5;
+  --signal-text: #9c4f0a;
 
-  --strong: #2b7a4b;
-  --strong-soft: #e5f2ea;
-  --moderate: #94620f;
-  --moderate-soft: #f8efdb;
-  --weak: #b0433a;
-  --weak-soft: #fae9e6;
-  --info: #3f55b5;
-  --info-soft: #ebeefa;
-  --violet: #7349ad;
-  --violet-soft: #f1ebf9;
-  --neutral-soft: #edece7;
+  --strong: #16804f;
+  --strong-soft: #daf1e4;
+  --moderate: #a36708;
+  --moderate-soft: #fbedd2;
+  --weak: #c0392f;
+  --weak-soft: #fbe5e2;
+  --info: #2f5fd0;
+  --info-soft: #e3ebfc;
+  --violet: #7a45c2;
+  --violet-soft: #efe6fb;
+  --neutral-soft: #e6eeea;
 
-  --shadow-sm: 0 1px 2px rgb(18 24 21 / 0.05);
-  --shadow-md: 0 1px 2px rgb(18 24 21 / 0.04), 0 6px 16px rgb(18 24 21 / 0.06);
-  --shadow-lg: 0 2px 6px rgb(18 24 21 / 0.05), 0 18px 44px rgb(18 24 21 / 0.13);
-  --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
+  --shadow-sm: 0 1px 2px rgb(11 59 46 / 0.06);
+  --shadow-md: 0 1px 2px rgb(11 59 46 / 0.05), 0 8px 20px rgb(11 59 46 / 0.08);
+  --shadow-lg: 0 2px 6px rgb(11 59 46 / 0.06), 0 20px 48px rgb(11 59 46 / 0.16);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--accent-bright) 35%, transparent);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1311;
-    --surface: #151a17;
-    --surface-2: #1b211e;
-    --surface-3: #232a26;
-    --border: #29302c;
-    --border-strong: #38403b;
-    --text: #eceeea;
-    --text-muted: #a3aaa5;
-    --text-subtle: #79807b;
-    --brand-tile: #eceeea;
-    --brand-tile-fg: #121815;
-    --insight: #12201b;
-    --insight-border: #1f3a30;
-    --sidebar: #131815;
-    --accent: #46b58f;
-    --accent-hover: #5cc7a2;
-    --accent-soft: #12302a;
-    --accent-text: #74d2af;
-    --accent-fg: #08130f;
-    --signal: #f0954a;
-    --signal-soft: #3a2410;
-    --signal-text: #f3a866;
-    --strong: #5cbf83;
-    --strong-soft: #163021;
-    --moderate: #e0a64a;
-    --moderate-soft: #33260f;
-    --weak: #ec7c70;
-    --weak-soft: #3a1c19;
-    --info: #8f9cf0;
-    --info-soft: #1e2240;
-    --violet: #b996ec;
-    --violet-soft: #2a1f3b;
-    --neutral-soft: #222824;
+    --bg: #08110e;
+    --surface: #0f1b16;
+    --surface-2: #13231d;
+    --surface-3: #1a2e26;
+    --border: #1f362d;
+    --border-strong: #2c4a3d;
+    --text: #e9f3ee;
+    --text-muted: #a1b8ae;
+    --text-subtle: #75897f;
+    --heading: #f2faf6;
+    --brand-tile: #34d39e;
+    --brand-tile-fg: #06261c;
+    --insight: #0f2a20;
+    --insight-border: #1f4f3d;
+    --sidebar: #061712;
+    --brand-deep: #0b3b2e;
+    --accent: #2fc58f;
+    --accent-bright: #5be3b4;
+    --accent-hover: #4fd9a6;
+    --accent-soft: #123a2d;
+    --accent-text: #7fe9c3;
+    --accent-fg: #052219;
+    --signal: #f7a04d;
+    --signal-soft: #3d2610;
+    --signal-text: #ffbe7a;
+    --strong: #5fd896;
+    --strong-soft: #143524;
+    --moderate: #f0b450;
+    --moderate-soft: #36290f;
+    --weak: #f07a6e;
+    --weak-soft: #3c1b18;
+    --info: #8fa8ff;
+    --info-soft: #1b2547;
+    --violet: #c09cf2;
+    --violet-soft: #2b1f40;
+    --neutral-soft: #1a2b24;
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px rgb(0 0 0 / 0.35);
-    --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.3), 0 18px 44px rgb(0 0 0 / 0.5);
+    --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 20px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.3), 0 20px 48px rgb(0 0 0 / 0.55);
     color-scheme: dark;
   }
 }
@@ -138,6 +146,9 @@
   --color-insight: var(--insight);
   --color-insight-border: var(--insight-border);
   --color-sidebar: var(--sidebar);
+  --color-heading: var(--heading);
+  --color-accent-bright: var(--accent-bright);
+  --color-brand-deep: var(--brand-deep);
 
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
@@ -240,6 +251,7 @@
     font-optical-sizing: auto;
     letter-spacing: -0.022em;
     font-weight: 650;
+    color: var(--heading);
   }
   p {
     text-wrap: pretty;
@@ -265,6 +277,50 @@
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
+}
+/*
+ * Brand scopes. Wrapping an area in .theme-ink re-points the tokens, so every
+ * component inside (inputs, buttons, menus, badges) turns into the dark brand
+ * version automatically. .brand-hero adds the Sales Scout gradient.
+ */
+.theme-ink {
+  --bg: #0b2f25;
+  --surface: #11392d;
+  --surface-2: #164536;
+  --surface-3: #1d5241;
+  --border: #23594a;
+  --border-strong: #2f6c5a;
+  --text: #effaf5;
+  --text-muted: #b3d4c6;
+  --text-subtle: #86ad9d;
+  --heading: #ffffff;
+  --brand-tile: #34d39e;
+  --brand-tile-fg: #06261c;
+  --accent: #34d39e;
+  --accent-bright: #7ff0c7;
+  --accent-hover: #5be3b4;
+  --accent-soft: #1a5a45;
+  --accent-text: #9cf4d2;
+  --accent-fg: #052219;
+  --insight: #123f31;
+  --insight-border: #2a6b57;
+  --strong: #6ee6a9;
+  --strong-soft: #1b5440;
+  --signal-soft: #5a3712;
+  --signal-text: #ffc489;
+  --neutral-soft: #1b4b3b;
+  --ring: 0 0 0 3px rgb(127 240 199 / 0.35);
+  color: var(--text);
+  color-scheme: dark;
+}
+.sidebar-brand {
+  background: linear-gradient(180deg, #0c3328 0%, #082219 100%);
+}
+.brand-hero {
+  background:
+    radial-gradient(90% 120% at 100% 0%, rgb(52 211 158 / 0.32), transparent 60%),
+    radial-gradient(60% 90% at 0% 100%, rgb(240 138 36 / 0.16), transparent 60%),
+    linear-gradient(135deg, #0b3b2e 0%, #0d5a45 55%, #0f6f63 100%);
 }
 .needle-seek {
   transform-origin: 16px 16px;

@@ -8,7 +8,7 @@ import { Needle } from "./needle";
  */
 export function Insight({ label, children, className, actions }: { label?: ReactNode; children: ReactNode; className?: string; actions?: ReactNode }) {
   return (
-    <div className={cn("rounded-lg border border-insight-border bg-insight px-4 py-3", className)}>
+    <div className={cn("rounded-lg border border-insight-border border-l-[3px] border-l-accent bg-insight px-4 py-3", className)}>
       {label && (
         <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-accent-text">
           <Needle className="size-3.5 text-accent-text" />

@@ -22,6 +22,13 @@
 - **Body** (Geist): everything you read. Base 14.5px; never below 12px.
 - Small uppercase labels are for data captions only, not section titles.
 
+## Brand scopes
+- `.theme-ink` re-points every token to the dark brand palette, so any component inside it adapts automatically. Used for the sidebar, mobile top bar, demo banner, sign-in panel, heroes and research progress.
+- `.brand-hero` is the Sales Scout gradient (deep → primary green, a soft mint glow and a faint amber warmth). Use it only for hero moments: the Home briefing, Discover, research in progress, sign-in. Never on ordinary cards.
+- Primary buttons use the green gradient with a coloured shadow. They're the only buttons that "pop".
+- The workspace background is tinted green-slate, never plain white. Cards are the lightest surface.
+- Prospect cards carry a fit-coloured left edge, and pipeline columns carry their stage colour on top.
+
 ## Patterns
 - **Answer the question the screen exists for first.** Home: "what should I do today?" Prospect: who, what, why, who to speak to, what to say, what next.
 - **One primary action per view.** Secondary actions are ghost buttons; rare ones go in the ⋯ menu; destructive ones stay restrained.

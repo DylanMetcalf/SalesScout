@@ -51,7 +51,7 @@ export function Tabs({
             }}
             className={cn(
               "relative -mb-px flex h-10 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-sm font-medium transition-colors outline-none focus-visible:shadow-[var(--ring)] rounded-t-md",
-              selected ? "border-accent text-text" : "border-transparent text-muted hover:text-text",
+              selected ? "border-accent text-accent-text" : "border-transparent text-muted hover:text-text",
             )}
           >
             {tab.label}

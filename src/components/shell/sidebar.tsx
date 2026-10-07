@@ -13,7 +13,7 @@ import { UserMenu } from "./user-menu";
 export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: SwitcherProps; user: { name: string; email: string }; counts: { followUpsDue: number; toReview: number }; aiConnected: boolean }) {
   const pathname = usePathname();
   return (
-    <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r border-border bg-sidebar md:flex">
+    <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col theme-ink sidebar-brand border-r border-border md:flex">
       <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
         <LogoMark size={26} />
         <span className="font-display text-[17px] font-[650] tracking-[-0.02em]">Sales Scout</span>

@@ -95,7 +95,8 @@ function Column({ status, cards, onMove, compact }: { status: CrmStatus; cards: 
     <section
       ref={setNodeRef}
       aria-label={`${meta.label}: ${cards.length} ${cards.length === 1 ? "company" : "companies"}`}
-      className={cn("flex flex-col rounded-lg border bg-surface-2/60 p-2 transition-colors", isOver ? "border-accent bg-accent-soft/50" : "border-border", compact ? "min-h-28" : "min-h-56")}
+      style={{ borderTopColor: `var(--${{ neutral: "border-strong", accent: "accent", strong: "strong", moderate: "moderate", weak: "weak", info: "info", violet: "violet" }[meta.tone]})` }}
+      className={cn("flex flex-col rounded-lg border border-t-[3px] bg-surface-2 p-2 transition-colors", isOver ? "border-accent bg-accent-soft/60" : "border-border", compact ? "min-h-28" : "min-h-56")}
     >
       <header className="flex items-center gap-2 px-1.5 pt-1 pb-2.5">
         <StatusDot tone={meta.tone} />

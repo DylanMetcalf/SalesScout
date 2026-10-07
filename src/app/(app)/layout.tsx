@@ -39,9 +39,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileTopBar switcher={switcher} user={user} />
         {c?.isDemo && (
-          <div className="border-b border-violet/15 bg-violet-soft/70 px-5 py-2 text-center text-sm text-violet">
-            You&apos;re exploring <span className="font-medium">example data</span>. Companies and people here are fictional.{" "}
-            <a href="/onboarding/company" className="font-medium underline underline-offset-2">Set up your own company</a>
+          <div className="theme-ink sidebar-brand border-b border-border px-5 py-2 text-center text-sm text-muted">
+            You&apos;re exploring <span className="font-medium text-signal">example data</span>. Companies and people here are fictional.{" "}
+            <a href="/onboarding/company" className="font-medium text-accent-text underline underline-offset-2">Set up your own company</a>
           </div>
         )}
         <main id="main" className="flex-1 pb-24 md:pb-0">{children}</main>

@@ -20,6 +20,7 @@ export default async function Discover({ searchParams }: { searchParams: Promise
 
   return (
     <Page width="narrow" className="sm:py-14">
+      <div className="theme-ink brand-hero -mx-1 rounded-2xl px-6 py-8 shadow-lg sm:px-9 sm:py-10">
       <h1 className="text-[32px] leading-tight sm:text-[40px]">Who are we looking for?</h1>
       <p className="mt-2 text-lg text-muted">Describe it the way you&apos;d tell a colleague. I&apos;ll show you how I understood it before I research anything.</p>
       <DiscoverForm
@@ -36,6 +37,7 @@ export default async function Discover({ searchParams }: { searchParams: Promise
           "Engineering firms in Gauteng with 50–200 employees",
         ].slice(0, 3)}
       />
+      </div>
 
       {!ai && <AiUnavailable feature="Searching for real companies" className="mt-6" />}
 

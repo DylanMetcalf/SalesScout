@@ -61,7 +61,7 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
   return (
     <article
       style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}
-      className={cn("rounded-lg border border-border bg-surface shadow-sm animate-rise", pending && "opacity-60", rejected && "bg-surface/60")}
+      className={cn("rounded-lg border border-border border-l-4 bg-surface shadow-sm transition-shadow hover:shadow-md animate-rise", { strong: "border-l-accent", moderate: "border-l-moderate", weak: "border-l-border-strong", unknown: "border-l-border-strong" }[p.fit?.company.level ?? "unknown"], pending && "opacity-60", rejected && "bg-surface/60 border-l-border")}
       aria-labelledby={`p-${p.id}`}
     >
       <div className="flex flex-col gap-4 p-5">
