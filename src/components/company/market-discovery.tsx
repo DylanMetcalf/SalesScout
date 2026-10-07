@@ -2,7 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Bookmark, BookmarkCheck, ChevronDown, Pencil, RotateCcw, Sparkles, X } from "lucide-react";
+import { ArrowRight, Bookmark, BookmarkCheck, ChevronDown, Pencil, RotateCcw, X } from "lucide-react";
+import { Insight } from "@/components/ui/insight";
+import { Needle } from "@/components/ui/needle";
 import { Button } from "@/components/ui/button";
 import { KnowledgeBadge } from "@/components/ui/knowledge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -83,7 +85,7 @@ export function MarketDiscovery({ opportunities, aiConnected, onboarding }: { op
       ) : visible.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface shadow-sm">
           <EmptyState
-            icon={<Sparkles />}
+            icon={<Needle className="size-5 text-accent-text" />}
             title="Where could you sell?"
             body="Sales Scout reads your Company Brain and suggests industries, company types, buyers and places worth exploring — with the reasoning behind each."
             action={
@@ -192,10 +194,7 @@ function OpportunityCard({ o, onboarding }: { o: Opportunity; onboarding?: boole
       </div>
       <p className="mt-1.5 text-muted">{o.summary}</p>
 
-      <div className="mt-4 rounded-md border-l-2 border-accent/50 bg-accent-soft/35 px-3.5 py-2.5">
-        <p className="text-xs font-medium text-accent-text">Why am I suggesting this?</p>
-        <p className="mt-0.5 text-sm text-text/85">{o.reasoning}</p>
-      </div>
+      <Insight label="Why am I suggesting this?" className="mt-4">{o.reasoning}</Insight>
 
       <dl className="mt-4 grid gap-3 sm:grid-cols-2">
         <Chips label="Industries" items={o.industries} />

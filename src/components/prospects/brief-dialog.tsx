@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { salesBriefAction } from "@/app/actions/prospects";
+import { Insight } from "@/components/ui/insight";
 
 type Brief = { headline: string; whatTheyDo: string; whyRelevant: string; opportunity: string; people: string[]; evidence: string[]; unknowns: string[]; nextStep: string };
 
@@ -60,7 +61,7 @@ export function BriefDialog({ open, onClose, prospectId, name }: { open: boolean
           <Block title="Relevant people"><Bullets items={brief.people} empty="No people identified yet." /></Block>
           <Block title="Known evidence"><Bullets items={brief.evidence} empty="No sources recorded." /></Block>
           <Block title="Unknowns"><Bullets items={brief.unknowns} empty="Nothing flagged." /></Block>
-          <Block title="Suggested next step"><p className="font-medium">{brief.nextStep}</p></Block>
+          <Insight label="Suggested next step"><p className="font-medium">{brief.nextStep}</p></Insight>
         </div>
       )}
     </Dialog>

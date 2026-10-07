@@ -39,7 +39,7 @@ export function WhyPanel({ p, open, onClose }: { p: ProspectView; open: boolean;
       <div className="flex flex-col gap-6">
         {p.isExample && <p className="rounded-md bg-violet-soft px-3 py-2 text-sm text-violet">Example data — this company and its sources are fictional.</p>}
         {p.fit && (
-          <section className="flex flex-col gap-2 rounded-xl bg-surface-2 p-4">
+          <section className="flex flex-col gap-2 rounded-xl border border-insight-border bg-insight p-4">
             <FitBadge level={p.fit.company.level} className="self-start" />
             <FitVerdict fit={p.fit} />
           </section>

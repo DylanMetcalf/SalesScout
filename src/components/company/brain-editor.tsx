@@ -166,7 +166,7 @@ function FactRow({ fact, sourceLabels }: { fact: FactLite; sourceLabels: Record<
         )}
       </div>
       {why && (
-        <div className="mt-1 rounded-md bg-surface-2 px-3 py-2 text-sm text-muted animate-fade-in">
+        <div className="mt-1 rounded-md border border-insight-border bg-insight px-3 py-2 text-sm text-muted animate-fade-in">
           {fact.rationale && <p>{fact.rationale}</p>}
           {fact.sourceIds.length > 0 && (
             <p className="mt-1 text-xs">

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
-import { Building2, CalendarCheck, Compass, Download, Kanban, Plus, Search, Settings, Sparkles, UserRound, Users, Layers, Telescope } from "lucide-react";
+import { Building2, CalendarCheck, Compass, Download, Kanban, Plus, Search, Settings, UserRound, Users, Layers, Telescope } from "lucide-react";
 import { Kbd } from "@/components/ui/kbd";
 
 type Prospect = { id: string; name: string; industry: string | null };
@@ -69,7 +69,7 @@ export function CommandPalette({ prospects, companies }: { prospects: Prospect[]
               <Command.Item className={item} onSelect={() => go("/prospects?add=1")}><Plus /> Add a prospect</Command.Item>
               <Command.Item className={item} onSelect={() => go("/prospects?add=1")} keywords={["research"]}><Telescope /> Research a company</Command.Item>
               <Command.Item className={item} onSelect={() => go("/follow-ups?new=1")}><CalendarCheck /> Create a follow-up</Command.Item>
-              <Command.Item className={item} onSelect={() => go("/company?tab=markets")}><Sparkles /> Discover my market</Command.Item>
+              <Command.Item className={item} onSelect={() => go("/company?tab=markets")}><Compass /> Discover my market</Command.Item>
               <Command.Item className={item} onSelect={() => go("/prospects?export=1")}><Download /> Export prospects</Command.Item>
             </Command.Group>
             <Command.Group heading="Go to" className={group}>

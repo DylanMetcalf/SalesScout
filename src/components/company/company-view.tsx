@@ -107,7 +107,7 @@ export function CompanyView(props: {
                 <li key={h.id} className="flex flex-col gap-0.5 px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
                   <span className="w-40 shrink-0 text-sm text-subtle">{formatDate(h.createdAt, true)}</span>
                   <span className="flex-1">{h.summary}</span>
-                  <Badge tone={h.source === "user" ? "neutral" : h.source === "ai" ? "violet" : "info"}>{{ user: "You", ai: "AI analysis", web_research: "Web research", system: "System", extraction: "Extraction" }[h.source] ?? h.source}</Badge>
+                  <Badge tone={h.source === "user" ? "neutral" : h.source === "ai" ? "accent" : "info"}>{{ user: "You", ai: "AI analysis", web_research: "Web research", system: "System", extraction: "Extraction" }[h.source] ?? h.source}</Badge>
                 </li>
               ))}
             </ul>
@@ -281,7 +281,7 @@ function StrategiesTab({ strategies, editId }: { strategies: Strategy[]; editId:
                   {s.description && <p className="mt-0.5 text-sm text-muted">{s.description}</p>}
                 </div>
                 {s.status !== "active" && <Badge>{s.status === "paused" ? "Paused" : "Archived"}</Badge>}
-                {s.origin === "market_discovery" && s.status === "active" && <Badge tone="violet">From market discovery</Badge>}
+                {s.origin === "market_discovery" && s.status === "active" && <Badge tone="accent">Suggested by Sales Scout</Badge>}
               </div>
               <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
                 {(

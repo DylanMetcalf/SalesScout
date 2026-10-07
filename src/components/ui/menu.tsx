@@ -89,7 +89,7 @@ export function Menu({
                   item.onSelect();
                 }}
                 className={cn(
-                  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm outline-none hover:bg-surface-2 focus:bg-surface-2",
+                  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm outline-none hover:bg-accent-soft/50 focus:bg-accent-soft/60",
                   item.danger ? "text-weak" : "text-text",
                 )}
               >

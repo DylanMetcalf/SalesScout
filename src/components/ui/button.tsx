@@ -10,8 +10,8 @@ const base =
   "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-[background,border-color,color,box-shadow,transform] duration-150 select-none disabled:opacity-55 active:translate-y-px focus-visible:shadow-[var(--ring)] outline-none";
 const variants: Record<Variant, string> = {
   primary: "bg-accent text-accent-fg hover:bg-accent-hover shadow-sm",
-  secondary: "bg-surface text-text border border-border hover:border-border-strong hover:bg-surface-2 shadow-sm",
-  ghost: "text-muted hover:text-text hover:bg-surface-2",
+  secondary: "bg-surface text-text border border-border hover:border-accent/40 hover:text-accent-text shadow-sm",
+  ghost: "text-muted hover:text-accent-text hover:bg-accent-soft/60",
   subtle: "bg-accent-soft text-accent-text hover:bg-[color-mix(in_srgb,var(--accent-soft)_80%,var(--accent)_12%)]",
   danger: "bg-surface text-weak border border-border hover:bg-weak-soft hover:border-weak/30",
 };
@@ -76,7 +76,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       aria-label={label}
       title={label}
       className={cn(
-        "inline-flex items-center justify-center rounded-md text-muted hover:text-text hover:bg-surface-2 transition-colors outline-none focus-visible:shadow-[var(--ring)]",
+        "inline-flex items-center justify-center rounded-md text-muted hover:text-accent-text hover:bg-accent-soft/60 transition-colors outline-none focus-visible:shadow-[var(--ring)]",
         size === "sm" ? "size-7" : "size-9",
         className,
       )}

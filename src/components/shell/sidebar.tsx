@@ -13,7 +13,7 @@ import { UserMenu } from "./user-menu";
 export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: SwitcherProps; user: { name: string; email: string }; counts: { followUpsDue: number; toReview: number }; aiConnected: boolean }) {
   const pathname = usePathname();
   return (
-    <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r border-border bg-surface-2/60 md:flex">
+    <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r border-border bg-sidebar md:flex">
       <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
         <LogoMark size={26} />
         <span className="font-display text-[17px] font-[650] tracking-[-0.02em]">Sales Scout</span>
@@ -32,7 +32,7 @@ export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: Swi
               aria-current={active ? "page" : undefined}
               className={cn(
                 "group flex h-9 items-center gap-3 rounded-md px-2.5 text-[14px] font-medium transition-colors",
-                active ? "bg-surface text-text shadow-sm ring-1 ring-border" : "text-muted hover:bg-surface hover:text-text",
+                active ? "bg-accent-soft text-accent-text font-semibold shadow-[inset_3px_0_0_var(--accent)]" : "text-muted hover:bg-surface/80 hover:text-text",
               )}
             >
               <Icon className={cn("size-[18px]", active ? "text-accent" : "text-subtle group-hover:text-muted")} aria-hidden />
@@ -50,7 +50,7 @@ export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: Swi
       <div className="mt-auto flex flex-col gap-0.5 px-3 pb-3">
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("open-command"))}
-          className="flex h-9 items-center gap-3 rounded-md px-2.5 text-[14px] font-medium text-muted hover:bg-surface hover:text-text"
+          className="flex h-9 items-center gap-3 rounded-md px-2.5 text-[14px] font-medium text-muted hover:bg-surface/80 hover:text-text"
         >
           <Search className="size-[18px] text-subtle" aria-hidden />
           <span className="flex-1 text-left">Search & actions</span>
@@ -61,7 +61,7 @@ export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: Swi
           aria-current={pathname.startsWith("/settings") ? "page" : undefined}
           className={cn(
             "flex h-9 items-center gap-3 rounded-md px-2.5 text-[14px] font-medium",
-            pathname.startsWith("/settings") ? "bg-surface text-text shadow-sm ring-1 ring-border" : "text-muted hover:bg-surface hover:text-text",
+            pathname.startsWith("/settings") ? "bg-accent-soft text-accent-text font-semibold shadow-[inset_3px_0_0_var(--accent)]" : "text-muted hover:bg-surface/80 hover:text-text",
           )}
         >
           <Settings className="size-[18px] text-subtle" aria-hidden />

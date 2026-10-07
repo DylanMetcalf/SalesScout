@@ -32,7 +32,7 @@ export function MobileTabBar() {
       {NAV.map(({ href, label, icon: Icon }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`);
         return (
-          <Link key={href} href={href} aria-current={active ? "page" : undefined} className={cn("flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium", active ? "text-accent-text" : "text-subtle")}>
+          <Link key={href} href={href} aria-current={active ? "page" : undefined} className={cn("flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium", active ? "text-accent-text font-semibold" : "text-subtle")}>
             <Icon className="size-5" aria-hidden />
             {label}
           </Link>

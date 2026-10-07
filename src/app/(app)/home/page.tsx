@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { and, asc, count, desc, eq, inArray, isNull, lte, ne } from "drizzle-orm";
-import { ArrowRight, CalendarClock, CircleAlert, Inbox, MessageSquareReply, Handshake, Sparkles, Layers, UserRound } from "lucide-react";
+import { ArrowRight, CalendarClock, CircleAlert, Inbox, MessageSquareReply, Handshake, Layers, UserRound } from "lucide-react";
 import { db, t } from "@/lib/db";
 import { inCompany, requireCompany } from "@/lib/tenant";
 import { pendingSuggestions } from "@/lib/services/learning";
@@ -8,6 +8,7 @@ import { aiConfigured } from "@/lib/ai/core";
 import { Page } from "@/components/layout/page";
 import { SuggestionCard } from "@/components/prospects/suggestion-card";
 import { AskBox } from "@/components/home/ask-box";
+import { Needle } from "@/components/ui/needle";
 import { cn } from "@/components/ui/cn";
 import { STATUS_META, PIPELINE_STAGES } from "@/lib/status";
 import { relativeDay } from "@/lib/format";
@@ -230,7 +231,7 @@ export default async function Home() {
                 {recentRuns.map((r) => (
                   <li key={r.id}>
                     <Link href={`/discover/runs/${r.id}`} className="-mx-2 flex items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-surface-2">
-                      <Sparkles className="size-4 text-subtle" aria-hidden />
+                      <Needle className="size-4 text-subtle" />
                       <span className="min-w-0 flex-1 truncate">{r.title}</span>
                       <span className="text-xs tabular-nums text-muted">{r.status === "running" ? "…" : r.relevant}</span>
                     </Link>

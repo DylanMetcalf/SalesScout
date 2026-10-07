@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarCheck, Circle, CircleCheck, Mail, MessageSquare, Phone, Users, Sparkles, Flag, History, Send, Telescope, ThumbsDown, ArrowRightLeft } from "lucide-react";
+import { CalendarCheck, Circle, CircleCheck, Mail, MessageSquare, Phone, Users, Compass, Flag, History, Send, Telescope, ThumbsDown, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { cn } from "@/components/ui/cn";
@@ -15,7 +15,7 @@ export type AuditItem = { id: string; summary: string; source: string; createdAt
 
 const ICONS: Record<string, typeof Circle> = {
   note: MessageSquare, call: Phone, email: Mail, meeting: Users, outreach: Send, status: ArrowRightLeft,
-  created: Sparkles, research: Telescope, feedback: ThumbsDown, follow_up: CalendarCheck, export: Flag,
+  created: Compass, research: Telescope, feedback: ThumbsDown, follow_up: CalendarCheck, export: Flag,
 };
 
 export function ActivityPanel({ prospectId, activities, followUps, audit, onFollowUp }: { prospectId: string; activities: ActivityItem[]; followUps: FollowUpItem[]; audit: AuditItem[]; onFollowUp: () => void }) {

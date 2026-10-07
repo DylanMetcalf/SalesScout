@@ -40,7 +40,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               role={t.kind === "error" ? "alert" : "status"}
               className="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border border-border bg-surface px-4 py-3 shadow-lg animate-rise"
             >
-              <Icon className={cn("mt-0.5 size-4 shrink-0", t.kind === "success" && "text-strong", t.kind === "error" && "text-weak", t.kind === "info" && "text-info")} aria-hidden />
+              <Icon className={cn("mt-0.5 size-4 shrink-0", t.kind === "success" && "text-accent", t.kind === "error" && "text-weak", t.kind === "info" && "text-info")} aria-hidden />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{t.title}</p>
                 {t.body && <p className="mt-0.5 text-sm text-muted">{t.body}</p>}

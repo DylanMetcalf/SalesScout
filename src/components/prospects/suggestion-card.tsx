@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Lightbulb } from "lucide-react";
+import { Needle } from "@/components/ui/needle";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { applySuggestionAction, ignoreSuggestionAction } from "@/app/actions/prospects";
@@ -19,8 +19,8 @@ export function SuggestionCard({ s }: { s: { id: string; title: string; body: st
       router.refresh();
     });
   return (
-    <div className="flex gap-3 rounded-lg border border-violet/20 bg-violet-soft/40 px-4 py-3.5">
-      <Lightbulb className="mt-0.5 size-4 shrink-0 text-violet" aria-hidden />
+    <div className="flex gap-3 rounded-lg border border-insight-border bg-insight px-4 py-3.5">
+      <Needle className="mt-1 size-4 text-accent-text" />
       <div className="min-w-0 flex-1">
         <p className="font-medium">{s.title}</p>
         <p className="mt-0.5 text-sm text-muted">{s.body}</p>

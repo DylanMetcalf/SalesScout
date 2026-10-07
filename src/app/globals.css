@@ -24,6 +24,10 @@
 
   --brand-tile: #121815;
   --brand-tile-fg: #f6f5f1;
+  /* Where Sales Scout shows its reasoning: a faint pine tint, never a gradient. */
+  --insight: #eef5f1;
+  --insight-border: #cfe2d8;
+  --sidebar: #eceee8;
 
   --accent: #17604b;
   --accent-hover: #114d3c;
@@ -67,6 +71,9 @@
     --text-subtle: #79807b;
     --brand-tile: #eceeea;
     --brand-tile-fg: #121815;
+    --insight: #12201b;
+    --insight-border: #1f3a30;
+    --sidebar: #131815;
     --accent: #46b58f;
     --accent-hover: #5cc7a2;
     --accent-soft: #12302a;
@@ -128,6 +135,9 @@
   --color-signal-text: var(--signal-text);
   --color-brand-tile: var(--brand-tile);
   --color-brand-tile-fg: var(--brand-tile-fg);
+  --color-insight: var(--insight);
+  --color-insight-border: var(--insight-border);
+  --color-sidebar: var(--sidebar);
 
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
@@ -207,6 +217,10 @@
     font-size: var(--text-base);
     line-height: var(--text-base--line-height);
     font-feature-settings: "ss01", "cv11";
+  }
+  /* Native checkboxes, radios and ranges follow the brand too. */
+  :root {
+    accent-color: var(--accent);
   }
   ::selection {
     background: color-mix(in srgb, var(--accent) 22%, transparent);

@@ -22,7 +22,7 @@ export function EmptyState({
   return (
     <div className={cn("flex flex-col items-center text-center", compact ? "px-6 py-8" : "px-6 py-16", className)}>
       {icon && (
-        <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-border bg-surface text-accent shadow-sm [&>svg]:size-5">
+        <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-accent-soft text-accent-text [&>svg]:size-5">
           {icon}
         </div>
       )}

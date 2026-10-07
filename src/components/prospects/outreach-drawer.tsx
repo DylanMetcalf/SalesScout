@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Copy, ExternalLink, Mail, Sparkles, Check } from "lucide-react";
+import { Copy, ExternalLink, Mail, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { Notice } from "@/components/ui/error-state";
 import { useToast } from "@/components/ui/toast";
+import { Needle } from "@/components/ui/needle";
 import { cn } from "@/components/ui/cn";
 import { draftOutreachAction, saveDraftAction } from "@/app/actions/prospects";
 import { useAction, type ContactFull } from "./shared";
@@ -120,10 +121,10 @@ export function OutreachDrawer({
         </div>
 
         {!draft ? (
-          <div className="rounded-lg border border-dashed border-border-strong bg-surface-2/40 px-5 py-8 text-center">
+          <div className="rounded-lg border border-insight-border bg-insight px-5 py-8 text-center">
             <p className="font-medium">I&apos;ll write a first draft from the research and your Company Brain.</p>
             <p className="mt-1 text-sm text-muted">You review and edit everything. Sales Scout never sends anything on your behalf.</p>
-            <Button className="mt-4" variant="primary" icon={<Sparkles className="size-4" />} loading={gen.pending} onClick={generate}>
+            <Button className="mt-4" variant="primary" icon={<Needle className="size-4 text-accent-fg" />} loading={gen.pending} onClick={generate}>
               {aiConnected ? "Draft it" : "Create a template draft"}
             </Button>
             {!aiConnected && <p className="mt-2 text-xs text-subtle">AI isn&apos;t connected, so this will be a simple template built from the research.</p>}
