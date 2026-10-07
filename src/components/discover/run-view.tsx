@@ -54,7 +54,7 @@ const FIELDS: { key: keyof SearchInterpretation; label: string }[] = [
   { key: "exclusions", label: "Avoid" },
 ];
 
-export function RunView({ run, prospects, aiConnected }: { run: Run; prospects: ProspectView[]; aiConnected: boolean }) {
+export function RunView({ run, prospects, aiConnected, query }: { run: Run; prospects: ProspectView[]; aiConnected: boolean; query: string }) {
   const router = useRouter();
   const toast = useToast();
   const [jobId, setJobId] = useState<string | null>(run.status === "running" ? run.jobId : null);
@@ -71,7 +71,8 @@ export function RunView({ run, prospects, aiConnected }: { run: Run; prospects: 
     return (
       <JobProgress
         jobId={jobId}
-        title="Finding and vetting companies…"
+        title="Scouting for companies…"
+        doneTitle="Done — here's what I found."
         initialSteps={STEPS}
         onDone={() => {
           setJobId(null);
@@ -93,7 +94,7 @@ export function RunView({ run, prospects, aiConnected }: { run: Run; prospects: 
     return <Interpretation initial={run.interpretation} onRun={runIt} pending={pending} aiConnected={aiConnected} />;
   }
 
-  return <Results run={run} prospects={prospects} onRetry={() => run.interpretation && runIt(run.interpretation)} aiConnected={aiConnected} />;
+  return <Results run={run} prospects={prospects} onRetry={() => run.interpretation && runIt(run.interpretation)} aiConnected={aiConnected} query={query} />;
 }
 
 function Interpretation({ initial, onRun, pending, aiConnected }: { initial: SearchInterpretation; onRun: (i: SearchInterpretation) => void; pending: boolean; aiConnected: boolean }) {
@@ -154,16 +155,7 @@ function Interpretation({ initial, onRun, pending, aiConnected }: { initial: Sea
   );
 }
 
-function Stat({ n, label, tone }: { n: number; label: string; tone?: string }) {
-  return (
-    <div className="flex flex-col">
-      <span className={cn("text-2xl font-semibold tabular-nums", tone)}>{n}</span>
-      <span className="text-sm text-muted">{label}</span>
-    </div>
-  );
-}
-
-function Results({ run, prospects, onRetry, aiConnected }: { run: Run; prospects: ProspectView[]; onRetry: () => void; aiConnected: boolean }) {
+function Results({ run, prospects, onRetry, aiConnected, query }: { run: Run; prospects: ProspectView[]; onRetry: () => void; aiConnected: boolean; query: string }) {
   const [showRejected, setShowRejected] = useState(false);
   const relevant = prospects.filter((p) => p.status !== "rejected");
   const rejected = prospects.filter((p) => p.status === "rejected");
@@ -189,20 +181,28 @@ function Results({ run, prospects, onRetry, aiConnected }: { run: Run; prospects
         </Notice>
       )}
 
-      <div className="grid grid-cols-3 gap-4 rounded-xl border border-border bg-surface p-5 shadow-sm sm:grid-cols-6">
-        <Stat n={run.requested} label="Requested" />
-        <Stat n={run.discovered} label="Discovered" />
-        <Stat n={run.duplicates} label="Already known" />
-        <Stat n={reviewed} label="Reviewed" />
-        <Stat n={relevant.length} label="Relevant" tone="text-strong" />
-        <Stat n={rejected.length} label="Set aside" />
-      </div>
-
-      {prospects.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-muted">
-            {relevant.length ? `${relevant.length} compan${relevant.length === 1 ? "y appears" : "ies appear"} relevant. Keep the ones worth pursuing — your choices teach Sales Scout.` : "Nothing strong this time."}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 className="text-2xl">
+            {relevant.length
+              ? `Found ${relevant.length} ${relevant.length === 1 ? "company" : "companies"} worth a look.`
+              : run.status === "failed"
+                ? "This search didn't finish."
+                : "No strong matches this time."}
+          </h2>
+          <p className="mt-1 text-muted">
+            {[
+              `${run.discovered} found`,
+              run.duplicates ? `${run.duplicates} you already knew` : null,
+              rejected.length ? `${rejected.length} set aside as weak` : null,
+              reviewed ? `${reviewed} reviewed` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+            {relevant.length > 0 && " — keep the ones worth pursuing and I'll learn from your choices."}
           </p>
+        </div>
+        {prospects.length > 0 && (
           <Menu
             align="end"
             items={[
@@ -211,21 +211,22 @@ function Results({ run, prospects, onRetry, aiConnected }: { run: Run; prospects
               { label: "Client-ready report", icon: <FileText />, onSelect: () => window.open(`/reports/prospects?scope=run&run=${run.id}`, "_blank") },
             ]}
             trigger={({ ref, ...p }) => (
-              <Button ref={ref} {...p} size="sm" icon={<Download className="size-4" />}>
+              <Button ref={ref} {...p} size="sm" variant="ghost" icon={<Download className="size-4" />}>
                 Export <ChevronDown className="size-3.5" />
               </Button>
             )}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       {relevant.length === 0 && run.status !== "failed" && (
         <div className="rounded-xl border border-border bg-surface shadow-sm">
           <EmptyState
             icon={<Search />}
-            title={run.discovered ? "Nothing new worth your time here" : "No companies found for this search"}
-            body={run.duplicates ? `${run.duplicates} of the companies found are already known to you or excluded.` : "Try broadening the location or industry, or describe the kind of company differently."}
-            action={<ButtonLink href="/discover" variant="primary">Try another search</ButtonLink>}
+            title={run.discovered ? "Nothing new worth your time here" : "I couldn't find enough strong matches yet"}
+            body={run.duplicates ? `${run.duplicates} of the companies I found are ones you already know or have excluded. Want me to look a little wider?` : "Want me to broaden the search? A wider area or a looser industry description usually helps."}
+            action={<ButtonLink href={`/discover?q=${encodeURIComponent(`Broaden: ${query}`)}`} variant="primary">Broaden the search</ButtonLink>}
+            secondary={<ButtonLink href="/discover" variant="ghost">Start a new search</ButtonLink>}
           />
         </div>
       )}

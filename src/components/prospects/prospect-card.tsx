@@ -75,12 +75,11 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
               </h3>
               {p.fit && <FitBadge level={p.fit.company.level} />}
               {p.inCrm && !rejected && <Badge tone={STATUS_META[p.status].tone} dot>{STATUS_META[p.status].label}</Badge>}
-              {p.isExample && <Badge tone="violet">Example</Badge>}
             </div>
             <p className="mt-0.5 text-sm text-muted">{[p.industry, p.location].filter(Boolean).join(" · ") || "Industry and location unknown"}</p>
           </div>
           <Button size="sm" variant="subtle" onClick={() => setWhy(true)} icon={<CircleHelp className="size-4" />} aria-label={`Why was ${p.name} suggested?`}>
-            WHY?
+            Why?
           </Button>
         </header>
 
@@ -124,7 +123,7 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
         ) : (
           <>
             {!p.inCrm ? (
-              <Button size="sm" variant="primary" icon={<Check className="size-4" />} onClick={() => act(() => addToCrmAction(p.id), "Added to your pipeline")}>
+              <Button size="sm" variant="primary" icon={<Check className="size-4" />} onClick={() => act(() => addToCrmAction(p.id), `${p.name} is in your pipeline`)}>
                 Keep
               </Button>
             ) : (

@@ -163,6 +163,7 @@ function BrainTab({ company, facts, sources, aiConnected }: { company: Company; 
           <JobProgress
             jobId={jobId}
             title="Re-reading your sources…"
+            doneTitle="Updated. Have a look at what changed."
             initialSteps={ANALYSIS_STEPS}
             onDone={(j) => {
               if (j.status !== "failed") {

@@ -17,14 +17,14 @@ export function People({ prospectId, contacts, isExample, onDraft }: { prospectI
   return (
     <section aria-labelledby="h-people">
       <div className="mb-3 flex items-center justify-between">
-        <h2 id="h-people" className="text-xs font-semibold uppercase tracking-[0.08em] text-subtle">Relevant people</h2>
+        <h2 id="h-people" className="text-lg">Who should I speak to?</h2>
         <Button size="sm" variant="ghost" icon={<Plus className="size-4" />} onClick={() => setAdding(true)}>Add person</Button>
       </div>
       {contacts.length === 0 ? (
-        <p className="text-muted">No people identified yet. Research deeper, or add someone you know.</p>
+        <p className="text-muted">I haven&apos;t found the right person yet. Research deeper, or add someone you already know.</p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {contacts.map((c) => (
+          {contacts.map((c, i) => (
             <li key={c.id} className="rounded-lg border border-border bg-surface p-4">
               <div className="flex items-start gap-3">
                 <span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${c.name ? "bg-strong-soft text-strong" : "bg-surface-3 text-subtle"}`}>
@@ -33,6 +33,9 @@ export function People({ prospectId, contacts, isExample, onDraft }: { prospectI
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold">{c.name ?? c.role}</p>
+                    {i === contacts.findIndex((x) => x.name) && contacts.filter((x) => x.name).length > 1 && (
+                      <span className="rounded-full bg-signal-soft px-2 py-0.5 text-xs font-medium text-signal-text">Start here</span>
+                    )}
                     {c.name ? <span className="text-muted">{c.role}</span> : <KnowledgeBadge value={"suggested" as Knowledge} />}
                   </div>
                   {!c.name && <p className="text-sm text-subtle">A role worth finding — no named person confirmed in the sources.</p>}

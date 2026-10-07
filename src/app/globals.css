@@ -5,60 +5,78 @@
  * Warm, paper-like neutrals with a single deep "scout green" accent.
  * Status colours are reserved for meaning (fit levels, knowledge, CRM state).
  */
+/*
+ * Sales Scout tokens — "field guide".
+ * Paper neutrals with a slight green bias, ink for structure, pine for action,
+ * and one amber signal colour reserved for the compass needle and "new / needs you".
+ * Status colours carry meaning only (fit levels, knowledge, CRM state).
+ */
 :root {
-  --bg: #f8f8f6;
+  --bg: #f6f5f1;
   --surface: #ffffff;
-  --surface-2: #f3f3f0;
-  --surface-3: #eaeae5;
-  --border: #e5e4de;
-  --border-strong: #d3d2ca;
-  --text: #16171a;
-  --text-muted: #5a5d64;
-  --text-subtle: #8a8d94;
+  --surface-2: #f0efea;
+  --surface-3: #e6e5df;
+  --border: #e3e1da;
+  --border-strong: #cfcdc4;
+  --text: #121815;
+  --text-muted: #555c58;
+  --text-subtle: #858b87;
 
-  --accent: #1c6a56;
-  --accent-hover: #155645;
-  --accent-soft: #e6f0eb;
-  --accent-text: #175b4a;
+  --brand-tile: #121815;
+  --brand-tile-fg: #f6f5f1;
+
+  --accent: #17604b;
+  --accent-hover: #114d3c;
+  --accent-soft: #e3efe9;
+  --accent-text: #145442;
   --accent-fg: #ffffff;
 
-  --strong: #2d7a4c;
-  --strong-soft: #e7f2ea;
-  --moderate: #9a6310;
-  --moderate-soft: #faf0dc;
+  --signal: #d9701f;
+  --signal-soft: #fbecdf;
+  --signal-text: #9e4f0e;
+
+  --strong: #2b7a4b;
+  --strong-soft: #e5f2ea;
+  --moderate: #94620f;
+  --moderate-soft: #f8efdb;
   --weak: #b0433a;
   --weak-soft: #fae9e6;
-  --info: #4453b3;
-  --info-soft: #eceefa;
+  --info: #3f55b5;
+  --info-soft: #ebeefa;
   --violet: #7349ad;
   --violet-soft: #f1ebf9;
-  --neutral-soft: #efefeb;
+  --neutral-soft: #edece7;
 
-  --shadow-sm: 0 1px 2px rgb(22 23 26 / 0.05);
-  --shadow-md: 0 1px 2px rgb(22 23 26 / 0.04), 0 4px 12px rgb(22 23 26 / 0.06);
-  --shadow-lg: 0 2px 6px rgb(22 23 26 / 0.05), 0 16px 40px rgb(22 23 26 / 0.12);
-  --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+  --shadow-sm: 0 1px 2px rgb(18 24 21 / 0.05);
+  --shadow-md: 0 1px 2px rgb(18 24 21 / 0.04), 0 6px 16px rgb(18 24 21 / 0.06);
+  --shadow-lg: 0 2px 6px rgb(18 24 21 / 0.05), 0 18px 44px rgb(18 24 21 / 0.13);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111214;
-    --surface: #17181b;
-    --surface-2: #1d1f22;
-    --surface-3: #25272b;
-    --border: #2a2c30;
-    --border-strong: #3a3d42;
-    --text: #ececea;
-    --text-muted: #a6a9af;
-    --text-subtle: #7b7e85;
-    --accent: #3fae8c;
-    --accent-hover: #53c19f;
-    --accent-soft: #15302a;
-    --accent-text: #6fd0b0;
-    --accent-fg: #0c1d18;
+    --bg: #0f1311;
+    --surface: #151a17;
+    --surface-2: #1b211e;
+    --surface-3: #232a26;
+    --border: #29302c;
+    --border-strong: #38403b;
+    --text: #eceeea;
+    --text-muted: #a3aaa5;
+    --text-subtle: #79807b;
+    --brand-tile: #eceeea;
+    --brand-tile-fg: #121815;
+    --accent: #46b58f;
+    --accent-hover: #5cc7a2;
+    --accent-soft: #12302a;
+    --accent-text: #74d2af;
+    --accent-fg: #08130f;
+    --signal: #f0954a;
+    --signal-soft: #3a2410;
+    --signal-text: #f3a866;
     --strong: #5cbf83;
-    --strong-soft: #173022;
+    --strong-soft: #163021;
     --moderate: #e0a64a;
     --moderate-soft: #33260f;
     --weak: #ec7c70;
@@ -67,10 +85,10 @@
     --info-soft: #1e2240;
     --violet: #b996ec;
     --violet-soft: #2a1f3b;
-    --neutral-soft: #24262a;
+    --neutral-soft: #222824;
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px rgb(0 0 0 / 0.35);
-    --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.3), 0 16px 40px rgb(0 0 0 / 0.5);
+    --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px rgb(0 0 0 / 0.35);
+    --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.3), 0 18px 44px rgb(0 0 0 / 0.5);
     color-scheme: dark;
   }
 }
@@ -78,6 +96,7 @@
 @theme inline {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: "Bricolage Grotesque Variable", var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -104,6 +123,11 @@
   --color-violet: var(--violet);
   --color-violet-soft: var(--violet-soft);
   --color-neutral-soft: var(--neutral-soft);
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
+  --color-signal-text: var(--signal-text);
+  --color-brand-tile: var(--brand-tile);
+  --color-brand-tile-fg: var(--brand-tile-fg);
 
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
@@ -136,6 +160,7 @@
   --animate-rise: rise 220ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-slide-in: slide-in 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+  --animate-check-pop: check-pop 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @keyframes fade-in {
@@ -149,6 +174,20 @@
 @keyframes slide-in {
   from { opacity: 0; transform: translateX(24px); }
   to { opacity: 1; transform: none; }
+}
+/* The compass needle "seeks" while Sales Scout is working, then settles. */
+@keyframes needle-seek {
+  0% { transform: rotate(40deg); }
+  25% { transform: rotate(-25deg); }
+  50% { transform: rotate(95deg); }
+  70% { transform: rotate(15deg); }
+  85% { transform: rotate(60deg); }
+  100% { transform: rotate(40deg); }
+}
+@keyframes check-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
 }
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }
@@ -181,6 +220,13 @@
     letter-spacing: -0.012em;
     text-wrap: balance;
   }
+  /* Page and section titles use the display face; everything you read stays in Geist. */
+  h1, h2 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    letter-spacing: -0.022em;
+    font-weight: 650;
+  }
   p {
     text-wrap: pretty;
   }
@@ -205,6 +251,15 @@
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
+}
+.needle-seek {
+  transform-origin: 16px 16px;
+  animation: needle-seek 2.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+.needle-rest {
+  transform-origin: 16px 16px;
+  transform: rotate(40deg);
+  transition: transform 600ms cubic-bezier(0.2, 0.9, 0.2, 1.2);
 }
 .dotted-underline {
   text-decoration: underline dotted var(--text-subtle);

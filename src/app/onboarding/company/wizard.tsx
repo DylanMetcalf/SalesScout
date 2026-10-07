@@ -171,6 +171,7 @@ function AnalyseStep() {
         <JobProgress
           jobId={jobId}
           title="Understanding your business…"
+          doneTitle="I've got a clearer picture of your business."
           initialSteps={ANALYSIS_STEPS}
           onDone={(job) => {
             if (job.status !== "failed") setTimeout(() => router.push("/onboarding/understand"), 700);

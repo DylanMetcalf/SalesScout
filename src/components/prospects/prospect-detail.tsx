@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Button, IconButton } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FitBadge, FitDimensions } from "@/components/ui/fit";
+import { FitBadge, FitDimensions, FitLevelIndicator, FIT_LABELS } from "@/components/ui/fit";
 import { Menu } from "@/components/ui/menu";
 import { Tabs, TabPanel } from "@/components/ui/tabs";
 import { Notice } from "@/components/ui/error-state";
@@ -86,53 +86,76 @@ export function ProspectDetail({
   const research = () => run(() => deepResearchAction(p.id), { refresh: false, then: (id) => setJob(id) });
   const similar = () => run(() => findSimilarAction(p.id), { refresh: false, then: (id) => router.push(`/discover/runs/${id}`) });
   const openDraft = (contactId?: string) => setOutreach({ open: true, draft: null, contactId });
+  const latestDraft = drafts[0];
+  const moreMenu = (
+    <Menu
+      align="end"
+      width={230}
+      items={[
+        { label: "Sales brief", icon: <FileText />, onSelect: () => setBrief(true) },
+        { label: "Research deeper", icon: <Telescope />, onSelect: research },
+        { label: "Find similar companies", icon: <Layers />, onSelect: similar },
+        ...(p.website && !p.isExample ? [{ label: "Open website", icon: <ExternalLink />, onSelect: () => window.open(p.website!, "_blank", "noopener") }] : []),
+        { type: "separator" as const },
+        { label: "Export as CSV", icon: <Download />, onSelect: () => (window.location.href = `/api/export?format=csv&ids=${p.id}`) },
+        { label: "Export report", icon: <FileText />, onSelect: () => window.open(`/reports/prospects?ids=${p.id}`, "_blank") },
+      ]}
+      trigger={({ ref, ...tp }) => (
+        <IconButton ref={ref} {...tp} label="More actions" className="border border-border bg-surface shadow-sm">
+          <MoreHorizontal className="size-4" />
+        </IconButton>
+      )}
+    />
+  );
 
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-8">
+    <div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-24 sm:px-8 sm:py-8">
       <Link href="/prospects" className="mb-5 inline-flex items-center gap-1.5 text-sm text-muted hover:text-text">
         <ArrowLeft className="size-4" aria-hidden /> Prospects
       </Link>
 
-      <header className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+      <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em]">{p.name}</h1>
-            {p.isExample && <Badge tone="violet">Example data</Badge>}
-          </div>
-          <p className="mt-1 text-muted">{[p.industry, p.location].filter(Boolean).join(" · ") || "Industry and location unknown"}</p>
+          <h1 className="text-[30px] leading-tight sm:text-[34px]">{p.name}</h1>
+          <p className="mt-1 text-muted">
+            {[p.industry, p.location].filter(Boolean).join(" · ") || "Industry and location unknown"}
+            {extra.domain && (
+              <>
+                {" · "}
+                {p.website && !p.isExample ? (
+                  <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-accent-text hover:underline">{extra.domain}</a>
+                ) : (
+                  <span>{extra.domain}</span>
+                )}
+              </>
+            )}
+          </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {p.fit && <FitBadge level={p.fit.company.level} />}
-            <Button size="sm" variant="subtle" icon={<CircleHelp className="size-4" />} onClick={() => setWhy(true)}>WHY?</Button>
+            <button onClick={() => setWhy(true)} className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium text-accent-text hover:bg-accent-soft">
+              <CircleHelp className="size-4" aria-hidden /> Why this lead?
+            </button>
+            {p.isExample && <Badge tone="violet">Example data</Badge>}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="hidden flex-wrap items-center gap-2 md:flex">
           <StatusSelect id={p.id} status={p.status} />
-          {!p.inCrm && p.status !== "rejected" && (
-            <Button icon={<Check className="size-4" />} loading={pending} onClick={() => run(() => addToCrmAction(p.id), { success: "Added to your pipeline" })}>
-              Add to pipeline
-            </Button>
+          <Button variant="ghost" icon={<CalendarCheck className="size-4" />} onClick={() => setFollowUp(true)}>Follow up</Button>
+          {!p.inCrm && p.status !== "rejected" ? (
+            <>
+              <Button icon={<Send className="size-4" />} onClick={() => openDraft()}>Draft outreach</Button>
+              <Button variant="primary" icon={<Check className="size-4" />} loading={pending} onClick={() => run(() => addToCrmAction(p.id), { success: `${p.name} is in your pipeline` })}>
+                Keep
+              </Button>
+            </>
+          ) : (
+            <Button variant="primary" icon={<Send className="size-4" />} onClick={() => openDraft()}>Draft outreach</Button>
           )}
-          <Button icon={<CalendarCheck className="size-4" />} onClick={() => setFollowUp(true)}>Follow up</Button>
-          <Button variant="primary" icon={<Send className="size-4" />} onClick={() => openDraft()}>Draft outreach</Button>
-          <Menu
-            align="end"
-            width={230}
-            items={[
-              { label: "Sales brief", icon: <FileText />, onSelect: () => setBrief(true) },
-              { label: "Research deeper", icon: <Telescope />, onSelect: research },
-              { label: "Find similar", icon: <Layers />, onSelect: similar },
-              ...(p.website && !p.isExample ? [{ label: "Open website", icon: <ExternalLink />, onSelect: () => window.open(p.website!, "_blank", "noopener") }] : []),
-              { type: "separator" as const },
-              { label: "Export as CSV", icon: <Download />, onSelect: () => (window.location.href = `/api/export?format=csv&ids=${p.id}`) },
-              { label: "Export report", icon: <FileText />, onSelect: () => window.open(`/reports/prospects?ids=${p.id}`, "_blank") },
-            ]}
-            trigger={({ ref, ...tp }) => (
-              <IconButton ref={ref} {...tp} label="More actions" className="border border-border bg-surface shadow-sm">
-                <MoreHorizontal className="size-4" />
-              </IconButton>
-            )}
-          />
+          {moreMenu}
+        </div>
+        <div className="md:hidden">
+          <StatusSelect id={p.id} status={p.status} />
         </div>
       </header>
 
@@ -141,6 +164,7 @@ export function ProspectDetail({
           <JobProgress
             jobId={job}
             title={`Researching ${p.name}…`}
+            doneTitle="Research updated."
             initialSteps={DEEP_STEPS}
             onDone={(j) => {
               if (j.status !== "failed") {
@@ -165,32 +189,81 @@ export function ProspectDetail({
             value={tab}
             onChange={setTab}
             tabs={[
-              { id: "overview", label: "Overview" },
-              { id: "research", label: "Research & evidence", count: p.evidence.length },
+              { id: "overview", label: "Briefing" },
+              { id: "research", label: "Evidence", count: p.evidence.length },
               { id: "activity", label: "Activity", count: activities.length },
               { id: "outreach", label: "Outreach", count: drafts.length || undefined },
             ]}
           />
           <div className="pt-6">
-            <TabPanel id="overview" active={tab === "overview"} className="flex flex-col gap-8">
+            <TabPanel id="overview" active={tab === "overview"} className="flex flex-col gap-9">
               {p.status === "rejected" && p.rejectionReason && <Notice tone="moderate" title="Set aside">{p.rejectionReason}</Notice>}
-              <Block title="What they do">
-                <p className="text-[15.5px] leading-7">{p.whatTheyDo ?? "Not researched yet."}</p>
-              </Block>
-              <Block title="Why they may be relevant" action={<button onClick={() => setWhy(true)} className="text-sm font-medium text-accent-text hover:underline">See the reasoning</button>}>
-                <p className="text-[15.5px] leading-7">{p.whyRelevant ?? "Not assessed yet."}</p>
-              </Block>
-              <Block title="Potential opportunity">
-                <p className="text-[15.5px] leading-7">{p.potentialOpportunity ?? "Not assessed yet."}</p>
-              </Block>
+
+              <section aria-label="Briefing" className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+                {[
+                  ["What do they do?", p.whatTheyDo ?? "I haven't researched this yet."],
+                  ["Why do they matter?", p.whyRelevant ?? "Not assessed yet."],
+                  ["What's the opportunity?", p.potentialOpportunity ?? "Not assessed yet."],
+                ].map(([q, a]) => (
+                  <div key={q} className="grid gap-1 px-5 py-4 sm:grid-cols-[200px_1fr] sm:gap-6">
+                    <h2 className="font-sans text-sm font-semibold text-muted">{q}</h2>
+                    <p className="text-[15.5px] leading-7">{a}</p>
+                  </div>
+                ))}
+              </section>
+
+              {p.fit && (
+                <section aria-labelledby="h-fit">
+                  <div className="mb-3 flex items-baseline justify-between">
+                    <h2 id="h-fit" className="text-lg">How they fit</h2>
+                    <button onClick={() => setWhy(true)} className="text-sm font-medium text-accent-text hover:underline">See the reasoning</button>
+                  </div>
+                  <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-xl border border-border bg-surface p-5 sm:grid-cols-3">
+                    {(Object.keys(FIT_LABELS) as (keyof typeof FIT_LABELS)[]).map((k) => (
+                      <div key={k} title={p.fit![k]?.explanation}>
+                        <dt className="text-sm text-muted">{FIT_LABELS[k]}</dt>
+                        <dd className="mt-1"><FitLevelIndicator level={p.fit![k]?.level ?? "unknown"} /></dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              )}
+
               <People prospectId={p.id} contacts={contacts} isExample={p.isExample} onDraft={(id) => openDraft(id)} />
-              <section className="rounded-lg border border-accent/25 bg-accent-soft/40 p-5">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-accent-text">Next step</h2>
-                <p className="mt-1.5 text-[15.5px] font-medium leading-7">{p.suggestedNextStep ?? "Review the research, then decide whether to reach out."}</p>
+
+              <section aria-labelledby="h-say">
+                <h2 id="h-say" className="mb-3 text-lg">What should I say?</h2>
+                <div className="rounded-xl border border-border bg-surface p-5">
+                  {latestDraft ? (
+                    <>
+                      <p className="text-sm text-muted">Your latest draft{latestDraft.subject ? ` — “${latestDraft.subject}”` : ""}</p>
+                      <p className="mt-1.5 line-clamp-3 whitespace-pre-line text-[15px] leading-7">{latestDraft.body}</p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Button size="sm" onClick={() => setOutreach({ open: true, draft: latestDraft })}>Open draft</Button>
+                        <Button size="sm" variant="ghost" icon={<Send className="size-4" />} onClick={() => openDraft()}>Write another</Button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                      <p className="flex-1 text-[15px] text-muted">
+                        I&apos;ll write an opening built on why they matter{contacts.find((c) => c.name) ? `, addressed to ${contacts.find((c) => c.name)!.name}` : ""}. You edit it and send it from your own email.
+                      </p>
+                      <Button variant="primary" icon={<Send className="size-4" />} onClick={() => openDraft()}>Draft outreach</Button>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <section className="rounded-xl bg-brand-tile p-5 text-brand-tile-fg">
+                <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.1em] text-signal">Next step</h2>
+                <p className="mt-1.5 text-[16px] font-medium leading-7">{p.suggestedNextStep ?? "Review the research, then decide whether to reach out."}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <Button size="sm" variant="primary" icon={<Send className="size-4" />} onClick={() => openDraft()}>Draft outreach</Button>
-                  <Button size="sm" icon={<CalendarCheck className="size-4" />} onClick={() => setFollowUp(true)}>Schedule follow-up</Button>
-                  <Button size="sm" variant="ghost" icon={<FileText className="size-4" />} onClick={() => setBrief(true)}>Sales brief</Button>
+                  <button onClick={() => setFollowUp(true)} className="inline-flex h-8 items-center gap-2 rounded-md bg-brand-tile-fg px-3 text-sm font-medium text-brand-tile transition-opacity hover:opacity-90">
+                    <CalendarCheck className="size-4" aria-hidden /> Schedule it
+                  </button>
+                  <button onClick={() => setBrief(true)} className="inline-flex h-8 items-center gap-2 rounded-md px-3 text-sm font-medium text-brand-tile-fg/80 hover:text-brand-tile-fg">
+                    <FileText className="size-4" aria-hidden /> One-minute brief
+                  </button>
                 </div>
               </section>
             </TabPanel>
@@ -287,7 +360,6 @@ export function ProspectDetail({
             {[
               ["Next follow-up", extra.nextFollowUpAt ? relativeDay(extra.nextFollowUpAt) : "None", extra.nextFollowUpAt && extra.nextFollowUpAt < new Date().setHours(0, 0, 0, 0) ? "text-weak font-medium" : ""],
               ["Last contact", extra.lastContactAt ? relativeDay(extra.lastContactAt) : "Not yet", ""],
-              ["Website", p.website ? (p.isExample ? `${extra.domain} (example)` : <a key="w" href={p.website} target="_blank" rel="noopener noreferrer" className="text-accent-text hover:underline">{extra.domain}</a>) : "Unknown", ""],
               ["Found by", extra.runId ? <Link key="r" href={`/discover/runs/${extra.runId}`} className="text-accent-text hover:underline">{extra.runTitle}</Link> : p.origin === "manual" ? "Added by you" : "Sales Scout", ""],
               ["Strategy", extra.strategyName ?? "—", ""],
               ["Research", DEPTH[p.researchDepth] ?? DEPTH[1], ""],
@@ -299,12 +371,17 @@ export function ProspectDetail({
               </div>
             ))}
           </dl>
-          <div className="rounded-lg border border-border bg-surface p-4">
-            <p className="text-sm font-medium">Sales brief</p>
-            <p className="mt-0.5 text-sm text-muted">Everything you need before making contact, in under a minute.</p>
-            <Button size="sm" className="mt-3" icon={<FileText className="size-4" />} onClick={() => setBrief(true)}>Open brief</Button>
-          </div>
         </aside>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-[calc(57px+env(safe-area-inset-bottom,0px))] z-20 flex items-center gap-2 border-t border-border bg-surface/95 px-4 py-2.5 backdrop-blur md:hidden">
+        {!p.inCrm && p.status !== "rejected" ? (
+          <Button variant="primary" className="flex-1" icon={<Check className="size-4" />} loading={pending} onClick={() => run(() => addToCrmAction(p.id), { success: `${p.name} is in your pipeline` })}>Keep</Button>
+        ) : (
+          <Button variant="primary" className="flex-1" icon={<Send className="size-4" />} onClick={() => openDraft()}>Draft outreach</Button>
+        )}
+        <Button icon={<CalendarCheck className="size-4" />} onClick={() => setFollowUp(true)}>Follow up</Button>
+        {moreMenu}
       </div>
 
       <WhyPanel p={p} open={why} onClose={() => setWhy(false)} />

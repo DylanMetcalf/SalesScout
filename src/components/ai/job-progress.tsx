@@ -15,12 +15,15 @@ import type { JobStep } from "@/lib/db/schema";
 export function JobProgress({
   jobId,
   title,
+  doneTitle,
   initialSteps,
   onDone,
   failureActions,
 }: {
   jobId: string;
   title: ReactNode;
+  /** Shown once the job finishes, e.g. "I've got a clearer picture of your business." */
+  doneTitle?: ReactNode;
   initialSteps: { key: string; label: string }[];
   onDone?: (job: JobState) => void;
   failureActions?: (job: JobState) => ReactNode;
@@ -36,10 +39,8 @@ export function JobProgress({
   return (
     <div className="rounded-xl border border-border bg-surface p-5 shadow-sm sm:p-6 animate-rise">
       <div className="mb-4 flex items-center gap-3">
-        <span className={running ? "animate-pulse-soft" : ""}>
-          <LogoMark size={28} />
-        </span>
-        <p className="font-medium">{title}</p>
+        <LogoMark size={30} working={running} label={running ? "Working" : "Done"} />
+        <p className="font-medium" aria-live="polite">{!running && job?.status !== "failed" && doneTitle ? doneTitle : title}</p>
       </div>
       <ProgressSteps steps={steps} />
       {job?.status === "failed" && (

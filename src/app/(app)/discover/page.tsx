@@ -11,7 +11,7 @@ import { formatDate } from "@/lib/format";
 
 export const metadata = { title: "Discover" };
 
-export default async function Discover({ searchParams }: { searchParams: Promise<{ mode?: string; strategy?: string; q?: string }> }) {
+export default async function Discover({ searchParams }: { searchParams: Promise<{ mode?: string; strategy?: string; q?: string; auto?: string }> }) {
   const tenant = await requireCompany();
   const sp = await searchParams;
   const strategies = db.select().from(t.leadStrategies).where(inCompany(t.leadStrategies, tenant, eq(t.leadStrategies.status, "active"))).orderBy(desc(t.leadStrategies.updatedAt)).all();
@@ -20,9 +20,8 @@ export default async function Discover({ searchParams }: { searchParams: Promise
 
   return (
     <Page width="narrow" className="sm:py-14">
-      <h1 className="text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">Who are we looking for?</h1>
-      <p className="mt-2 text-lg text-muted">Describe it in your own words. I&apos;ll show you how I understood it before I start researching.</p>
-      {!ai && <AiUnavailable feature="Prospect discovery (live web research)" className="mt-6" />}
+      <h1 className="text-[32px] leading-tight sm:text-[40px]">Who are we looking for?</h1>
+      <p className="mt-2 text-lg text-muted">Describe it the way you&apos;d tell a colleague. I&apos;ll show you how I understood it before I research anything.</p>
       <DiscoverForm
         className="mt-8"
         initialMode={sp.mode === "specific" ? "specific" : "discover"}
@@ -30,7 +29,15 @@ export default async function Discover({ searchParams }: { searchParams: Promise
         initialQuery={sp.q ?? ""}
         strategies={strategies.map((s) => ({ id: s.id, name: s.name, summary: [s.industries.slice(0, 2).join(", "), s.geographies.slice(0, 2).join(", ")].filter(Boolean).join(" · ") }))}
         aiConnected={ai}
+        auto={sp.auto === "1"}
+        examples={[
+          ...strategies.slice(0, 2).map((s) => `${s.industries[0] ?? s.name} companies in ${s.geographies[0] ?? "my area"} that could need what we sell`),
+          "Operations managers at mid-sized manufacturers",
+          "Engineering firms in Gauteng with 50–200 employees",
+        ].slice(0, 3)}
       />
+
+      {!ai && <AiUnavailable feature="Searching for real companies" className="mt-6" />}
 
       <section className="mt-14" aria-labelledby="h-runs">
         <h2 id="h-runs" className="text-lg font-semibold">Previous searches</h2>

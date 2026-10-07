@@ -22,5 +22,6 @@ Maintained by the `platform-steward` agent (`/evolve`). Most valuable first with
 - CRM sync (HubSpot, Salesforce, Pipedrive).
 
 ## Done
+- 2026-10-07 — UI/UX pass: compass brand mark (doubles as the research indicator), refined palette with one amber signal colour, display typeface, Home rebuilt as a "Today" briefing with an ask box, conversational Discover, prospect page as a one-screen sales briefing with a mobile action bar, WHY? verdict summary, human copy throughout. See docs/DESIGN.md.
 - 2026-09-30 — V1: design system, multi-tenant foundation, onboarding, Company Brain, market discovery, discovery pipeline, WHY panel, CRM, pipeline, follow-ups, outreach, learning, exports, demo company.
 - 2026-09-30 — API key can be pasted in Settings (encrypted per account; falls back to a server key). Key can also be pasted during onboarding. Jobs interrupted by a restart are marked failed (with retry) instead of hanging. Render blueprint, closable sign-ups, uploads stored next to the database, platform-steward agent + /evolve.

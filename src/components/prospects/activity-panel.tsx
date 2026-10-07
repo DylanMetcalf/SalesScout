@@ -51,7 +51,7 @@ export function ActivityPanel({ prospectId, activities, followUps, audit, onFoll
                   onClick={() => run(() => setFollowUpDoneAction(f.id, !f.completedAt))}
                   className="text-subtle hover:text-accent"
                 >
-                  {f.completedAt ? <CircleCheck className="size-5 text-strong" /> : <Circle className="size-5" />}
+                  {f.completedAt ? <CircleCheck className="size-5 text-strong animate-check-pop" /> : <Circle className="size-5" />}
                 </button>
                 <span className={cn("flex-1", f.completedAt && "text-subtle line-through")}>{f.title}</span>
                 <span className={cn("text-sm", overdue ? "font-medium text-weak" : "text-muted")}>{relativeDay(f.dueAt)}</span>

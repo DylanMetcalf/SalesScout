@@ -82,10 +82,10 @@ function Row({ f, overdue }: { f: Item; overdue: boolean }) {
     <li className={cn("flex items-center gap-3 px-4 py-3", pending && "opacity-60")}>
       <button
         aria-label={f.completedAt ? `Mark "${f.title}" as not done` : `Mark "${f.title}" as done`}
-        onClick={() => run(() => setFollowUpDoneAction(f.id, !f.completedAt), { success: f.completedAt ? "Reopened" : "Done" })}
+        onClick={() => run(() => setFollowUpDoneAction(f.id, !f.completedAt), { success: f.completedAt ? "Reopened" : `Done — ${f.prospectName} is one step further` })}
         className="text-subtle hover:text-accent"
       >
-        {f.completedAt ? <CircleCheck className="size-5 text-strong" /> : <Circle className="size-5" />}
+        {f.completedAt ? <CircleCheck className="size-5 text-strong animate-check-pop" /> : <Circle className="size-5" />}
       </button>
       <div className="min-w-0 flex-1">
         <p className={cn("font-medium", f.completedAt && "text-subtle line-through")}>{f.title}</p>

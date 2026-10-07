@@ -16,7 +16,7 @@ export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: Swi
     <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r border-border bg-surface-2/60 md:flex">
       <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
         <LogoMark size={26} />
-        <span className="text-[15px] font-semibold tracking-[-0.01em]">Sales Scout</span>
+        <span className="font-display text-[17px] font-[650] tracking-[-0.02em]">Sales Scout</span>
       </div>
       <div className="px-3">
         <ContextSwitcher {...switcher} />
@@ -38,7 +38,7 @@ export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: Swi
               <Icon className={cn("size-[18px]", active ? "text-accent" : "text-subtle group-hover:text-muted")} aria-hidden />
               <span className="flex-1">{label}</span>
               {badge > 0 && (
-                <span className={cn("rounded-full px-1.5 text-xs tabular-nums", href === "/follow-ups" ? "bg-moderate-soft text-moderate" : "bg-info-soft text-info")}>
+                <span className="rounded-full bg-signal-soft px-1.5 text-xs font-medium tabular-nums text-signal-text">
                   {badge}
                   <span className="sr-only">{href === "/follow-ups" ? " follow-ups due" : " prospects to review"}</span>
                 </span>

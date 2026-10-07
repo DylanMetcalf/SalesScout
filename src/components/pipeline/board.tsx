@@ -95,7 +95,7 @@ function Column({ status, cards, onMove, compact }: { status: CrmStatus; cards: 
     <section
       ref={setNodeRef}
       aria-label={`${meta.label}: ${cards.length} ${cards.length === 1 ? "company" : "companies"}`}
-      className={cn("flex flex-col rounded-lg border bg-surface-2/60 p-2 transition-colors", isOver ? "border-accent bg-accent-soft/50" : "border-border", compact ? "min-h-40" : "min-h-[60vh]")}
+      className={cn("flex flex-col rounded-lg border bg-surface-2/60 p-2 transition-colors", isOver ? "border-accent bg-accent-soft/50" : "border-border", compact ? "min-h-28" : "min-h-56")}
     >
       <header className="flex items-center gap-2 px-1.5 pt-1 pb-2.5">
         <StatusDot tone={meta.tone} />
@@ -107,7 +107,7 @@ function Column({ status, cards, onMove, compact }: { status: CrmStatus; cards: 
           <DraggableCard key={c.id} c={c} onMove={onMove} />
         ))}
       </ul>
-      {cards.length === 0 && <p className="px-1.5 py-3 text-xs text-subtle">{isOver ? "Drop here" : "—"}</p>}
+      {cards.length === 0 && <p className="rounded-md border border-dashed border-border-strong px-2 py-4 text-center text-xs text-subtle">{isOver ? "Drop here" : "Nothing here"}</p>}
     </section>
   );
 }

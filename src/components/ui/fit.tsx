@@ -41,7 +41,7 @@ export function FitBadge({ level, className }: { level: FitLevel; className?: st
     unknown: "bg-neutral-soft text-muted",
   }[level];
   return (
-    <span className={cn("inline-flex h-6 items-center rounded-full px-2.5 text-xs font-semibold tracking-wide uppercase", tone, className)}>
+    <span className={cn("inline-flex h-6 items-center rounded-full px-2.5 text-xs font-semibold", tone, className)}>
       {levelStyle[level].label} fit
     </span>
   );
@@ -61,5 +61,20 @@ export function FitDimensions({ fit, dense, className }: { fit: FitAssessment; d
         </div>
       ))}
     </dl>
+  );
+}
+
+/** One-line verdict: how many dimensions are strong, and what's still unknown. */
+export function FitVerdict({ fit, className }: { fit: FitAssessment; className?: string }) {
+  const keys = Object.keys(FIT_LABELS) as (keyof FitAssessment)[];
+  const strong = keys.filter((k) => fit[k]?.level === "strong");
+  const unknown = keys.filter((k) => !fit[k] || fit[k].level === "unknown");
+  const weak = keys.filter((k) => fit[k]?.level === "weak");
+  return (
+    <p className={cn("text-[15px] text-muted", className)}>
+      <span className="font-semibold text-text">Strong on {strong.length} of {keys.length}.</span>{" "}
+      {weak.length > 0 && <>Weak on {weak.map((k) => FIT_LABELS[k].toLowerCase()).join(", ")}. </>}
+      {unknown.length > 0 ? <>Not yet known: {unknown.map((k) => FIT_LABELS[k].toLowerCase()).join(", ")}.</> : <>Nothing important is unknown.</>}
+    </p>
   );
 }

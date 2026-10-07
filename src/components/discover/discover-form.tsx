@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, SlidersHorizontal, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ export function DiscoverForm({
   strategies,
   aiConnected,
   className,
+  auto,
+  examples,
 }: {
   initialMode: Mode;
   initialStrategy: string | null;
@@ -35,6 +37,8 @@ export function DiscoverForm({
   strategies: { id: string; name: string; summary: string }[];
   aiConnected: boolean;
   className?: string;
+  auto?: boolean;
+  examples: string[];
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -58,29 +62,19 @@ export function DiscoverForm({
       else router.push(`/discover/runs/${r.data}`);
     });
 
+  const autoRan = useRef(false);
+  useEffect(() => {
+    if (auto && aiConnected && initialQuery.trim() && !autoRan.current) {
+      autoRan.current = true;
+      submit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const filterCount = Object.values(filters).filter((v) => v?.length).length;
 
   return (
     <div className={className}>
-      <div role="radiogroup" aria-label="How do you want to search?" className="inline-flex rounded-lg border border-border bg-surface-2 p-1">
-        {(
-          [
-            ["discover", "Discover for me"],
-            ["specific", "I know what I'm looking for"],
-          ] as const
-        ).map(([m, label]) => (
-          <button
-            key={m}
-            role="radio"
-            aria-checked={mode === m}
-            onClick={() => setMode(m)}
-            className={cn("rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors", mode === m ? "bg-surface text-text shadow-sm" : "text-muted hover:text-text")}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
       <form
         className="mt-4"
         onSubmit={(e) => {
@@ -88,7 +82,7 @@ export function DiscoverForm({
           submit();
         }}
       >
-        <div className="rounded-xl border border-border bg-surface shadow-sm transition-shadow focus-within:border-accent focus-within:shadow-[var(--ring)]">
+        <div className="rounded-2xl border border-border bg-surface shadow-md transition-shadow focus-within:border-accent focus-within:shadow-[var(--ring),var(--shadow-md)]">
           <label htmlFor="discover-q" className="sr-only">
             Who are we looking for?
           </label>
@@ -100,9 +94,28 @@ export function DiscoverForm({
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
             }}
             placeholder={placeholder}
-            className="min-h-28 resize-none border-0 bg-transparent px-5 pt-4 text-lg shadow-none focus:shadow-none"
+            className="min-h-28 resize-none border-0 bg-transparent px-5 pt-4 text-lg shadow-none focus:shadow-none focus-visible:shadow-none"
           />
-          <div className="flex flex-wrap items-center gap-2 border-t border-border px-3 py-2.5">
+          <div className="flex flex-wrap items-center gap-2 px-3 pt-1 pb-3">
+            <div role="radiogroup" aria-label="What are you looking for?" className="inline-flex rounded-lg bg-surface-2 p-0.5">
+              {(
+                [
+                  ["discover", "Companies for me"],
+                  ["specific", "Specific people"],
+                ] as const
+              ).map(([m, label]) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="radio"
+                  aria-checked={mode === m}
+                  onClick={() => setMode(m)}
+                  className={cn("rounded-md px-2.5 py-1 text-[13px] font-medium transition-colors", mode === m ? "bg-surface text-text shadow-sm" : "text-muted hover:text-text")}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             <Button type="button" variant="ghost" size="sm" icon={<SlidersHorizontal className="size-4" />} onClick={() => setShowFilters((s) => !s)} aria-expanded={showFilters}>
               Filters{filterCount ? ` · ${filterCount}` : ""}
             </Button>
@@ -126,12 +139,22 @@ export function DiscoverForm({
         )}
       </form>
 
+      {!query.trim() && !showFilters && (
+        <div className="mt-3 flex flex-wrap gap-2" aria-label="Examples">
+          {examples.map((e) => (
+            <button key={e} type="button" onClick={() => setQuery(e)} className="rounded-full border border-border bg-surface px-3 py-1 text-left text-sm text-muted transition-colors hover:border-border-strong hover:text-text">
+              {e}
+            </button>
+          ))}
+        </div>
+      )}
+
       {error && <ErrorState className="mt-4" title="I couldn't start that search" body={error} />}
 
       {strategies.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-8">
           <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-muted">
-            <Target className="size-4" aria-hidden /> Use one of your lead strategies
+            <Target className="size-4" aria-hidden /> Or start from one of your strategies
           </p>
           <div className="flex flex-wrap gap-2">
             {strategies.map((s) => {

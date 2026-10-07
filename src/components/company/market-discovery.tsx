@@ -64,6 +64,7 @@ export function MarketDiscovery({ opportunities, aiConnected, onboarding }: { op
         <JobProgress
           jobId={jobId}
           title="Thinking about who could need what you sell…"
+          doneTitle="I've got a clearer picture of your market."
           initialSteps={STEPS}
           onDone={(job) => {
             if (job.status !== "failed") {

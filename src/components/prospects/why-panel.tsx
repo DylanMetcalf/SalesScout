@@ -2,7 +2,7 @@
 
 import { ExternalLink, CircleCheck, CircleDashed, CircleHelp, Search } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
-import { FitDimensions } from "@/components/ui/fit";
+import { FitBadge, FitDimensions, FitVerdict } from "@/components/ui/fit";
 import { cn } from "@/components/ui/cn";
 import type { ProspectView } from "@/lib/types";
 
@@ -35,9 +35,15 @@ function List({ items, icon, empty }: { items: string[]; icon: React.ReactNode; 
  */
 export function WhyPanel({ p, open, onClose }: { p: ProspectView; open: boolean; onClose: () => void }) {
   return (
-    <Dialog open={open} onClose={onClose} variant="sheet" title={`Why ${p.name}?`} description="Everything behind this suggestion — including what we don't know.">
+    <Dialog open={open} onClose={onClose} variant="sheet" title={`Why ${p.name}?`} description="Everything behind this suggestion, including what I couldn't verify.">
       <div className="flex flex-col gap-6">
         {p.isExample && <p className="rounded-md bg-violet-soft px-3 py-2 text-sm text-violet">Example data — this company and its sources are fictional.</p>}
+        {p.fit && (
+          <section className="flex flex-col gap-2 rounded-xl bg-surface-2 p-4">
+            <FitBadge level={p.fit.company.level} className="self-start" />
+            <FitVerdict fit={p.fit} />
+          </section>
+        )}
         <section>
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-subtle">Why this company appeared</h3>
           <p className="text-[15px] leading-7">{p.whyRelevant ?? "Not assessed yet."}</p>
@@ -107,7 +113,7 @@ export function WhyPanel({ p, open, onClose }: { p: ProspectView; open: boolean;
           <Section title="Inferred">
             <List items={p.inferences} icon={<CircleDashed className="size-4 text-info" aria-hidden />} empty="No inferences." />
           </Section>
-          <Section title="What we don't know">
+          <Section title="What I couldn't verify">
             <List items={p.unknowns} icon={<CircleHelp className="size-4 text-subtle" aria-hidden />} empty="Nothing flagged — but always verify before reaching out." />
           </Section>
         </div>

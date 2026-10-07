@@ -28,4 +28,6 @@ AI sales-intelligence, prospect-discovery and lightweight CRM. Read `README.md` 
 8. **UX first.** Calm, plain language, progressive disclosure, useful empty/loading/error states, keyboard + screen-reader support, works on mobile. Less cognitive load beats more features.
 
 ## Style
+Design rules live in `docs/DESIGN.md`. Follow them.
+
 Match surrounding code: small focused components, Tailwind with design tokens (`bg-surface`, `text-muted`, `text-accent-text`, …), no new colours outside `globals.css`, comments only where intent isn't obvious.
