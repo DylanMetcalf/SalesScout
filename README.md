@@ -29,6 +29,9 @@ The SQLite database is created and migrated automatically in `data/` on first ru
 | `/evolve` (Claude Code) | Runs the `platform-steward` agent to audit, fix, enhance and evolve the app |
 | `node scripts/dev/e2e.mjs` | Browser walkthrough of first run → CRM → exports → cross-tenant checks (needs a running server) |
 
+## Public website
+Visiting `/` shows the marketing site for the done-for-you service (edit the wording, packages and contact email in `src/content/site.ts`). "Client login" leads to the workspace. Contact-form enquiries appear under Settings → Website enquiries.
+
 ## What works with and without AI
 
 Sales Scout never shows fake results. When a capability isn't available it says so plainly.

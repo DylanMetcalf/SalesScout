@@ -624,3 +624,17 @@ export const rateLimits = sqliteTable("rate_limits", {
   windowStart: integer("window_start").notNull(),
   count: integer("count").notNull(),
 });
+
+// Public website -------------------------------------------------------------
+
+/** Enquiries from the marketing site's contact form. Belong to the installation owner, not a tenant. */
+export const enquiries = sqliteTable("enquiries", {
+  id: id(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  company: text("company"),
+  website: text("website"),
+  message: text("message").notNull(),
+  status: text("status", { enum: ["new", "contacted", "closed"] }).notNull().default("new"),
+  createdAt: createdAt(),
+});

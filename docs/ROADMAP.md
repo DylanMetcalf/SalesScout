@@ -6,6 +6,9 @@ Maintained by the `platform-steward` agent (`/evolve`). Most valuable first with
 - Validate discovery quality end to end with a real API key: run 3–5 real searches, review the results as a salesperson would, and tune the prompts in `src/lib/ai/agents.ts`.
 
 ## Next
+- Email notification when a website enquiry arrives (needs an email provider).
+- Public sample report page linked from the website.
+- Client view: a read-only portal per client company, shared by link.
 - Reuse research: cache company research by domain across searches within a company, so the same site isn't researched twice.
 - Scheduled discovery: re-run a lead strategy weekly and surface only new companies on Home.
 - Bulk triage on search results: keep or reject several at once, with keyboard shortcuts.
@@ -22,6 +25,7 @@ Maintained by the `platform-steward` agent (`/evolve`). Most valuable first with
 - CRM sync (HubSpot, Salesforce, Pipedrive).
 
 ## Done
+- 2026-10-09 — "Scout Night" palette (navy + teal, calmer and easier to read, 15px body), original S mark restored (traces itself while working), public marketing website at `/` with editable copy and an enquiry form that lands in Settings.
 - 2026-10-07 — UI/UX pass: compass brand mark (doubles as the research indicator), refined palette with one amber signal colour, display typeface, Home rebuilt as a "Today" briefing with an ask box, conversational Discover, prospect page as a one-screen sales briefing with a mobile action bar, WHY? verdict summary, human copy throughout. See docs/DESIGN.md.
 - 2026-09-30 — V1: design system, multi-tenant foundation, onboarding, Company Brain, market discovery, discovery pipeline, WHY panel, CRM, pipeline, follow-ups, outreach, learning, exports, demo company.
 - 2026-09-30 — API key can be pasted in Settings (encrypted per account; falls back to a server key). Key can also be pasted during onboarding. Jobs interrupted by a restart are marked failed (with retry) instead of hanging. Render blueprint, closable sign-ups, uploads stored next to the database, platform-steward agent + /evolve.

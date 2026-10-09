@@ -1,9 +1,9 @@
 # Sales Scout design language
 
-**Feel:** a field guide, not a database. Calm paper surfaces, ink for structure, one pine green for action, and one amber "signal" for where your attention is needed.
+**Feel:** "Scout Night". Navy ink for structure, a calm teal for action, a soft cool-grey workspace, and one amber "signal" for where your attention is needed.
 
 ## Brand
-- **Mark:** a compass needle on an ink tile (`src/components/ui/logo.tsx`). The amber tip points to "where to go next". While Sales Scout is working, the needle seeks (`<LogoMark working />`); when it's done, it settles. That behaviour *is* the personality. There's no mascot.
+- **Mark:** the S-curve with two waypoints on a teal tile (`src/components/ui/logo.tsx`). While Sales Scout is working, the S traces itself (`<LogoMark working />`). `<Needle>` is the small S glyph used to mark Sales Scout's reasoning. There's no mascot.
 - **Voice:** first person, plain, confident, never hype. "Found 5 companies worth a look." "I couldn't verify this." "I've got a clearer picture of your market."
 
 ## Tokens (`src/app/globals.css`)
@@ -11,7 +11,7 @@
 | --- | --- | --- |
 | Background / surfaces | `bg`, `surface`, `surface-2/3`, `border` | Layout. Prefer dividers and spacing over extra cards. |
 | Ink | `text`, `brand-tile` | Text, the mark, the "Next step" block. |
-| Action | `accent` (pine) | Primary buttons and links. One primary per view. |
+| Action | `accent` (teal) | Primary buttons and links. One primary per view. |
 | Signal | `signal` (amber) | Needs-you counts, "Start here", the needle tip. Use sparingly. |
 | Insight | `insight`, `insight-border` + `<Insight>` / `<Needle>` | Anywhere Sales Scout explains itself: why a market or lead, what it noticed, research progress, the brief's next step. Never sparkles or gradients. |
 | Navigation | `sidebar`, active = `accent-soft` + 3px pine edge | The brand anchor on every screen. |
@@ -23,11 +23,15 @@
 - Small uppercase labels are for data captions only, not section titles.
 
 ## Brand scopes
+- `.theme-paper` does the opposite: a light card inside a dark area (the website contact form and product preview).
 - `.theme-ink` re-points every token to the dark brand palette, so any component inside it adapts automatically. Used for the sidebar, mobile top bar, demo banner, sign-in panel, heroes and research progress.
 - `.brand-hero` is the Sales Scout gradient (deep → primary green, a soft mint glow and a faint amber warmth). Use it only for hero moments: the Home briefing, Discover, research in progress, sign-in. Never on ordinary cards.
 - Primary buttons use the green gradient with a coloured shadow. They're the only buttons that "pop".
 - The workspace background is tinted green-slate, never plain white. Cards are the lightest surface.
 - Prospect cards carry a fit-coloured left edge, and pipeline columns carry their stage colour on top.
+
+## Public website
+`/` is the marketing site for the done-for-you service. All its copy lives in `src/content/site.ts`. Enquiries from its form are stored in `enquiries` and listed under Settings → Website enquiries for the installation owner (the first account). Never add invented stats, testimonials or prices there.
 
 ## Patterns
 - **Answer the question the screen exists for first.** Home: "what should I do today?" Prospect: who, what, why, who to speak to, what to say, what next.

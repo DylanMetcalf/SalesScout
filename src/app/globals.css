@@ -6,90 +6,87 @@
  * Status colours are reserved for meaning (fit levels, knowledge, CRM state).
  */
 /*
- * Sales Scout tokens — "field guide".
- * Paper neutrals with a slight green bias, ink for structure, pine for action,
- * and one amber signal colour reserved for the compass needle and "new / needs you".
- * Status colours carry meaning only (fit levels, knowledge, CRM state).
+ * Sales Scout tokens — "Scout Night".
+ * Navy ink for structure, a calm teal for action, and one amber signal for
+ * "needs you" moments. Soft cool-grey workspace, never stark white.
  */
 :root {
-  /* Tinted workspace, not white: surfaces float on a soft green-slate ground. */
-  --bg: #e7efea;
-  --surface: #fbfdfc;
-  --surface-2: #eef5f1;
-  --surface-3: #dce9e2;
-  --border: #d0dfd7;
-  --border-strong: #b6cdc1;
-  --text: #0f1f19;
-  --text-muted: #4a5d55;
-  --text-subtle: #778a82;
-  --heading: #0b3b2e;
+  --bg: #eef1f6;
+  --surface: #fcfdfe;
+  --surface-2: #f2f5f9;
+  --surface-3: #e3e8f0;
+  --border: #dbe1ea;
+  --border-strong: #c3ccd9;
+  --text: #18213a;
+  --text-muted: #4d5874;
+  --text-subtle: #7b85a0;
+  --heading: #16203a;
 
-  --brand-tile: #0b3b2e;
-  --brand-tile-fg: #f2faf6;
+  --brand-tile: #16203a;
+  --brand-tile-fg: #f4f6fb;
   /* Where Sales Scout shows its reasoning. */
-  --insight: #e0f3ea;
-  --insight-border: #a8dbc4;
-  --sidebar: #0b2f25;
+  --insight: #e7f4f4;
+  --insight-border: #b5dedd;
+  --sidebar: #16203a;
 
-  /* Scout green: deep → primary → bright, plus tints. */
-  --brand-deep: #0b3b2e;
-  --accent: #0e7a5a;
-  --accent-bright: #13a47a;
-  --accent-hover: #0b6249;
-  --accent-soft: #d3efe2;
-  --accent-text: #0a5f46;
+  --brand-deep: #16203a;
+  --accent: #0f8285;
+  --accent-bright: #19a7a3;
+  --accent-hover: #0b6b6e;
+  --accent-soft: #dcf1f0;
+  --accent-text: #0b6669;
   --accent-fg: #ffffff;
 
-  --signal: #f08a24;
-  --signal-soft: #fdead5;
-  --signal-text: #9c4f0a;
+  --signal: #e8833a;
+  --signal-soft: #fcebdc;
+  --signal-text: #9a4d12;
 
-  --strong: #16804f;
-  --strong-soft: #daf1e4;
-  --moderate: #a36708;
-  --moderate-soft: #fbedd2;
-  --weak: #c0392f;
-  --weak-soft: #fbe5e2;
-  --info: #2f5fd0;
-  --info-soft: #e3ebfc;
-  --violet: #7a45c2;
-  --violet-soft: #efe6fb;
-  --neutral-soft: #e6eeea;
+  --strong: #1f8a55;
+  --strong-soft: #def2e6;
+  --moderate: #a16507;
+  --moderate-soft: #fbefd6;
+  --weak: #c2412f;
+  --weak-soft: #fbe6e2;
+  --info: #3b5bd9;
+  --info-soft: #e5ebfc;
+  --violet: #7650c7;
+  --violet-soft: #efe8fb;
+  --neutral-soft: #e9edf3;
 
-  --shadow-sm: 0 1px 2px rgb(11 59 46 / 0.06);
-  --shadow-md: 0 1px 2px rgb(11 59 46 / 0.05), 0 8px 20px rgb(11 59 46 / 0.08);
-  --shadow-lg: 0 2px 6px rgb(11 59 46 / 0.06), 0 20px 48px rgb(11 59 46 / 0.16);
+  --shadow-sm: 0 1px 2px rgb(22 32 58 / 0.06);
+  --shadow-md: 0 1px 2px rgb(22 32 58 / 0.05), 0 8px 20px rgb(22 32 58 / 0.07);
+  --shadow-lg: 0 2px 6px rgb(22 32 58 / 0.06), 0 20px 48px rgb(22 32 58 / 0.14);
   --ring: 0 0 0 3px color-mix(in srgb, var(--accent-bright) 35%, transparent);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #08110e;
-    --surface: #0f1b16;
-    --surface-2: #13231d;
-    --surface-3: #1a2e26;
-    --border: #1f362d;
-    --border-strong: #2c4a3d;
-    --text: #e9f3ee;
-    --text-muted: #a1b8ae;
-    --text-subtle: #75897f;
-    --heading: #f2faf6;
-    --brand-tile: #34d39e;
-    --brand-tile-fg: #06261c;
-    --insight: #0f2a20;
-    --insight-border: #1f4f3d;
-    --sidebar: #061712;
-    --brand-deep: #0b3b2e;
-    --accent: #2fc58f;
-    --accent-bright: #5be3b4;
-    --accent-hover: #4fd9a6;
-    --accent-soft: #123a2d;
-    --accent-text: #7fe9c3;
-    --accent-fg: #052219;
-    --signal: #f7a04d;
-    --signal-soft: #3d2610;
-    --signal-text: #ffbe7a;
+    --bg: #0d1220;
+    --surface: #141b2d;
+    --surface-2: #19223a;
+    --surface-3: #212c47;
+    --border: #263150;
+    --border-strong: #34416a;
+    --text: #e6eaf4;
+    --text-muted: #a5aec7;
+    --text-subtle: #79839f;
+    --heading: #f3f5fb;
+    --brand-tile: #2fc5c0;
+    --brand-tile-fg: #0b1426;
+    --insight: #112a33;
+    --insight-border: #1f4a52;
+    --sidebar: #0a0f1c;
+    --brand-deep: #16203a;
+    --accent: #2fc5c0;
+    --accent-bright: #6be0db;
+    --accent-hover: #4fd3ce;
+    --accent-soft: #123438;
+    --accent-text: #7fe3de;
+    --accent-fg: #06191b;
+    --signal: #f29a52;
+    --signal-soft: #3d2711;
+    --signal-text: #ffc189;
     --strong: #5fd896;
     --strong-soft: #143524;
     --moderate: #f0b450;
@@ -100,7 +97,7 @@
     --info-soft: #1b2547;
     --violet: #c09cf2;
     --violet-soft: #2b1f40;
-    --neutral-soft: #1a2b24;
+    --neutral-soft: #1c2540;
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 20px rgb(0 0 0 / 0.4);
     --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.3), 0 20px 48px rgb(0 0 0 / 0.55);
@@ -162,10 +159,10 @@
   /* Type scale: never smaller than 12px, body at 14.5px for calm reading. */
   --text-xs: 12px;
   --text-xs--line-height: 16px;
-  --text-sm: 13.5px;
-  --text-sm--line-height: 20px;
-  --text-base: 14.5px;
-  --text-base--line-height: 22px;
+  --text-sm: 14px;
+  --text-sm--line-height: 21px;
+  --text-base: 15px;
+  --text-base--line-height: 24px;
   --text-lg: 16.5px;
   --text-lg--line-height: 24px;
   --text-xl: 19px;
@@ -284,47 +281,87 @@
  * version automatically. .brand-hero adds the Sales Scout gradient.
  */
 .theme-ink {
-  --bg: #0b2f25;
-  --surface: #11392d;
-  --surface-2: #164536;
-  --surface-3: #1d5241;
-  --border: #23594a;
-  --border-strong: #2f6c5a;
-  --text: #effaf5;
-  --text-muted: #b3d4c6;
-  --text-subtle: #86ad9d;
+  --bg: #16203a;
+  --surface: #1c2744;
+  --surface-2: #22304f;
+  --surface-3: #2a3a5e;
+  --border: #2b3a5c;
+  --border-strong: #3a4c74;
+  --text: #eef1f8;
+  --text-muted: #b6bfd5;
+  --text-subtle: #8c96b2;
   --heading: #ffffff;
-  --brand-tile: #34d39e;
-  --brand-tile-fg: #06261c;
-  --accent: #34d39e;
-  --accent-bright: #7ff0c7;
-  --accent-hover: #5be3b4;
-  --accent-soft: #1a5a45;
-  --accent-text: #9cf4d2;
-  --accent-fg: #052219;
-  --insight: #123f31;
-  --insight-border: #2a6b57;
-  --strong: #6ee6a9;
-  --strong-soft: #1b5440;
-  --signal-soft: #5a3712;
-  --signal-text: #ffc489;
-  --neutral-soft: #1b4b3b;
-  --ring: 0 0 0 3px rgb(127 240 199 / 0.35);
+  --brand-tile: #2fc5c0;
+  --brand-tile-fg: #0b1426;
+  --accent: #4fd1cb;
+  --accent-bright: #8ae6e1;
+  --accent-hover: #6fdcd6;
+  --accent-soft: #1f3f55;
+  --accent-text: #9ceee9;
+  --accent-fg: #06191b;
+  --insight: #1d3550;
+  --insight-border: #2f5470;
+  --strong: #6fe0a4;
+  --strong-soft: #1d4a3e;
+  --signal-soft: #4a3320;
+  --signal-text: #ffc189;
+  --neutral-soft: #243354;
+  --ring: 0 0 0 3px rgb(138 230 225 / 0.35);
   color: var(--text);
   color-scheme: dark;
 }
+/* The opposite scope: a light card inside a dark brand area (e.g. a form on a hero). */
+.theme-paper {
+  --surface: #fcfdfe;
+  --surface-2: #f2f5f9;
+  --surface-3: #e3e8f0;
+  --border: #dbe1ea;
+  --border-strong: #c3ccd9;
+  --text: #18213a;
+  --text-muted: #4d5874;
+  --text-subtle: #7b85a0;
+  --heading: #16203a;
+  --accent: #0f8285;
+  --accent-bright: #19a7a3;
+  --accent-hover: #0b6b6e;
+  --accent-soft: #dcf1f0;
+  --accent-text: #0b6669;
+  --accent-fg: #ffffff;
+  --weak: #c2412f;
+  --weak-soft: #fbe6e2;
+  --strong: #1f8a55;
+  --strong-soft: #def2e6;
+  --moderate: #a16507;
+  --moderate-soft: #fbefd6;
+  --insight: #e7f4f4;
+  --insight-border: #b5dedd;
+  --signal-soft: #fcebdc;
+  --signal-text: #9a4d12;
+  --neutral-soft: #e9edf3;
+  --ring: 0 0 0 3px rgb(25 167 163 / 0.35);
+  color: var(--text);
+  color-scheme: light;
+}
 .sidebar-brand {
-  background: linear-gradient(180deg, #0c3328 0%, #082219 100%);
+  background: linear-gradient(180deg, #18233f 0%, #111a30 100%);
 }
 .brand-hero {
   background:
-    radial-gradient(90% 120% at 100% 0%, rgb(52 211 158 / 0.32), transparent 60%),
-    radial-gradient(60% 90% at 0% 100%, rgb(240 138 36 / 0.16), transparent 60%),
-    linear-gradient(135deg, #0b3b2e 0%, #0d5a45 55%, #0f6f63 100%);
+    radial-gradient(90% 120% at 100% 0%, rgb(47 197 192 / 0.26), transparent 60%),
+    radial-gradient(60% 90% at 0% 100%, rgb(232 131 58 / 0.12), transparent 60%),
+    linear-gradient(135deg, #16203a 0%, #1b2c52 55%, #144858 100%);
 }
 .needle-seek {
   transform-origin: 16px 16px;
   animation: needle-seek 2.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+@keyframes trace {
+  0% { stroke-dashoffset: 40; }
+  55%, 100% { stroke-dashoffset: 0; }
+}
+.mark-trace {
+  stroke-dasharray: 40;
+  animation: trace 1.6s cubic-bezier(0.5, 0, 0.2, 1) infinite alternate;
 }
 .needle-rest {
   transform-origin: 16px 16px;

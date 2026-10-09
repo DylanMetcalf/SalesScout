@@ -1,9 +1,10 @@
 import { cn } from "./cn";
 
+const S_PATH = "M20.5 8.5h-6.2a3.3 3.3 0 0 0 0 6.6h3.4a3.3 3.3 0 0 1 0 6.6H11.5";
+
 /**
- * The Sales Scout mark: a compass needle on an ink tile.
- * The amber tip points at "where to go next". While Sales Scout is working,
- * the needle seeks (pass `working`); when it's done, it settles.
+ * The Sales Scout mark: a single S-curve — one path of travel — with two
+ * waypoints. While Sales Scout is working the S traces itself (`working`).
  */
 export function LogoMark({ size = 28, working = false, className, label = "Sales Scout" }: { size?: number; working?: boolean; className?: string; label?: string | null }) {
   return (
@@ -16,13 +17,17 @@ export function LogoMark({ size = 28, working = false, className, label = "Sales
       aria-label={label ?? undefined}
       aria-hidden={label ? undefined : true}
     >
-      <rect width="32" height="32" rx="9" fill="var(--brand-tile)" />
-      <circle cx="16" cy="16" r="10.25" fill="none" stroke="var(--brand-tile-fg)" strokeOpacity=".22" strokeWidth="1.5" />
-      <g className={working ? "needle-seek" : "needle-rest"}>
-        <path d="M16 6.2 18.7 16h-5.4Z" fill="var(--signal)" />
-        <path d="M13.3 16h5.4L16 25.8Z" fill="var(--brand-tile-fg)" />
-      </g>
-      <circle cx="16" cy="16" r="1.45" fill="var(--brand-tile)" />
+      <rect width="32" height="32" rx="8" fill="var(--accent)" />
+      <path
+        d={S_PATH}
+        className={working ? "mark-trace" : undefined}
+        fill="none"
+        stroke="var(--accent-fg)"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M24 12.4v-.2M8 19.8v-.2" stroke="var(--accent-fg)" strokeOpacity=".55" strokeWidth="2.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -31,7 +36,7 @@ export function Logo({ className }: { className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <LogoMark />
-      <span className="font-display text-[17px] font-[650] tracking-[-0.02em] text-text">Sales Scout</span>
+      <span className="font-display text-[17px] font-[650] tracking-[-0.02em] text-heading">Sales Scout</span>
     </span>
   );
 }

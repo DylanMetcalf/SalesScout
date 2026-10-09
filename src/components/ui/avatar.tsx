@@ -1,6 +1,6 @@
 import { cn } from "./cn";
 
-const palette = ["#17604b", "#2f4a40", "#8a5a12", "#3d6b5c", "#55633a", "#7a4b2a", "#35596a"];
+const palette = ["#0f8285", "#16203a", "#2f4f7a", "#9a5a1c", "#3d6b78", "#5a4f8a", "#2d6a5a"];
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);

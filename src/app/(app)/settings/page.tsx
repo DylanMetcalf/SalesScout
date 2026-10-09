@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, sum } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, sum } from "drizzle-orm";
 import { db, t } from "@/lib/db";
 import { requireTenant } from "@/lib/tenant";
 import { MODEL, resolveKey } from "@/lib/ai/core";
@@ -32,6 +32,9 @@ export default async function Settings() {
   const exportsLog = db.select().from(t.exportsLog).where(eq(t.exportsLog.workspaceId, ws.id)).orderBy(desc(t.exportsLog.createdAt)).limit(5).all();
   const resolved = resolveKey(tenant.account.id);
   const ai = resolved !== null;
+  // Website enquiries belong to whoever runs this installation: the first account created.
+  const ownerAccount = db.select({ id: t.accounts.id }).from(t.accounts).orderBy(asc(t.accounts.createdAt)).limit(1).get();
+  const enquiries = ownerAccount?.id === tenant.account.id ? db.select().from(t.enquiries).orderBy(desc(t.enquiries.createdAt)).limit(20).all() : null;
 
   return (
     <Page width="narrow">
@@ -102,6 +105,34 @@ export default async function Settings() {
             )}
           </div>
         </Card>
+
+        {enquiries && (
+          <Card id="enquiries">
+            <CardHeader title="Website enquiries" description="Messages from the contact form on your public website." />
+            {enquiries.length === 0 ? (
+              <p className="px-5 pb-5 text-sm text-muted">No enquiries yet. When someone books a call on the website, it appears here.</p>
+            ) : (
+              <ul className="divide-y divide-border border-t border-border">
+                {enquiries.map((e) => (
+                  <li key={e.id} className="px-5 py-4">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <p className="font-medium">
+                        {e.name}
+                        {e.company && <span className="font-normal text-muted"> · {e.company}</span>}
+                      </p>
+                      <span className="text-xs text-subtle">{formatDate(e.createdAt, true)}</span>
+                    </div>
+                    <p className="text-sm">
+                      <span className="select-all text-accent-text">{e.email}</span>
+                      {e.website && <span className="text-muted"> · {e.website}</span>}
+                    </p>
+                    <p className="mt-1.5 whitespace-pre-line text-sm text-muted">{e.message}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        )}
 
         <Card>
           <CardHeader title="Members" description="Team roles and permissions arrive with multi-user workspaces." />
