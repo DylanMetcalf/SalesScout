@@ -30,7 +30,7 @@ The SQLite database is created and migrated automatically in `data/` on first ru
 | `node scripts/dev/e2e.mjs` | Browser walkthrough of first run → CRM → exports → cross-tenant checks (needs a running server) |
 
 ## Public website
-Visiting `/` shows the marketing site for the done-for-you service (edit the wording, packages and contact email in `src/content/site.ts`). "Client login" leads to the workspace. Contact-form enquiries appear under Settings → Website enquiries.
+Visiting `/` shows the marketing site (Home, Why Sales Scout, How it works, Services, Contact) for the done-for-you service (edit the wording, packages and contact email in `src/content/site.ts`). "Client login" leads to the workspace. Contact-form enquiries appear under Settings → Website enquiries.
 
 ## What works with and without AI
 

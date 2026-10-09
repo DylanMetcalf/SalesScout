@@ -152,7 +152,7 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
               </>
             )}
             <div className="ml-auto flex items-center gap-1">
-              <Button size="sm" variant="ghost" icon={<Layers className="size-4" />} onClick={similar} className="hidden sm:inline-flex">
+              <Button size="sm" variant="ghost" icon={<Layers className="size-4" />} onClick={similar} className="max-sm:hidden">
                 Find similar
               </Button>
               <Menu

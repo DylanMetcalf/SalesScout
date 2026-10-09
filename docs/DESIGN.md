@@ -31,7 +31,7 @@
 - Prospect cards carry a fit-coloured left edge, and pipeline columns carry their stage colour on top.
 
 ## Public website
-`/` is the marketing site for the done-for-you service. All its copy lives in `src/content/site.ts`. Enquiries from its form are stored in `enquiries` and listed under Settings → Website enquiries for the installation owner (the first account). Never add invented stats, testimonials or prices there.
+The marketing site for the done-for-you service lives in `src/app/(site)/` (`/`, `/why-us`, `/how-it-works`, `/services`, `/contact`) with shared chrome in `src/components/site/chrome.tsx`; new public pages must also be added to `PUBLIC` in `src/middleware.ts`. All its copy lives in `src/content/site.ts`. Enquiries from its form are stored in `enquiries` and listed under Settings → Website enquiries for the installation owner (the first account). Never add invented stats, testimonials or prices there.
 
 ## Patterns
 - **Answer the question the screen exists for first.** Home: "what should I do today?" Prospect: who, what, why, who to speak to, what to say, what next.
