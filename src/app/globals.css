@@ -372,3 +372,108 @@
   text-decoration: underline dotted var(--text-subtle);
   text-underline-offset: 3px;
 }
+
+/*
+ * Alternative palettes. Each is five base colours; every token is derived from
+ * them, so a palette is one small block. Default (no data-palette) is Scout Night.
+ * Options and labels for the picker live in src/lib/palettes.ts.
+ */
+[data-palette="indigo"] { --p-ink: #151735; --p-ink-2: #262a63; --p-accent: #4f46e5; --p-bright: #7f78ff; --p-signal: #f2705b; }
+[data-palette="ocean"] { --p-ink: #0b1d38; --p-ink-2: #12376b; --p-accent: #1b67d6; --p-bright: #3fa0ff; --p-signal: #f3a22a; }
+[data-palette="forest"] { --p-ink: #112620; --p-ink-2: #18443a; --p-accent: #1b7a56; --p-bright: #2db37f; --p-signal: #d39a2b; }
+[data-palette="plum"] { --p-ink: #22163a; --p-ink-2: #3d2368; --p-accent: #8a3fd0; --p-bright: #b77cf5; --p-signal: #ff8a65; }
+[data-palette="graphite"] { --p-ink: #16181d; --p-ink-2: #2a2f38; --p-accent: #2f7d3a; --p-bright: #7fcb4a; --p-signal: #ff6b4a; }
+[data-palette="ember"] { --p-ink: #1d1a2b; --p-ink-2: #3a2a3f; --p-accent: #d9502b; --p-bright: #ff7f50; --p-signal: #2bb3a6; }
+
+html[data-palette],
+html[data-palette] .theme-paper {
+  --bg: color-mix(in oklab, var(--p-ink) 6%, #f5f6f8);
+  --surface: color-mix(in oklab, var(--p-ink) 1%, #ffffff);
+  --surface-2: color-mix(in oklab, var(--p-ink) 4%, #f8f9fb);
+  --surface-3: color-mix(in oklab, var(--p-ink) 10%, #f3f4f7);
+  --border: color-mix(in oklab, var(--p-ink) 13%, #f1f2f5);
+  --border-strong: color-mix(in oklab, var(--p-ink) 24%, #eceef2);
+  --text: color-mix(in oklab, var(--p-ink) 92%, #000);
+  --text-muted: color-mix(in oklab, var(--p-ink) 72%, #fff);
+  --text-subtle: color-mix(in oklab, var(--p-ink) 52%, #fff);
+  --heading: var(--p-ink);
+  --brand-tile: var(--p-ink);
+  --brand-deep: var(--p-ink);
+  --sidebar: var(--p-ink);
+  --accent: var(--p-accent);
+  --accent-bright: var(--p-bright);
+  --accent-hover: color-mix(in oklab, var(--p-accent) 85%, #000);
+  --accent-soft: color-mix(in oklab, var(--p-accent) 13%, #fff);
+  --accent-text: color-mix(in oklab, var(--p-accent) 78%, #000);
+  --accent-fg: #ffffff;
+  --insight: color-mix(in oklab, var(--p-accent) 7%, #fff);
+  --insight-border: color-mix(in oklab, var(--p-accent) 28%, #fff);
+  --signal: var(--p-signal);
+  --signal-soft: color-mix(in oklab, var(--p-signal) 15%, #fff);
+  --signal-text: color-mix(in oklab, var(--p-signal) 60%, #000);
+  --neutral-soft: color-mix(in oklab, var(--p-ink) 7%, #fff);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--p-bright) 35%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  html[data-palette]:not([data-theme="light"]) {
+    --bg: color-mix(in oklab, var(--p-ink) 70%, #000);
+    --surface: color-mix(in oklab, var(--p-ink) 88%, #fff 4%);
+    --surface-2: color-mix(in oklab, var(--p-ink) 85%, #fff 8%);
+    --surface-3: color-mix(in oklab, var(--p-ink) 80%, #fff 12%);
+    --border: color-mix(in oklab, var(--p-ink) 78%, #fff 14%);
+    --border-strong: color-mix(in oklab, var(--p-ink) 70%, #fff 22%);
+    --text: #eceef4;
+    --text-muted: color-mix(in oklab, var(--p-ink) 30%, #fff);
+    --text-subtle: color-mix(in oklab, var(--p-ink) 50%, #fff);
+    --heading: #f6f7fb;
+    --brand-tile: var(--p-bright);
+    --brand-tile-fg: var(--p-ink);
+    --sidebar: color-mix(in oklab, var(--p-ink) 80%, #000);
+    --accent: var(--p-bright);
+    --accent-bright: color-mix(in oklab, var(--p-bright) 70%, #fff);
+    --accent-hover: color-mix(in oklab, var(--p-bright) 85%, #fff);
+    --accent-soft: color-mix(in oklab, var(--p-bright) 18%, var(--p-ink));
+    --accent-text: color-mix(in oklab, var(--p-bright) 60%, #fff);
+    --accent-fg: color-mix(in oklab, var(--p-ink) 80%, #000);
+    --insight: color-mix(in oklab, var(--p-bright) 10%, var(--p-ink));
+    --insight-border: color-mix(in oklab, var(--p-bright) 28%, var(--p-ink));
+    --signal-soft: color-mix(in oklab, var(--p-signal) 20%, var(--p-ink));
+    --signal-text: color-mix(in oklab, var(--p-signal) 55%, #fff);
+    --neutral-soft: color-mix(in oklab, var(--p-ink) 85%, #fff 8%);
+  }
+}
+html[data-palette] .theme-ink {
+  --bg: var(--p-ink);
+  --surface: color-mix(in oklab, var(--p-ink) 90%, #fff);
+  --surface-2: color-mix(in oklab, var(--p-ink) 85%, #fff);
+  --surface-3: color-mix(in oklab, var(--p-ink) 78%, #fff);
+  --border: color-mix(in oklab, var(--p-ink) 80%, #fff);
+  --border-strong: color-mix(in oklab, var(--p-ink) 70%, #fff);
+  --text: #eff1f7;
+  --text-muted: color-mix(in oklab, var(--p-ink) 25%, #fff);
+  --text-subtle: color-mix(in oklab, var(--p-ink) 45%, #fff);
+  --heading: #ffffff;
+  --brand-tile: var(--p-bright);
+  --brand-tile-fg: var(--p-ink);
+  --accent: color-mix(in oklab, var(--p-bright) 85%, #fff);
+  --accent-bright: color-mix(in oklab, var(--p-bright) 55%, #fff);
+  --accent-hover: color-mix(in oklab, var(--p-bright) 70%, #fff);
+  --accent-soft: color-mix(in oklab, var(--p-bright) 22%, var(--p-ink));
+  --accent-text: color-mix(in oklab, var(--p-bright) 45%, #fff);
+  --accent-fg: var(--p-ink);
+  --insight: color-mix(in oklab, var(--p-bright) 14%, var(--p-ink));
+  --insight-border: color-mix(in oklab, var(--p-bright) 32%, var(--p-ink));
+  --signal-soft: color-mix(in oklab, var(--p-signal) 25%, var(--p-ink));
+  --signal-text: color-mix(in oklab, var(--p-signal) 55%, #fff);
+  --neutral-soft: color-mix(in oklab, var(--p-ink) 82%, #fff);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--p-bright) 40%, transparent);
+}
+html[data-palette] .sidebar-brand {
+  background: linear-gradient(180deg, var(--p-ink) 0%, color-mix(in oklab, var(--p-ink) 85%, #000) 100%);
+}
+html[data-palette] .brand-hero {
+  background:
+    radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--p-bright) 28%, transparent), transparent 60%),
+    radial-gradient(60% 90% at 0% 100%, color-mix(in srgb, var(--p-signal) 14%, transparent), transparent 60%),
+    linear-gradient(135deg, var(--p-ink) 0%, var(--p-ink-2) 60%, color-mix(in oklab, var(--p-ink-2) 70%, var(--p-accent)) 100%);
+}

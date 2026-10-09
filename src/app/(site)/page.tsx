@@ -4,7 +4,7 @@ import { SITE } from "@/content/site";
 import { ButtonLink } from "@/components/ui/button";
 import { FitLevelIndicator, FIT_LABELS } from "@/components/ui/fit";
 import { Needle } from "@/components/ui/needle";
-import { ProductPreview } from "@/components/site/product-preview";
+import { AppMock, FitMock, PipelineMock, ResearchMock } from "@/components/site/mocks";
 import { CtaBand, Eyebrow, SectionHead } from "@/components/site/chrome";
 
 export const metadata = {
@@ -14,6 +14,11 @@ export const metadata = {
 
 const DELIVERABLE_ICONS = [ClipboardList, Search, UserRound, FileText, Send, FileSpreadsheet];
 const PRINCIPLE_ICONS = [Ban, Waypoints, Send, Lock];
+const PLATFORM = [
+  { title: "Live research", body: "Watch every company get checked.", Mock: ResearchMock },
+  { title: "Explainable fit", body: "Six dimensions, each with evidence.", Mock: FitMock },
+  { title: "Built-in pipeline", body: "Keep, track and follow up.", Mock: PipelineMock },
+];
 
 export default function Home() {
   return (
@@ -29,10 +34,10 @@ export default function Home() {
               <ButtonLink href="/contact" variant="primary" size="lg" icon={<ArrowRight className="size-4" />}>Book a discovery call</ButtonLink>
               <ButtonLink href="/how-it-works" variant="ghost" size="lg">See how it works</ButtonLink>
             </div>
-            <p className="mt-6 text-sm text-subtle">No software to learn. We do the research; you get the conversations.</p>
+            <p className="mt-6 text-sm text-subtle">Our own platform, run by our team. You get the conversations, and your own workspace if you want it.</p>
           </div>
           <div className="animate-rise [animation-delay:120ms] lg:pl-4">
-            <ProductPreview />
+            <AppMock />
           </div>
         </div>
       </section>
@@ -62,8 +67,27 @@ export default function Home() {
         </div>
       </section>
 
+      {/* The platform */}
+      <section className="border-y border-border bg-surface-2/70" aria-labelledby="h-platform">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <SectionHead id="h-platform" eyebrow="The platform" title="Software that researches like your best salesperson." lead="Research, explainable fit, pipeline and outreach drafts in one place, with a source behind every fact." />
+            <ButtonLink href="/platform" variant="secondary" icon={<ArrowRight className="size-4" />}>Explore the platform</ButtonLink>
+          </div>
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            {PLATFORM.map(({ title, body, Mock }) => (
+              <div key={title}>
+                <Mock />
+                <h3 className="mt-4 text-lg font-semibold text-heading">{title}</h3>
+                <p className="text-muted">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* The four questions */}
-      <section className="border-y border-border bg-surface-2/70" aria-labelledby="h-questions">
+      <section aria-labelledby="h-questions">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
           <SectionHead id="h-questions" eyebrow="Not another lead list" title="Every company we hand you answers four questions." />
           <dl className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">

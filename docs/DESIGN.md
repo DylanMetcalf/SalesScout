@@ -42,3 +42,6 @@ The marketing site for the done-for-you service lives in `src/app/(site)/` (`/`,
 - **Colour lives in tokens only.** The only literal hex values allowed are the print report, platform marks and avatar tones.
 - **Long work** shows real steps (`JobProgress`) and ends with a human line (`doneTitle`).
 - **Mobile:** the key action sits in a bottom bar within thumb reach; sidebars become tab bars and sheets.
+
+## Palettes
+Scout Night is the default. Alternatives are five base colours each under `[data-palette]` in `globals.css` (every token is derived from them) and listed in `src/lib/palettes.ts`. Users try them from Settings → Appearance or the "Colours" button on the website (signed-in only); the choice is saved per browser. To make one the default, move its five colours into the `:root` tokens. `OUT=<dir> node scripts/dev/palettes.mjs` screenshots every palette.

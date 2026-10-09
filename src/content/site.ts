@@ -5,12 +5,12 @@
  */
 export const SITE = {
   name: "Sales Scout",
-  tagline: "Done-for-you sales intelligence",
+  tagline: "AI sales intelligence, done for you",
   // Shown in the footer and on the contact section. Replace with your own.
   contactEmail: "hello@salesscout.co",
   hero: {
     title: "We find the companies that need what you sell.",
-    eyebrow: "Done-for-you sales intelligence",
+    eyebrow: "AI sales-intelligence platform",
     body: "Sales Scout researches your market, vets every company, finds the right people to speak to and hands you a briefed shortlist, with the reasoning behind every lead.",
   },
   questions: [
@@ -63,6 +63,7 @@ export const SITE = {
     },
   ],
   nav: [
+    { href: "/platform", label: "Platform" },
     { href: "/why-us", label: "Why Sales Scout" },
     { href: "/how-it-works", label: "How it works" },
     { href: "/services", label: "Services" },

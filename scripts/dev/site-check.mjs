@@ -2,7 +2,7 @@
 import { chromium } from "playwright";
 const OUT = process.env.OUT ?? ".";
 const BASE = process.env.BASE ?? "http://localhost:3000";
-const PAGES = [["home", "/"], ["why", "/why-us"], ["how", "/how-it-works"], ["services", "/services"], ["contact", "/contact"]];
+const PAGES = [["home", "/"], ["platform", "/platform"], ["why", "/why-us"], ["how", "/how-it-works"], ["services", "/services"], ["contact", "/contact"]];
 const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
 const errors = [];
 for (const [suffix, vp] of [["", { width: 1440, height: 900 }], ["_m", { width: 390, height: 844 }]]) {

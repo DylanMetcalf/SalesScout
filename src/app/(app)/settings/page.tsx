@@ -5,6 +5,7 @@ import { MODEL, resolveKey } from "@/lib/ai/core";
 import { ApiKeyForm } from "@/components/settings/api-key-form";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Card, CardHeader } from "@/components/ui/card";
+import { PalettePicker } from "@/components/ui/palette-picker";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { WorkspaceSettings } from "@/components/settings/workspace-settings";
@@ -44,6 +45,13 @@ export default async function Settings() {
           <CardHeader title="Workspace" description="Workspace context is shared with Sales Scout for every company in this workspace." />
           <div className="px-5 pb-5">
             <WorkspaceSettings initial={{ name: ws.name, description: ws.description ?? "", context: ws.context ?? "" }} canEdit={tenant.role !== "member"} />
+          </div>
+        </Card>
+
+        <Card id="appearance">
+          <CardHeader title="Appearance" description="Try a colour palette. It applies to the app and website in this browser only." />
+          <div className="px-5 pb-5">
+            <PalettePicker />
           </div>
         </Card>
 
