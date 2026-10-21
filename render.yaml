@@ -11,7 +11,7 @@ services:
     runtime: node
     plan: starter
     region: frankfurt # change to the region closest to you
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build # build tools are devDependencies
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true # redeploys when you push to the connected branch

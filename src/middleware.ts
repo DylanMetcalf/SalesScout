@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { siteUrl } from "@/lib/site-url";
 
 const PUBLIC = ["/reset-password", "/opengraph-image", "/privacy", "/terms", "/robots.txt", "/sitemap.xml", "/platform", "/why-us", "/how-it-works", "/services", "/contact", "/login", "/signup", "/_next", "/favicon", "/brand", "/api/health"];
 
@@ -9,7 +10,7 @@ export function middleware(req: NextRequest) {
   // Health checks stay on the original host so Render can still reach the app.
   const host = req.headers.get("host") ?? "";
   if (host.endsWith(".onrender.com") && pathname !== "/api/health") {
-    const target = new URL(req.nextUrl.pathname + req.nextUrl.search, process.env.SITE_URL || "https://www.salesscout.co.za");
+    const target = new URL(req.nextUrl.pathname + req.nextUrl.search, siteUrl());
     return NextResponse.redirect(target, 308);
   }
   if (pathname === "/" || PUBLIC.some((p) => pathname.startsWith(p))) return NextResponse.next();
