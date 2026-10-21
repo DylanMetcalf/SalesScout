@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import * as z from "zod/v4";
 import { db, t } from "@/lib/db";
-import { assertAdmin } from "@/lib/admin";
+import { assertAdmin, isAdminAccount } from "@/lib/admin";
 import { createInvite } from "@/lib/services/invites";
 import { createResetToken } from "@/lib/services/password-reset";
 import { attempt } from "./result";
@@ -42,6 +42,8 @@ const InviteSchema = z.object({
   allowance: Allowance,
   maxUses: z.coerce.number().int().min(1).max(100),
   expiresInDays: z.union([z.literal(""), z.coerce.number().int().min(1).max(365)]),
+  email: z.union([z.literal(""), z.email("That email doesn't look right")]).transform((e) => (e ? e.toLowerCase() : null)),
+  accessDays: z.union([z.literal(""), z.coerce.number().int().min(1).max(3650)]).transform((d) => (d === "" ? null : d)),
 });
 
 export async function createInviteAction(input: Record<string, string>) {
@@ -54,6 +56,8 @@ export async function createInviteAction(input: Record<string, string>) {
       aiMonthlyTokenLimit: v.allowance,
       maxUses: v.maxUses,
       expiresAt: v.expiresInDays === "" ? null : new Date(Date.now() + v.expiresInDays * 86_400_000),
+      email: v.email,
+      accessDays: v.accessDays,
     });
     revalidatePath("/admin");
     return code;
@@ -84,5 +88,29 @@ export async function createResetLinkAction(userId: string) {
     const user = db.select({ id: t.users.id }).from(t.users).where(eq(t.users.id, userId)).get();
     if (!user) throw new Error("That user no longer exists.");
     return `/reset-password?token=${createResetToken(user.id)}`;
+  });
+}
+
+/** Pause locks an account out at once (signed-in sessions end on their next click). */
+export async function setAccountPausedAction(accountId: string, paused: boolean) {
+  return attempt(async () => {
+    await assertAdmin();
+    if (paused && isAdminAccount(accountId)) throw new Error("Administrators can't be paused.");
+    db.update(t.accounts).set({ suspendedAt: paused ? new Date() : null }).where(eq(t.accounts.id, accountId)).run();
+    if (paused) {
+      const users = db.select({ id: t.users.id }).from(t.users).where(eq(t.users.accountId, accountId)).all();
+      for (const u of users) db.delete(t.sessions).where(eq(t.sessions.userId, u.id)).run();
+    }
+    revalidatePath("/admin");
+  });
+}
+
+/** Paid-up-to date ("YYYY-MM-DD", end of that day), or "" for no end date. */
+export async function setAccessUntilAction(accountId: string, until: string) {
+  return attempt(async () => {
+    await assertAdmin();
+    const date = until ? new Date(`${check(z.iso.date("Pick a date"), until)}T23:59:59`) : null;
+    db.update(t.accounts).set({ accessUntil: date }).where(eq(t.accounts.id, accountId)).run();
+    revalidatePath("/admin");
   });
 }

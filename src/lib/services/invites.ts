@@ -18,7 +18,15 @@ export function normaliseInviteCode(code: string): string {
   return clean.length === 10 ? `${clean.slice(0, 5)}-${clean.slice(5)}` : clean;
 }
 
-export type InviteInput = { label: string; aiAccess: "server" | "own_key"; aiMonthlyTokenLimit: number | null; maxUses: number; expiresAt: Date | null };
+export type InviteInput = {
+  label: string;
+  aiAccess: "server" | "own_key";
+  aiMonthlyTokenLimit: number | null;
+  maxUses: number;
+  expiresAt: Date | null;
+  email: string | null;
+  accessDays: number | null;
+};
 
 export function createInvite(input: InviteInput) {
   const code = generateInviteCode();
@@ -26,12 +34,22 @@ export function createInvite(input: InviteInput) {
   return code;
 }
 
-/** A code that can still be used right now, or null. */
-export function findUsableInvite(code: string) {
+/** A code that can still be used right now (by this email, if the code is tied to one), or null. */
+export function findUsableInvite(code: string, email?: string) {
   const row = db.select().from(t.invites).where(eq(t.invites.code, normaliseInviteCode(code))).get();
   if (!row || row.revokedAt || row.uses >= row.maxUses) return null;
   if (row.expiresAt && row.expiresAt.getTime() < Date.now()) return null;
+  if (row.email && row.email !== email?.trim().toLowerCase()) return null;
   return row;
+}
+
+/** What an invite gives the account it creates. */
+export function inviteGrant(invite: typeof t.invites.$inferSelect) {
+  return {
+    aiAccess: invite.aiAccess,
+    aiMonthlyTokenLimit: invite.aiMonthlyTokenLimit,
+    accessUntil: invite.accessDays ? new Date(Date.now() + invite.accessDays * 86_400_000) : null,
+  };
 }
 
 /** Atomically consumes one use. False if someone else took the last one first. */

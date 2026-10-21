@@ -39,3 +39,10 @@ services:
       # Set in the dashboard (Environment tab) so blueprint syncs never overwrite it.
       - key: ALLOW_SIGNUPS
         sync: false
+      # Your scheduling page (Calendly / Cal.com / Google appointment schedule).
+      # It creates the Zoom or Google Meet link; the Contact page shows the calendar.
+      - key: BOOKING_URL
+        sync: false
+      # Resend API key: emails each website enquiry to ENQUIRY_EMAIL (default: site contact email).
+      - key: RESEND_API_KEY
+        sync: false

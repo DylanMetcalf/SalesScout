@@ -5,6 +5,7 @@ import * as z from "zod/v4";
 import { db, t } from "@/lib/db";
 import { newId } from "@/lib/ids";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { notifyEnquiry } from "@/lib/notify";
 
 export type EnquiryState = { ok?: boolean; error?: string; fields?: Record<string, string> } | undefined;
 
@@ -29,5 +30,7 @@ export async function submitEnquiry(_: EnquiryState, form: FormData): Promise<En
   db.insert(t.enquiries)
     .values({ id: newId("enq"), ...parsed.data, company: parsed.data.company || null, website: parsed.data.website || null })
     .run();
+  // The enquiry is already saved; an email failure shouldn't fail the form.
+  await notifyEnquiry(parsed.data).catch((err) => console.error("[enquiry] email notification failed", err));
   return { ok: true };
 }

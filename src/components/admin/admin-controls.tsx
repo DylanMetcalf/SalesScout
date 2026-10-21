@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { useAction } from "@/components/prospects/shared";
-import { createInviteAction, createResetLinkAction, revokeInviteAction, setAccountAccessAction, setEnquiryStatusAction } from "@/app/actions/admin";
+import { createInviteAction, createResetLinkAction, revokeInviteAction, setAccessUntilAction, setAccountAccessAction, setAccountPausedAction, setEnquiryStatusAction } from "@/app/actions/admin";
 
 const toMillions = (tokens: number | null) => (tokens == null ? "" : String(tokens / 1_000_000));
 
@@ -40,7 +40,7 @@ export function InviteCreator() {
   const toast = useToast();
   const create = useAction();
   const [open, setOpen] = useState(false);
-  const [code, setCode] = useState<string | null>(null);
+  const [created, setCreated] = useState<{ code: string; email: string; days: string } | null>(null);
   const [aiAccess, setAccess] = useState("server");
 
   const copy = async (text: string) => {
@@ -52,31 +52,42 @@ export function InviteCreator() {
     }
   };
 
-  if (code) {
-    const link = `${window.location.origin}/signup?invite=${code}`;
+  if (created) {
+    const loginUrl = `${window.location.origin}/login`;
+    const message = [
+      "Your Sales Scout access is ready.",
+      `Sign in at ${loginUrl}`,
+      `Email: ${created.email || "your work email"}`,
+      `Password: ${created.code}`,
+      created.days ? `Access: ${created.days} days from your first sign-in.` : "",
+      "You can change your password in Settings once you're in.",
+    ].filter(Boolean).join("\n");
     return (
       <div className="rounded-lg border border-insight-border bg-insight p-4">
-        <p className="text-sm font-semibold text-heading">Invite created</p>
-        <p className="mt-2 select-all font-mono text-lg tracking-wider text-accent-text">{code}</p>
-        <p className="mt-1 break-all text-xs text-muted select-all">{link}</p>
+        <p className="text-sm font-semibold text-heading">Access code created</p>
+        <p className="mt-2 select-all font-mono text-lg tracking-wider text-accent-text">{created.code}</p>
+        <p className="mt-1 text-sm text-muted">They sign in with {created.email ? <span className="font-medium text-text">{created.email}</span> : "their email"} and this code as the password.</p>
+        <pre className="mt-3 rounded-md border border-border bg-surface p-3 font-sans text-xs whitespace-pre-wrap text-muted select-all">{message}</pre>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button size="sm" icon={<Copy className="size-4" />} onClick={() => copy(link)}>Copy sign-up link</Button>
-          <Button size="sm" variant="ghost" onClick={() => { setCode(null); setOpen(false); }}>Done</Button>
+          <Button size="sm" variant="primary" icon={<Copy className="size-4" />} onClick={() => copy(message)}>Copy message to send</Button>
+          <Button size="sm" variant="ghost" onClick={() => { setCreated(null); setOpen(false); }}>Done</Button>
         </div>
       </div>
     );
   }
-  if (!open) return <Button icon={<Plus className="size-4" />} onClick={() => setOpen(true)}>New invite code</Button>;
+  if (!open) return <Button icon={<Plus className="size-4" />} onClick={() => setOpen(true)}>New access code</Button>;
   return (
     <form
       className="grid gap-3 rounded-lg border border-border bg-surface-2 p-4 sm:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault();
         const input = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
-        create.run(() => createInviteAction(input), { then: (c) => setCode(c) });
+        create.run(() => createInviteAction(input), { then: (code) => setCreated({ code, email: input.email ?? "", days: input.accessDays ?? "" }) });
       }}
     >
-      <Field label="Who is it for?" className="sm:col-span-2">{(p) => <Input {...p} name="label" placeholder="e.g. Acme Engineering pilot" required maxLength={80} />}</Field>
+      <Field label="Who is it for?">{(p) => <Input {...p} name="label" placeholder="e.g. Acme Engineering" required maxLength={80} />}</Field>
+      <Field label="Their email" hint="Recommended: only this email can use the code." optional>{(p) => <Input {...p} name="email" type="email" placeholder="name@company.com" />}</Field>
+      <Field label="Access length (days)" hint="From first sign-in, e.g. 30 for a month. Blank = until you pause it." optional>{(p) => <Input {...p} name="accessDays" type="number" min={1} max={3650} defaultValue={30} />}</Field>
       <Field label="AI usage">
         {(p) => (
           <Select {...p} name="aiAccess" value={aiAccess} onChange={(e) => setAccess(e.target.value)}>
@@ -91,7 +102,7 @@ export function InviteCreator() {
         <input type="hidden" name="allowance" value="" />
       )}
       <Field label="Can be used">{(p) => <Input {...p} name="maxUses" type="number" min={1} max={100} defaultValue={1} />}</Field>
-      <Field label="Expires after (days)" optional>{(p) => <Input {...p} name="expiresInDays" type="number" min={1} max={365} defaultValue={14} />}</Field>
+      <Field label="Code must be used within (days)" optional>{(p) => <Input {...p} name="expiresInDays" type="number" min={1} max={365} defaultValue={14} />}</Field>
       <div className="flex gap-2 sm:col-span-2">
         <Button type="submit" variant="primary" loading={create.pending}>Create code</Button>
         <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
@@ -137,5 +148,26 @@ export function ResetLink({ userId, email }: { userId: string; email: string }) 
     <Button size="sm" variant="ghost" loading={make.pending} aria-label={`Create a password reset link for ${email}`} onClick={() => make.run(() => createResetLinkAction(userId), { refresh: false, then: (path) => setLink(`${window.location.origin}${path}`) })}>
       Reset link
     </Button>
+  );
+}
+
+/** Pause / resume, and the paid-up-to date. */
+export function AccessControl({ accountId, paused, until, isAdmin }: { accountId: string; paused: boolean; until: string; isAdmin: boolean }) {
+  const pause = useAction();
+  const save = useAction();
+  const [date, setDate] = useState(until);
+  if (isAdmin) return <span className="text-sm text-muted">Always</span>;
+  const ended = !paused && until !== "" && new Date(`${until}T23:59:59`).getTime() < Date.now();
+  return (
+    <div className="flex flex-col gap-2">
+      <span className={paused || ended ? "text-xs font-semibold text-weak" : "text-xs font-semibold text-strong"}>{paused ? "Paused" : ended ? "Ended" : "Active"}</span>
+      <div className="flex flex-wrap items-center gap-2">
+        <Input type="date" aria-label="Access until" value={date} onChange={(e) => setDate(e.target.value)} className="h-9 w-[150px]" />
+        {date !== until && <Button size="sm" variant="primary" loading={save.pending} onClick={() => save.run(() => setAccessUntilAction(accountId, date), { success: date ? "Access date saved" : "No end date" })}>Save</Button>}
+        <Button size="sm" variant={paused ? "primary" : "ghost"} loading={pause.pending} onClick={() => pause.run(() => setAccountPausedAction(accountId, !paused), { success: paused ? "Access restored" : "Access paused. They've been signed out." })}>
+          {paused ? "Resume" : "Pause"}
+        </Button>
+      </div>
+    </div>
   );
 }

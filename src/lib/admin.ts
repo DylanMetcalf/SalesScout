@@ -1,31 +1,11 @@
 import "server-only";
-import { and, asc, eq, gte, inArray, sum } from "drizzle-orm";
+import { and, eq, gte, sum } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db, t } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
+import { isAdminAccount } from "@/lib/access";
 
-/**
- * Who runs this installation. Administrators use the server's AI key without
- * limits and can open /admin.
- *
- * Set ADMIN_EMAILS (comma-separated) on the server. Until it's set, the first
- * account ever created is treated as the administrator.
- */
-export function adminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-export function isAdminAccount(accountId: string): boolean {
-  const emails = adminEmails();
-  if (emails.length > 0) {
-    return Boolean(db.select({ id: t.users.id }).from(t.users).where(and(eq(t.users.accountId, accountId), inArray(t.users.email, emails))).get());
-  }
-  const first = db.select({ id: t.accounts.id }).from(t.accounts).orderBy(asc(t.accounts.createdAt)).limit(1).get();
-  return first?.id === accountId;
-}
+export { adminEmails, isAdminAccount } from "@/lib/access";
 
 /** For admin pages and actions. Anyone else gets a plain 404, so /admin isn't advertised. */
 export async function requireAdmin() {

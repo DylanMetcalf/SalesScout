@@ -87,6 +87,10 @@ export const accounts = sqliteTable("accounts", {
   aiAccess: text("ai_access", { enum: ["server", "own_key"] }).notNull().default("own_key"),
   /** Optional monthly cap, in tokens, on server-key usage. Null = no cap. */
   aiMonthlyTokenLimit: integer("ai_monthly_token_limit"),
+  /** Set by an administrator to lock the account out immediately. */
+  suspendedAt: integer("suspended_at", { mode: "timestamp_ms" }),
+  /** Paid-up-to date. After it, sign-in stops working until an administrator extends it. Null = no end. */
+  accessUntil: integer("access_until", { mode: "timestamp_ms" }),
   createdAt: createdAt(),
 });
 
@@ -662,6 +666,10 @@ export const invites = sqliteTable("invites", {
   label: text("label").notNull(),
   aiAccess: text("ai_access", { enum: ["server", "own_key"] }).notNull().default("own_key"),
   aiMonthlyTokenLimit: integer("ai_monthly_token_limit"),
+  /** If set, only this email can use the code. */
+  email: text("email"),
+  /** Days of access granted when the code is used. Null = no end date. */
+  accessDays: integer("access_days"),
   maxUses: integer("max_uses").notNull().default(1),
   uses: integer("uses").notNull().default(0),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }),

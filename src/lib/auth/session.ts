@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import { and, eq, gt } from "drizzle-orm";
 import { db, t } from "@/lib/db";
+import { accessBlock } from "@/lib/access";
 
 export const SESSION_COOKIE = "ss_session";
 const SESSION_DAYS = 30;
@@ -40,5 +41,11 @@ export const getSessionUser = cache(async () => {
     .innerJoin(t.users, eq(t.users.id, t.sessions.userId))
     .where(and(eq(t.sessions.id, hashToken(token)), gt(t.sessions.expiresAt, new Date())))
     .get();
-  return row?.user ?? null;
+  if (!row) return null;
+  // Paused or expired accounts are signed out on their next request.
+  if (accessBlock(row.user.accountId)) {
+    db.delete(t.sessions).where(eq(t.sessions.userId, row.user.id)).run();
+    return null;
+  }
+  return row.user;
 });

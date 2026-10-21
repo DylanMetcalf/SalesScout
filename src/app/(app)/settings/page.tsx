@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { WorkspaceSettings } from "@/components/settings/workspace-settings";
+import { PasswordForm } from "@/components/settings/password-form";
 import { formatDate } from "@/lib/format";
 
 export const metadata = { title: "Settings" };
@@ -44,6 +45,13 @@ export default async function Settings() {
           <CardHeader title="Workspace" description="Workspace context is shared with Sales Scout for every company in this workspace." />
           <div className="px-5 pb-5">
             <WorkspaceSettings initial={{ name: ws.name, description: ws.description ?? "", context: ws.context ?? "" }} canEdit={tenant.role !== "member"} />
+          </div>
+        </Card>
+
+        <Card id="password">
+          <CardHeader title="Password" description={`Signed in as ${tenant.user.email}.`} />
+          <div className="px-5 pb-5">
+            <PasswordForm />
           </div>
         </Card>
 

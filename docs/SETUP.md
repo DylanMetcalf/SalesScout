@@ -49,6 +49,14 @@ Once it's online, the key set on the server is **yours**: administrators (the em
 6. Optional: set `ALLOW_SIGNUPS` = `false` (Environment tab) to make sign-up invite-only. Invite codes are created in **Admin**, and administrator emails can always sign up. Either way, new accounts can't spend your AI key unless you allow it.
 7. **Settings → Custom Domains** to use your own domain, (the site already defaults to `https://www.salesscout.co.za`; set `SITE_URL` only if that changes).
 
+**Clients and access codes:** in **Admin → Access codes**, create a code (ideally tied to the client's email, with an access length such as 30 days) and send them the ready-made message. They sign in at `/login` with their email and the code as the password. Under **Accounts** you can **Pause** them (signed out at once), **Resume**, or change **Access until** when they renew.
+
+**Discovery calls:** create a booking page in Calendly, Cal.com or Google Calendar (appointment schedule), connect Zoom or Google Meet there, then set `BOOKING_URL` to its link. The Contact page shows the calendar; the tool sends the invite with the meeting link.
+
+**Enquiry emails:** create a free account at resend.com using the inbox that should receive enquiries, create an API key, and set `RESEND_API_KEY`.
+
+**Monitoring:** `.github/workflows/uptime.yml` checks the live site every 10 minutes and opens a GitHub issue (which emails you) if it's down, closing it when it's back.
+
 **Locked out?** In Admin, each user has a **Reset link** button: send them the one-time link. If you're the one locked out, open the service's **Shell** tab in Render and run `npm run reset-link -- you@example.com`.
 
 From then on, every push to the connected branch redeploys automatically. Your data on the disk is kept.

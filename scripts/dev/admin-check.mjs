@@ -1,4 +1,4 @@
-// Admin back office: console renders, invite code signs a new account up with sign-ups closed,
+// Admin back office: console renders, access codes (sign-up and code-as-password), pause/resume/end access,
 // the new account can't open /admin and doesn't get the server key. Needs a server started with
 // ADMIN_EMAILS=demo@salesscout.app ALLOW_SIGNUPS=false ANTHROPIC_API_KEY=<anything>.
 import { chromium } from "playwright";
@@ -21,11 +21,11 @@ await login(admin, "demo@salesscout.app", "salesscout-demo");
 await admin.getByRole("link", { name: "Admin" }).click();
 await admin.getByRole("heading", { name: "Back office" }).waitFor();
 ok("admin console opens from the sidebar");
-await admin.getByRole("button", { name: "New invite code" }).click();
+await admin.getByRole("button", { name: "New access code" }).click();
 await admin.getByLabel("Who is it for?").fill("E2E client");
 await admin.getByLabel("AI usage").selectOption("own_key");
 await admin.getByRole("button", { name: "Create code" }).click();
-await admin.getByText("Invite created").waitFor();
+await admin.getByText("Access code created").waitFor();
 const code = (await admin.locator("p.font-mono").first().textContent()).trim();
 ok(`invite created ${code}`);
 await admin.screenshot({ path: `${OUT}/admin.png`, fullPage: true });
@@ -77,6 +77,69 @@ ok("reset link can't be reused");
 const relog = await (await browser.newContext()).newPage();
 await login(relog, clientEmail, "brand-new-pass");
 ok("can sign in with the new password");
+
+// Access codes: email + code as password, then pause / resume / end access.
+const codeEmail = `paid${Date.now()}@example.com`;
+await admin.goto(BASE + "/admin");
+await admin.getByRole("button", { name: "New access code" }).click();
+await admin.getByLabel("Who is it for?").fill("Paid client");
+await admin.getByLabel("Their email").fill(codeEmail);
+await admin.getByRole("button", { name: "Create code" }).click();
+await admin.getByText("Access code created").waitFor();
+const accessCode = (await admin.locator("p.font-mono").first().textContent()).trim();
+ok(`access code ${accessCode} for ${codeEmail}`);
+
+const wrong = await (await browser.newContext()).newPage();
+await wrong.goto(BASE + "/login");
+await wrong.getByLabel("Work email").fill(`someoneelse${Date.now()}@example.com`);
+await wrong.getByLabel("Password").fill(accessCode);
+await wrong.getByRole("button", { name: "Sign in" }).click();
+await wrong.getByText("don't match").waitFor();
+ok("code tied to an email can't be used by another email");
+
+const paid = await (await browser.newContext()).newPage();
+await paid.goto(BASE + "/login");
+await paid.getByLabel("Work email").fill(codeEmail);
+await paid.getByLabel("Password").fill(accessCode.toLowerCase());
+await paid.getByRole("button", { name: "Sign in" }).click();
+await paid.waitForURL(/\/onboarding/);
+ok("first sign-in with email + access code creates the account");
+const again = await (await browser.newContext()).newPage();
+await login(again, codeEmail, accessCode);
+ok("the code keeps working as their password");
+
+await admin.goto(BASE + "/admin");
+const row = admin.locator("tr", { hasText: codeEmail });
+await row.getByText("Active").waitFor();
+await row.getByRole("button", { name: "Pause" }).click();
+await row.getByText("Paused").waitFor();
+await paid.goto(BASE + "/home");
+await paid.waitForURL(/\/login/);
+ok("pausing signs them out on their next click");
+const blocked = await (await browser.newContext()).newPage();
+await blocked.goto(BASE + "/login");
+await blocked.getByLabel("Work email").fill(codeEmail);
+await blocked.getByLabel("Password").fill(accessCode);
+await blocked.getByRole("button", { name: "Sign in" }).click();
+await blocked.getByText("access is paused").waitFor();
+ok("paused account sees a clear message at sign-in");
+
+await row.getByRole("button", { name: "Resume" }).click();
+await row.getByText("Active").waitFor();
+await row.getByLabel("Access until").fill("2020-01-01");
+await row.getByRole("button", { name: "Save" }).click();
+await row.getByText("Ended").waitFor();
+await blocked.getByLabel("Password").fill(accessCode);
+await blocked.getByRole("button", { name: "Sign in" }).click();
+await blocked.getByText("access period has ended").waitFor();
+ok("past access-until date blocks sign-in");
+await row.getByLabel("Access until").fill("2099-12-31");
+await row.getByRole("button", { name: "Save" }).click();
+await row.getByText("Active").waitFor();
+await blocked.getByLabel("Password").fill(accessCode);
+await blocked.getByRole("button", { name: "Sign in" }).click();
+await blocked.waitForURL(/\/home|\/onboarding/);
+ok("extending the date lets them back in");
 
 console.log("ERRORS:", JSON.stringify(errors));
 await browser.close();

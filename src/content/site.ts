@@ -1,5 +1,7 @@
 import {
   Ban,
+  CalendarCheck,
+  Video,
   BookOpenCheck,
   Building2,
   ClipboardCheck,
@@ -199,6 +201,13 @@ export const SITE = {
     { q: "What counts as a lead?", a: "A verified company with a clear reason it fits, who to speak to, and a brief. Not a row in a spreadsheet." },
     { q: "How quickly do we start?", a: "We agree a start date on the discovery call, based on your market and volume." },
   ],
+
+  // Contact page when a booking calendar is set up (BOOKING_URL).
+  bookingSteps: [
+    { icon: CalendarCheck, title: "Pick a time", text: "Choose a slot in the calendar." },
+    { icon: Video, title: "Meet online", text: "The video link is in your invite." },
+    { icon: FileText, title: "A fixed quote", text: "Scope, volume, timing. No obligation." },
+  ] as Item[],
 
   contactNext: [
     { icon: Inbox, title: "We read your message", text: "And look at your business first." },

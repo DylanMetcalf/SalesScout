@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { ErrorState } from "@/components/ui/error-state";
 import { login, signup, type AuthState } from "@/app/actions/auth";
+import { SITE } from "@/content/site";
 
 export function AuthForm({ mode, invite }: { mode: "login" | "signup"; invite?: { required: boolean; code: string } }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(mode === "login" ? login : signup, undefined);
@@ -22,7 +23,7 @@ export function AuthForm({ mode, invite }: { mode: "login" | "signup"; invite?: 
           <Field label="Your name">{(p) => <Input {...p} name="name" autoComplete="name" defaultValue={f.name} required />}</Field>
         )}
         <Field label="Work email">{(p) => <Input {...p} name="email" type="email" autoComplete="email" defaultValue={f.email} required />}</Field>
-        <Field label="Password" hint={mode === "signup" ? "At least 8 characters." : "Forgotten it? Ask your administrator for a reset link."}>
+        <Field label="Password" hint={mode === "signup" ? "At least 8 characters." : "Have an access code? Use it as your password."}>
           {(p) => <Input {...p} name="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} />}
         </Field>
         {mode === "signup" && (invite?.required || invite?.code || f.invite) && (
@@ -46,6 +47,9 @@ export function AuthForm({ mode, invite }: { mode: "login" | "signup"; invite?: 
             <Link href="/signup" className="font-medium text-accent-text hover:underline">
               Create an account
             </Link>
+            <span className="mt-2 block">
+              Forgotten your password? Email <a href={`mailto:${SITE.contactEmail}`} className="font-medium text-accent-text hover:underline">{SITE.contactEmail}</a> for a reset link.
+            </span>
           </>
         ) : (
           <>

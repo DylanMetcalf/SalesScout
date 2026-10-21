@@ -6,9 +6,11 @@ import { MODEL } from "@/lib/ai/core";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AccountAccess, EnquiryStatus, InviteCreator, ResetLink, RevokeInvite } from "@/components/admin/admin-controls";
+import { AccessControl, AccountAccess, EnquiryStatus, InviteCreator, ResetLink, RevokeInvite } from "@/components/admin/admin-controls";
 import { formatDate } from "@/lib/format";
 import { processInfo, storage } from "@/lib/system";
+import { bookingUrl } from "@/lib/booking";
+import { enquiryEmailsEnabled } from "@/lib/notify";
 
 export const metadata = { title: "Admin" };
 
@@ -74,6 +76,8 @@ export default async function Admin() {
     { ok: Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN), label: "Server AI key", detail: process.env.ANTHROPIC_API_KEY ? "Set" : "Not set: only accounts with their own key can use AI" },
     { ok: adminEmails().length > 0, label: "ADMIN_EMAILS", detail: adminEmails().length ? adminEmails().join(", ") : "Not set: the first account is treated as admin" },
     { ok: process.env.ALLOW_SIGNUPS === "false", label: "Sign-ups", detail: process.env.ALLOW_SIGNUPS === "false" ? "Invite only" : "Open to anyone (new accounts must bring their own key)" },
+    { ok: Boolean(bookingUrl()), label: "Discovery-call booking", detail: bookingUrl() ? `Calendar shown on Contact: ${bookingUrl()}` : "Not set: add BOOKING_URL (Calendly, Cal.com or Google appointment page) to show a calendar" },
+    { ok: enquiryEmailsEnabled(), label: "Enquiry emails", detail: enquiryEmailsEnabled() ? `New enquiries are emailed to ${process.env.ENQUIRY_EMAIL || "the site contact email"}` : "Not set: add RESEND_API_KEY to get an email for each enquiry" },
     { ok: Boolean(process.env.APP_ENCRYPTION_KEY), label: "Encryption key", detail: process.env.APP_ENCRYPTION_KEY ? "Set from environment" : "Generated on disk" },
   ];
   const stats = [
@@ -121,7 +125,7 @@ export default async function Admin() {
             description={`Who can use your AI key. "Own key" accounts never touch your bill. ${ownKeys} account${ownKeys === 1 ? "" : "s"} saved their own key.`}
           />
           <div className="overflow-x-auto border-t border-border">
-            <table className="w-full min-w-[820px] text-left text-sm">
+            <table className="w-full min-w-[1040px] text-left text-sm">
               <thead className="bg-surface-2 text-xs text-muted">
                 <tr>
                   <th scope="col" className="px-5 py-2.5 font-medium">Account</th>
@@ -129,6 +133,7 @@ export default async function Admin() {
                   <th scope="col" className="px-3 py-2.5 font-medium">Prospects</th>
                   <th scope="col" className="px-3 py-2.5 font-medium">AI this month</th>
                   <th scope="col" className="px-3 py-2.5 font-medium">Key</th>
+                  <th scope="col" className="px-3 py-2.5 font-medium">Sign-in access</th>
                   <th scope="col" className="px-5 py-2.5 font-medium">AI access</th>
                 </tr>
               </thead>
@@ -152,6 +157,7 @@ export default async function Admin() {
                       <span className="block text-xs text-subtle">{a.usage.calls} requests · {a.usage.searches} searches</span>
                     </td>
                     <td className="px-3 py-3">{a.anthropicKeyHint ? <span className="inline-flex items-center gap-1 font-mono text-xs"><KeyRound className="size-3.5 text-strong" aria-hidden />…{a.anthropicKeyHint}</span> : <span className="text-subtle">None</span>}</td>
+                    <td className="px-3 py-3"><AccessControl accountId={a.id} paused={Boolean(a.suspendedAt)} until={a.accessUntil ? a.accessUntil.toISOString().slice(0, 10) : ""} isAdmin={a.admin} /></td>
                     <td className="px-5 py-3"><AccountAccess accountId={a.id} access={a.aiAccess} limit={a.aiMonthlyTokenLimit} isAdmin={a.admin} /></td>
                   </tr>
                 ))}
@@ -161,7 +167,7 @@ export default async function Admin() {
         </Card>
 
         <Card>
-          <CardHeader title="Invite codes" description="Let someone create an account, even when sign-ups are closed. Choose whether their AI usage is included." action={<Ticket className="size-5 text-accent" aria-hidden />} />
+          <CardHeader title="Access codes" description="Give a client access: they sign in with their email and the code as their password. Set how long it lasts; pause or extend it any time under Accounts." action={<Ticket className="size-5 text-accent" aria-hidden />} />
           <div className="flex flex-col gap-4 px-5 pb-5">
             <InviteCreator />
             {invites.length > 0 && (
@@ -171,7 +177,8 @@ export default async function Admin() {
                   return (
                     <li key={i.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-sm">
                       <span className="font-mono tracking-wider text-accent-text select-all">{i.code}</span>
-                      <span className="flex-1 font-medium">{i.label}</span>
+                      <span className="flex-1 font-medium">{i.label}{i.email && <span className="block text-xs font-normal text-muted">{i.email}</span>}</span>
+                      {i.accessDays && <span className="text-muted">{i.accessDays} days</span>}
                       <span className="text-muted">{i.aiAccess === "server" ? `Included${i.aiMonthlyTokenLimit ? ` · ${fmtTokens(i.aiMonthlyTokenLimit)}/mo` : ""}` : "Own key"}</span>
                       <span className="text-muted tabular-nums">{i.uses}/{i.maxUses} used</span>
                       <Badge tone={state === "Active" ? "strong" : "neutral"}>{state}</Badge>

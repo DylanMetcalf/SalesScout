@@ -9,7 +9,9 @@ import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, destroySession } from "@/lib/auth/session";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { createAccountWithUser } from "@/lib/services/accounts";
-import { consumeInvite, findUsableInvite } from "@/lib/services/invites";
+import { consumeInvite, findUsableInvite, inviteGrant, normaliseInviteCode } from "@/lib/services/invites";
+import { accessBlock, accessBlockMessage } from "@/lib/access";
+import { SITE } from "@/content/site";
 import { consumeResetToken } from "@/lib/services/password-reset";
 import { adminEmails } from "@/lib/admin";
 
@@ -39,7 +41,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
     invite: String(form.get("invite") ?? "").trim(),
   };
   if (!rateLimit(`signup:${await clientKey()}`, 10, 3_600_000)) return { error: "Too many attempts. Please try again later.", fields: raw };
-  const invite = raw.invite ? findUsableInvite(raw.invite) : null;
+  const invite = raw.invite ? findUsableInvite(raw.invite, raw.email) : null;
   if (raw.invite && !invite) return { error: "That invite code isn't valid, has expired or has already been used.", fields: raw };
   const isAdmin = adminEmails().includes(raw.email.toLowerCase());
   if (!signupsOpen() && !invite && !isAdmin) return { error: "Sign-ups are by invitation. Enter the invite code you were given.", fields: raw };
@@ -50,7 +52,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   if (invite && !consumeInvite(invite.id)) return { error: "That invite code has just been used up. Ask for a new one.", fields: raw };
   const { userId } = await createAccountWithUser({
     ...parsed.data,
-    ...(invite && { aiAccess: invite.aiAccess, aiMonthlyTokenLimit: invite.aiMonthlyTokenLimit }),
+    ...(invite && inviteGrant(invite)),
   });
   await createSession(userId);
   redirect("/onboarding");
@@ -59,9 +61,27 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
 export async function login(_: AuthState, form: FormData): Promise<AuthState> {
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   const password = String(form.get("password") ?? "");
-  if (!rateLimit(`login:${await clientKey()}:${email}`, 8, 900_000)) return { error: "Too many attempts. Wait a few minutes and try again.", fields: { email } };
+  const ip = await clientKey();
+  // Per email (guessing one password) and per address (trying many emails or access codes).
+  if (!rateLimit(`login:${ip}:${email}`, 8, 900_000) || !rateLimit(`login-ip:${ip}`, 40, 900_000)) return { error: "Too many attempts. Wait a few minutes and try again.", fields: { email } };
   const user = db.select().from(t.users).where(eq(t.users.email, email)).get();
-  if (!user || !(await verifyPassword(password, user.passwordHash))) return { error: "That email and password don't match.", fields: { email } };
+
+  // First sign-in with an access code: the code is the password and creates the account.
+  if (!user) {
+    const invite = findUsableInvite(password, email);
+    if (!invite || !z.email().safeParse(email).success) return { error: "That email and password don't match.", fields: { email } };
+    if (!consumeInvite(invite.id)) return { error: "That access code has just been used up. Ask for a new one.", fields: { email } };
+    const name = email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 80) || "New user";
+    const { userId } = await createAccountWithUser({ name, email, password: normaliseInviteCode(password), ...inviteGrant(invite) });
+    await createSession(userId);
+    redirect("/onboarding");
+  }
+
+  if (!(await verifyPassword(password, user.passwordHash)) && !(await verifyPassword(normaliseInviteCode(password), user.passwordHash))) {
+    return { error: "That email and password don't match.", fields: { email } };
+  }
+  const block = accessBlock(user.accountId);
+  if (block) return { error: accessBlockMessage(block, SITE.contactEmail), fields: { email } };
   await createSession(user.id);
   redirect("/home");
 }

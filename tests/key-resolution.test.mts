@@ -21,6 +21,7 @@ const t = await import("../src/lib/db/schema");
 const { encryptSecret } = await import("../src/lib/security/secrets");
 const { resolveKey, aiConfigured, aiUnavailableReason } = await import("../src/lib/ai/core");
 const { isAdminAccount } = await import("../src/lib/admin");
+const { accessBlock } = await import("../src/lib/access");
 const { eq } = await import("drizzle-orm");
 
 const db = getDb();
@@ -64,6 +65,19 @@ test("an unreadable saved key falls back to whatever else the account may use", 
   db.update(t.accounts).set({ anthropicKeyEnc: "v1.bad.bad.bad" }).where(eq(t.accounts.id, "acc_admin")).run();
   assert.equal(resolveKey("acc_admin")?.source, "server");
   delete process.env.ANTHROPIC_API_KEY;
+});
+
+test("paused or expired accounts are blocked; administrators never are", () => {
+  process.env.ADMIN_EMAILS = "owner@example.com";
+  assert.equal(accessBlock("acc_2"), null);
+  db.update(t.accounts).set({ accessUntil: new Date(Date.now() + 86_400_000) }).where(eq(t.accounts.id, "acc_2")).run();
+  assert.equal(accessBlock("acc_2"), null);
+  db.update(t.accounts).set({ accessUntil: new Date(Date.now() - 1000) }).where(eq(t.accounts.id, "acc_2")).run();
+  assert.equal(accessBlock("acc_2"), "ended");
+  db.update(t.accounts).set({ suspendedAt: new Date() }).where(eq(t.accounts.id, "acc_2")).run();
+  assert.equal(accessBlock("acc_2"), "paused");
+  db.update(t.accounts).set({ suspendedAt: new Date(), accessUntil: new Date(0) }).where(eq(t.accounts.id, "acc_admin")).run();
+  assert.equal(accessBlock("acc_admin"), null);
 });
 
 test("without ADMIN_EMAILS, the first account is the administrator", () => {

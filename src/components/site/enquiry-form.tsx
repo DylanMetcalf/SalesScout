@@ -7,7 +7,7 @@ import { Field, Input, Textarea } from "@/components/ui/input";
 import { ErrorState } from "@/components/ui/error-state";
 import { submitEnquiry, type EnquiryState } from "@/app/actions/enquiry";
 
-export function EnquiryForm() {
+export function EnquiryForm({ submitLabel = "Book a discovery call" }: { submitLabel?: string }) {
   const [state, action, pending] = useActionState<EnquiryState, FormData>(submitEnquiry, undefined);
   if (state?.ok) {
     return (
@@ -33,7 +33,7 @@ export function EnquiryForm() {
       </Field>
       <input type="text" name="fax" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
       <Button type="submit" variant="primary" size="lg" loading={pending} className="mt-1 w-full sm:w-auto sm:self-start">
-        Book a discovery call
+        {submitLabel}
       </Button>
       <p className="text-xs text-subtle">
         We use your details only to reply. See our <a href="/privacy" className="underline hover:text-accent-text">Privacy Policy</a>.
