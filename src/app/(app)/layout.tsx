@@ -2,6 +2,7 @@ import { and, count, desc, eq, isNull, lte, ne } from "drizzle-orm";
 import { db, t } from "@/lib/db";
 import { requireTenant } from "@/lib/tenant";
 import { aiConfigured } from "@/lib/ai/core";
+import { isAdminAccount } from "@/lib/admin";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileTabBar, MobileTopBar } from "@/components/shell/mobile-nav";
 import { CommandPalette } from "@/components/shell/command-palette";
@@ -35,7 +36,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2 focus:shadow-md">
         Skip to content
       </a>
-      <Sidebar switcher={switcher} user={user} counts={{ followUpsDue, toReview }} aiConnected={aiConfigured(tenant.account.id)} />
+      <Sidebar switcher={switcher} user={user} counts={{ followUpsDue, toReview }} aiConnected={aiConfigured(tenant.account.id)} admin={isAdminAccount(tenant.account.id)} />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileTopBar switcher={switcher} user={user} />
         {c?.isDemo && (

@@ -99,7 +99,7 @@ export function CompanyWizard(props: {
               <p className="mt-1 mb-4 text-sm text-muted">
                 With an Anthropic API key I can properly understand your business, suggest markets and research real companies. Without one I&apos;ll only record what your sources say directly — you can add a key later in Settings.
               </p>
-              <ApiKeyForm status={{ source: null, hint: null, updatedAt: null, serverKey: false, canEdit: true }} />
+              <ApiKeyForm status={{ source: null, hint: null, updatedAt: null, serverKey: false, access: "own_key", canEdit: true }} />
             </div>
           )}
           <Nav label="Analyse everything" canSkip={false} />

@@ -8,7 +8,15 @@ import { useAction } from "@/components/prospects/shared";
 import { removeApiKeyAction, saveApiKeyAction, testApiKeyAction } from "@/app/actions/ai-key";
 import { formatDate } from "@/lib/format";
 
-type Status = { source: "account" | "server" | null; hint: string | null; updatedAt: number | null; serverKey: boolean; canEdit: boolean };
+type Status = {
+  source: "account" | "server" | null;
+  hint: string | null;
+  updatedAt: number | null;
+  serverKey: boolean;
+  /** Why this account may or may not use the server key. */
+  access: "admin" | "granted" | "own_key" | "allowance_used";
+  canEdit: boolean;
+};
 
 /** Paste-in API key. The key is encrypted on the server and never shown again in full. */
 export function ApiKeyForm({ status }: { status: Status }) {
@@ -41,9 +49,23 @@ export function ApiKeyForm({ status }: { status: Status }) {
       {status.source === "server" && (
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-strong/25 bg-strong-soft/50 px-4 py-3">
           <ShieldCheck className="size-4 text-strong" aria-hidden />
-          <p className="flex-1 text-sm">Using the <span className="font-medium">server&apos;s API key</span> (set by whoever runs this installation). You can paste your own to use it instead.</p>
+          <p className="flex-1 text-sm">
+            {status.access === "admin" ? (
+              <>Using the <span className="font-medium">installation&apos;s API key</span>. You&apos;re an administrator, so there&apos;s no allowance to watch.</>
+            ) : (
+              <>Using the <span className="font-medium">installation&apos;s API key</span>, included by your administrator. You can paste your own to use it instead.</>
+            )}
+          </p>
           {status.canEdit && <Button size="sm" loading={test.pending} onClick={() => test.run(() => testApiKeyAction(), { success: "The key works", refresh: false })}>Test</Button>}
         </div>
+      )}
+
+      {status.source === null && status.serverKey && (
+        <p className="rounded-lg border border-border bg-surface-2 px-4 py-3 text-sm text-muted">
+          {status.access === "allowance_used"
+            ? "This account has used this month's included AI allowance. Paste your own key to keep going, or ask your administrator to raise it."
+            : "AI features need your own Anthropic API key on this account. You're only charged by Anthropic for what you use."}
+        </p>
       )}
 
       {showForm && (

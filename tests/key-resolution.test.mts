@@ -19,31 +19,55 @@ delete process.env.ANTHROPIC_AUTH_TOKEN;
 const { getDb } = await import("../src/lib/db/connection");
 const t = await import("../src/lib/db/schema");
 const { encryptSecret } = await import("../src/lib/security/secrets");
-const { resolveKey, aiConfigured } = await import("../src/lib/ai/core");
+const { resolveKey, aiConfigured, aiUnavailableReason } = await import("../src/lib/ai/core");
+const { isAdminAccount } = await import("../src/lib/admin");
 const { eq } = await import("drizzle-orm");
 
 const db = getDb();
-db.insert(t.accounts).values({ id: "acc_1", name: "One" }).run();
-db.insert(t.accounts).values({ id: "acc_2", name: "Two" }).run();
+process.env.ADMIN_EMAILS = "Owner@Example.com";
+for (const [id, email] of [["acc_admin", "owner@example.com"], ["acc_1", "one@example.com"], ["acc_2", "two@example.com"]]) {
+  db.insert(t.accounts).values({ id, name: id, createdAt: new Date(id === "acc_admin" ? 1_000 : 2_000) }).run();
+  db.insert(t.users).values({ id: `usr_${id}`, accountId: id, email, name: id, passwordHash: "x" }).run();
+}
 
 test("no key anywhere means AI is off", () => {
+  assert.equal(aiConfigured("acc_admin"), false);
   assert.equal(aiConfigured("acc_1"), false);
 });
 
-test("a server key is used for every account", () => {
+test("the server key is the administrator's, not everyone's", () => {
   process.env.ANTHROPIC_API_KEY = "sk-ant-server";
-  assert.deepEqual(resolveKey("acc_1"), { key: "sk-ant-server", source: "server" });
-  assert.deepEqual(resolveKey("acc_2"), { key: "sk-ant-server", source: "server" });
+  assert.deepEqual(resolveKey("acc_admin"), { key: "sk-ant-server", source: "server" });
+  assert.equal(resolveKey("acc_1"), null);
+  assert.equal(resolveKey("acc_2"), null);
 });
 
 test("an account's own key wins, and only for that account", () => {
   db.update(t.accounts).set({ anthropicKeyEnc: encryptSecret("sk-ant-mine") }).where(eq(t.accounts.id, "acc_1")).run();
   assert.deepEqual(resolveKey("acc_1"), { key: "sk-ant-mine", source: "account" });
-  assert.deepEqual(resolveKey("acc_2"), { key: "sk-ant-server", source: "server" });
+  assert.equal(resolveKey("acc_2"), null);
 });
 
-test("an unreadable saved key falls back to the server key instead of failing", () => {
+test("an administrator can grant the server key, up to a monthly allowance", () => {
+  db.update(t.accounts).set({ aiAccess: "server", aiMonthlyTokenLimit: 1000 }).where(eq(t.accounts.id, "acc_2")).run();
+  assert.equal(resolveKey("acc_2")?.source, "server");
+  db.insert(t.aiInteractions).values({ id: "ai_1", accountId: "acc_2", workspaceId: "ws", agent: "a", purpose: "p", model: "m", status: "ok", inputTokens: 900, outputTokens: 200 }).run();
+  assert.equal(resolveKey("acc_2"), null);
+  assert.match(aiUnavailableReason("acc_2"), /allowance/);
+  db.update(t.accounts).set({ aiMonthlyTokenLimit: null }).where(eq(t.accounts.id, "acc_2")).run();
+  assert.equal(resolveKey("acc_2")?.source, "server");
+});
+
+test("an unreadable saved key falls back to whatever else the account may use", () => {
   db.update(t.accounts).set({ anthropicKeyEnc: "v1.bad.bad.bad" }).where(eq(t.accounts.id, "acc_1")).run();
-  assert.equal(resolveKey("acc_1")?.source, "server");
+  assert.equal(resolveKey("acc_1"), null);
+  db.update(t.accounts).set({ anthropicKeyEnc: "v1.bad.bad.bad" }).where(eq(t.accounts.id, "acc_admin")).run();
+  assert.equal(resolveKey("acc_admin")?.source, "server");
   delete process.env.ANTHROPIC_API_KEY;
+});
+
+test("without ADMIN_EMAILS, the first account is the administrator", () => {
+  delete process.env.ADMIN_EMAILS;
+  assert.equal(isAdminAccount("acc_admin"), true);
+  assert.equal(isAdminAccount("acc_1"), false);
 });

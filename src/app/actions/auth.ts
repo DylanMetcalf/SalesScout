@@ -9,6 +9,8 @@ import { verifyPassword } from "@/lib/auth/password";
 import { createSession, destroySession } from "@/lib/auth/session";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { createAccountWithUser } from "@/lib/services/accounts";
+import { consumeInvite, findUsableInvite } from "@/lib/services/invites";
+import { adminEmails } from "@/lib/admin";
 
 export type AuthState = { error?: string; fields?: Record<string, string> } | undefined;
 
@@ -23,20 +25,32 @@ const SignupSchema = z.object({
   password: z.string().min(8, "Use at least 8 characters").max(200),
 });
 
-/** Sign-ups are open unless ALLOW_SIGNUPS=false. Close them on a hosted instance once your account exists. */
+/** Sign-ups are open unless ALLOW_SIGNUPS=false. A valid invite code always works. */
 function signupsOpen() {
   return process.env.ALLOW_SIGNUPS !== "false";
 }
 
 export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
-  if (!signupsOpen()) return { error: "Sign-ups are closed on this installation. Ask the owner for access." };
-  const raw = { name: String(form.get("name") ?? ""), email: String(form.get("email") ?? "").trim(), password: String(form.get("password") ?? "") };
+  const raw = {
+    name: String(form.get("name") ?? ""),
+    email: String(form.get("email") ?? "").trim(),
+    password: String(form.get("password") ?? ""),
+    invite: String(form.get("invite") ?? "").trim(),
+  };
   if (!rateLimit(`signup:${await clientKey()}`, 10, 3_600_000)) return { error: "Too many attempts. Please try again later.", fields: raw };
+  const invite = raw.invite ? findUsableInvite(raw.invite) : null;
+  if (raw.invite && !invite) return { error: "That invite code isn't valid, has expired or has already been used.", fields: raw };
+  const isAdmin = adminEmails().includes(raw.email.toLowerCase());
+  if (!signupsOpen() && !invite && !isAdmin) return { error: "Sign-ups are by invitation. Enter the invite code you were given.", fields: raw };
   const parsed = SignupSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message, fields: raw };
   const exists = db.select({ id: t.users.id }).from(t.users).where(eq(t.users.email, parsed.data.email)).get();
   if (exists) return { error: "There's already an account with that email. Try signing in.", fields: raw };
-  const { userId } = await createAccountWithUser(parsed.data);
+  if (invite && !consumeInvite(invite.id)) return { error: "That invite code has just been used up. Ask for a new one.", fields: raw };
+  const { userId } = await createAccountWithUser({
+    ...parsed.data,
+    ...(invite && { aiAccess: invite.aiAccess, aiMonthlyTokenLimit: invite.aiMonthlyTokenLimit }),
+  });
   await createSession(userId);
   redirect("/onboarding");
 }

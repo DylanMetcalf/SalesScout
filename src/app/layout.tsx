@@ -4,7 +4,6 @@ import { GeistMono } from "geist/font/mono";
 import { ToastProvider } from "@/components/ui/toast";
 import "@fontsource-variable/bricolage-grotesque";
 import "./globals.css";
-import { PALETTE_BOOT } from "@/lib/palettes";
 
 export const metadata: Metadata = {
   title: { default: "Sales Scout", template: "%s · Sales Scout" },
@@ -20,10 +19,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: PALETTE_BOOT }} />
-      </head>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body>
         <ToastProvider>{children}</ToastProvider>
       </body>

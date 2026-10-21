@@ -30,6 +30,11 @@ services:
       # Server-wide AI key: used for every account that hasn't pasted its own. You enter it in the dashboard.
       - key: ANTHROPIC_API_KEY
         sync: false
-      # Set to "false" once you've created your account, so strangers can't sign up and use your key.
+      # Your login email(s), comma-separated. These accounts use the server key free of
+      # limits and get the Admin back office. Set it before anyone else signs up.
+      - key: ADMIN_EMAILS
+        sync: false
+      # "false" = invite-only (admins can always sign up). Either way, new accounts must
+      # bring their own AI key unless you grant them yours in Admin.
       - key: ALLOW_SIGNUPS
         value: "true"

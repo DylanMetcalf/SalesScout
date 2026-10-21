@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { db, t } from "@/lib/db";
 import { decryptSecret } from "@/lib/security/secrets";
 import { newId } from "@/lib/ids";
+import { serverKeyAccess } from "@/lib/admin";
 
 export const MODEL = process.env.SALES_SCOUT_MODEL || "claude-opus-5-5";
 
@@ -16,8 +17,8 @@ const FALLBACK_BETA = "server-side-fallback-2026-07-01";
 export type AiContext = { accountId: string; workspaceId: string; companyId: string | null };
 
 export class AiUnavailableError extends Error {
-  constructor() {
-    super("AI isn't connected. Paste an Anthropic API key in Settings, or set ANTHROPIC_API_KEY on the server.");
+  constructor(message = "AI isn't connected. Paste an Anthropic API key in Settings, or set ANTHROPIC_API_KEY on the server.") {
+    super(message);
   }
 }
 export class AiFailedError extends Error {}
@@ -27,8 +28,9 @@ export type KeySource = "account" | "server";
 /**
  * Which API key to use for an account:
  *   1. the account's own key, pasted in Settings (stored encrypted), else
- *   2. the server-wide key from the environment (ANTHROPIC_API_KEY), used
- *      for everyone on this installation.
+ *   2. the server-wide key from the environment (ANTHROPIC_API_KEY), but only
+ *      for administrators and accounts they've granted it to (src/lib/admin.ts),
+ *      so other people's usage never lands on the owner's bill.
  */
 export function resolveKey(accountId: string): { key: string; source: KeySource } | null {
   const row = db.select({ enc: t.accounts.anthropicKeyEnc }).from(t.accounts).where(eq(t.accounts.id, accountId)).get();
@@ -37,7 +39,15 @@ export function resolveKey(accountId: string): { key: string; source: KeySource 
     if (key) return { key, source: "account" };
   }
   const server = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN;
-  return server ? { key: server, source: "server" } : null;
+  if (!server || !serverKeyAccess(accountId).allowed) return null;
+  return { key: server, source: "server" };
+}
+
+/** Plain-language reason AI isn't available to an account, for errors and Settings. */
+export function aiUnavailableReason(accountId: string): string {
+  const access = serverKeyAccess(accountId);
+  if (access.reason === "allowance_used") return "This account has used this month's AI allowance. Add your own Anthropic API key in Settings, or ask your administrator to raise it.";
+  return new AiUnavailableError().message;
 }
 
 export function aiConfigured(accountId: string): boolean {
@@ -47,7 +57,7 @@ export function aiConfigured(accountId: string): boolean {
 const clients = new Map<string, Anthropic>();
 function getClient(ctx: AiContext): Anthropic {
   const resolved = resolveKey(ctx.accountId);
-  if (!resolved) throw new AiUnavailableError();
+  if (!resolved) throw new AiUnavailableError(aiUnavailableReason(ctx.accountId));
   let client = clients.get(resolved.key);
   if (!client) {
     const useAuthToken = resolved.source === "server" && !process.env.ANTHROPIC_API_KEY;

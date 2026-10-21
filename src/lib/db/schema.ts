@@ -80,6 +80,13 @@ export const accounts = sqliteTable("accounts", {
   /** Last few characters, so people can recognise which key is saved. */
   anthropicKeyHint: text("anthropic_key_hint"),
   anthropicKeyUpdatedAt: integer("anthropic_key_updated_at", { mode: "timestamp_ms" }),
+  /**
+   * May this account use the installation's server-wide AI key? "own_key" means it
+   * must bring its own. Administrators (see src/lib/admin.ts) always may.
+   */
+  aiAccess: text("ai_access", { enum: ["server", "own_key"] }).notNull().default("own_key"),
+  /** Optional monthly cap, in tokens, on server-key usage. Null = no cap. */
+  aiMonthlyTokenLimit: integer("ai_monthly_token_limit"),
   createdAt: createdAt(),
 });
 
@@ -636,5 +643,19 @@ export const enquiries = sqliteTable("enquiries", {
   website: text("website"),
   message: text("message").notNull(),
   status: text("status", { enum: ["new", "contacted", "closed"] }).notNull().default("new"),
+  createdAt: createdAt(),
+});
+
+/** Invite codes created by an administrator. They open sign-up even when ALLOW_SIGNUPS=false. */
+export const invites = sqliteTable("invites", {
+  id: id(),
+  code: text("code").notNull().unique(),
+  label: text("label").notNull(),
+  aiAccess: text("ai_access", { enum: ["server", "own_key"] }).notNull().default("own_key"),
+  aiMonthlyTokenLimit: integer("ai_monthly_token_limit"),
+  maxUses: integer("max_uses").notNull().default(1),
+  uses: integer("uses").notNull().default(0),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
+  revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
   createdAt: createdAt(),
 });

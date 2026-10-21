@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Settings } from "lucide-react";
+import { Search, Settings, ShieldCheck } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { Kbd } from "@/components/ui/kbd";
 import { LogoMark } from "@/components/ui/logo";
@@ -10,7 +10,7 @@ import { NAV } from "./nav";
 import { ContextSwitcher, type SwitcherProps } from "./context-switcher";
 import { UserMenu } from "./user-menu";
 
-export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: SwitcherProps; user: { name: string; email: string }; counts: { followUpsDue: number; toReview: number }; aiConnected: boolean }) {
+export function Sidebar({ switcher, user, counts, aiConnected, admin }: { switcher: SwitcherProps; user: { name: string; email: string }; counts: { followUpsDue: number; toReview: number }; aiConnected: boolean; admin?: boolean }) {
   const pathname = usePathname();
   return (
     <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col theme-ink sidebar-brand border-r border-border md:flex">
@@ -68,6 +68,19 @@ export function Sidebar({ switcher, user, counts, aiConnected }: { switcher: Swi
           Settings
           {!aiConnected && <span className="ml-auto size-1.5 rounded-full bg-moderate" title="AI not connected" />}
         </Link>
+        {admin && (
+          <Link
+            href="/admin"
+            aria-current={pathname.startsWith("/admin") ? "page" : undefined}
+            className={cn(
+              "flex h-9 items-center gap-3 rounded-md px-2.5 text-[14px] font-medium",
+              pathname.startsWith("/admin") ? "bg-accent-soft text-accent-text font-semibold shadow-[inset_3px_0_0_var(--accent)]" : "text-muted hover:bg-surface/80 hover:text-text",
+            )}
+          >
+            <ShieldCheck className="size-[18px] text-subtle" aria-hidden />
+            Admin
+          </Link>
+        )}
         <div className="mt-2 border-t border-border pt-2">
           <UserMenu user={user} />
         </div>
