@@ -248,7 +248,7 @@ export const TERMS: LegalSection[] = [
     id: "ending",
     title: "Ending the agreement",
     body: [
-      "You can close your account at any time. Either of us may end the agreement for a serious breach that isn't fixed within 14 days of notice. We may suspend access immediately if needed to protect the service or other clients. Fixed-term engagements end as set out in your proposal.",
+      "You can close your account at any time by emailing us. Either of us may end the agreement for a serious breach that isn't fixed within 14 days of notice. We may suspend access immediately if needed to protect the service or other clients. Fixed-term engagements end as set out in your proposal.",
       "After closure, you can request an export of your data for 30 days, after which we delete it as described in our Privacy Policy.",
     ],
   },

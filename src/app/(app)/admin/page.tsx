@@ -6,7 +6,7 @@ import { MODEL } from "@/lib/ai/core";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AccountAccess, EnquiryStatus, InviteCreator, RevokeInvite } from "@/components/admin/admin-controls";
+import { AccountAccess, EnquiryStatus, InviteCreator, ResetLink, RevokeInvite } from "@/components/admin/admin-controls";
 import { formatDate } from "@/lib/format";
 
 export const metadata = { title: "Admin" };
@@ -38,7 +38,7 @@ export default async function Admin() {
       .groupBy(t.workspaces.accountId)
       .all().map((r) => [r.accountId, r.n]),
   );
-  const users = db.select({ accountId: t.users.accountId, email: t.users.email, name: t.users.name }).from(t.users).all();
+  const users = db.select({ id: t.users.id, accountId: t.users.accountId, email: t.users.email, name: t.users.name }).from(t.users).all();
   const accounts = db.select().from(t.accounts).orderBy(desc(t.accounts.createdAt)).all().map((a) => ({
     ...a,
     users: users.filter((u) => u.accountId === a.id),
@@ -127,7 +127,12 @@ export default async function Admin() {
                   <tr key={a.id}>
                     <td className="px-5 py-3">
                       <p className="font-medium">{a.name} {a.admin && <Badge tone="accent" className="ml-1">Admin</Badge>}</p>
-                      <p className="text-xs text-muted">{a.users.map((u) => u.email).join(", ")}</p>
+                      {a.users.map((u) => (
+                        <p key={u.id} className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
+                          {u.email}
+                          <ResetLink userId={u.id} email={u.email} />
+                        </p>
+                      ))}
                     </td>
                     <td className="px-3 py-3 text-muted">{formatDate(a.createdAt)}</td>
                     <td className="px-3 py-3 tabular-nums">{a.prospects}</td>

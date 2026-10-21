@@ -45,7 +45,7 @@ export function AppMock() {
   return (
     <AppWindow>
       <div className="grid grid-cols-[150px_1fr] max-sm:grid-cols-1">
-        <aside className="theme-ink sidebar-brand flex flex-col gap-1 p-3 max-sm:hidden">
+        <div className="theme-ink sidebar-brand flex flex-col gap-1 p-3 max-sm:hidden">
           <div className="mb-3 flex items-center gap-2 px-1 text-sm font-semibold text-heading">
             <LogoMark size={22} label={null} /> Sales Scout
           </div>
@@ -54,7 +54,7 @@ export function AppMock() {
               <Icon className="size-3.5" aria-hidden /> {label}
             </span>
           ))}
-        </aside>
+        </div>
         <div className="flex flex-col gap-3 p-4">
           <div className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs">
             <Search className="size-3.5 text-subtle" aria-hidden />

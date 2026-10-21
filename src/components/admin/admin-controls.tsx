@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { useAction } from "@/components/prospects/shared";
-import { createInviteAction, revokeInviteAction, setAccountAccessAction, setEnquiryStatusAction } from "@/app/actions/admin";
+import { createInviteAction, createResetLinkAction, revokeInviteAction, setAccountAccessAction, setEnquiryStatusAction } from "@/app/actions/admin";
 
 const toMillions = (tokens: number | null) => (tokens == null ? "" : String(tokens / 1_000_000));
 
@@ -117,5 +117,25 @@ export function EnquiryStatus({ id, status }: { id: string; status: string }) {
       <option value="contacted">Contacted</option>
       <option value="closed">Closed</option>
     </Select>
+  );
+}
+
+/** Issues a one-time password reset link for a locked-out user and copies it. */
+export function ResetLink({ userId, email }: { userId: string; email: string }) {
+  const toast = useToast();
+  const make = useAction();
+  const [link, setLink] = useState<string | null>(null);
+  if (link) {
+    return (
+      <span className="flex items-center gap-2">
+        <span className="max-w-56 truncate font-mono text-xs text-muted select-all" title={link}>{link}</span>
+        <Button size="sm" variant="ghost" icon={<Copy className="size-3.5" />} onClick={async () => { try { await navigator.clipboard.writeText(link); toast({ title: "Reset link copied. It works once, for 24 hours." }); } catch { toast({ kind: "error", title: "Couldn't copy. Select the link instead." }); } }}>Copy</Button>
+      </span>
+    );
+  }
+  return (
+    <Button size="sm" variant="ghost" loading={make.pending} aria-label={`Create a password reset link for ${email}`} onClick={() => make.run(() => createResetLinkAction(userId), { refresh: false, then: (path) => setLink(`${window.location.origin}${path}`) })}>
+      Reset link
+    </Button>
   );
 }

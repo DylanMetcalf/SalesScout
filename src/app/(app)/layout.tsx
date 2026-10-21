@@ -40,10 +40,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileTopBar switcher={switcher} user={user} />
         {c?.isDemo && (
-          <div className="theme-ink sidebar-brand border-b border-border px-5 py-2 text-center text-sm text-muted">
+          <section aria-label="Demo notice" className="theme-ink sidebar-brand border-b border-border px-5 py-2 text-center text-sm text-muted">
             You&apos;re exploring <span className="font-medium text-signal">example data</span>. Companies and people here are fictional.{" "}
             <a href="/onboarding/company" className="font-medium text-accent-text underline underline-offset-2">Set up your own company</a>
-          </div>
+          </section>
         )}
         <main id="main" className="flex-1 pb-24 md:pb-0">{children}</main>
       </div>

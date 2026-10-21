@@ -127,7 +127,7 @@ export function VettingFunnel() {
 export function TierCard({ name, leads, summary, items, featured }: { name: string; leads: string; summary: string; items: string[]; featured: boolean }) {
   return (
     <article className={cn("relative flex flex-col rounded-2xl p-7", featured ? "theme-ink brand-hero shadow-lg lg:-my-4 lg:py-11" : "border border-border bg-surface shadow-sm")}>
-      {featured && <span className="absolute -top-3 left-7 rounded-full bg-signal px-3 py-1 text-xs font-semibold text-white shadow">Recommended</span>}
+      {featured && <span className="absolute -top-3 left-7 rounded-full bg-signal px-3 py-1 text-xs font-semibold text-[var(--brand-deep)] shadow">Recommended</span>}
       <h3 className="text-sm font-semibold tracking-wide text-accent-text uppercase">{name}</h3>
       <p className="mt-4">
         <span className="block font-display text-5xl font-[700] tracking-tight whitespace-nowrap text-heading tabular-nums">{leads}</span>

@@ -11,7 +11,8 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:reset": "rm -f data/salesscout.db* && tsx scripts/migrate.ts && tsx scripts/seed.ts",
-    "test": "tsx --test tests/*.test.ts tests/*.test.mts"
+    "test": "tsx --test tests/*.test.ts tests/*.test.mts",
+    "reset-link": "tsx scripts/reset-link.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",

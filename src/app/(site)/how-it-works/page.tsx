@@ -45,17 +45,17 @@ export default function HowItWorks() {
                   <h3 className="font-semibold text-heading">{s.title}</h3>
                 </div>
               </div>
-              <dl className="grid gap-2 sm:grid-cols-3">
+              <ul className="grid gap-2 sm:grid-cols-3">
                 {ROLES.map(({ key, label, icon: Icon, cls }) => (
-                  <div key={key} className={`flex items-start gap-2.5 rounded-xl px-3.5 py-3 ${cls}`}>
+                  <li key={key} className={`flex items-start gap-2.5 rounded-xl px-3.5 py-3 ${cls}`}>
                     <Icon className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-                    <div>
-                      <dt className="text-[11px] font-semibold tracking-wide text-subtle uppercase">{label}</dt>
-                      <dd className="text-sm leading-5">{s[key]}</dd>
-                    </div>
-                  </div>
+                    <p className="text-sm leading-5">
+                      <span className="block text-[11px] font-semibold tracking-wide text-subtle uppercase">{label}</span>
+                      {s[key]}
+                    </p>
+                  </li>
                 ))}
-              </dl>
+              </ul>
             </li>
           ))}
         </ol>

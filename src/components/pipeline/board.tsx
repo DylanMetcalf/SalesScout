@@ -117,7 +117,7 @@ function DraggableCard({ c, onMove }: { c: CardT; onMove: (id: string, to: CrmSt
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: c.id });
   return (
     <li ref={setNodeRef} className={cn("relative", isDragging && "opacity-30")}>
-      <div {...listeners} {...attributes} aria-roledescription="Draggable company" aria-label={`${c.name}, ${STATUS_META[c.realStatus].label}`} className="rounded-md outline-none focus-visible:shadow-[var(--ring)]">
+      <div {...listeners} {...attributes} role="group" aria-roledescription="Draggable company" aria-label={`${c.name}, ${STATUS_META[c.realStatus].label}`} className="rounded-md outline-none focus-visible:shadow-[var(--ring)]">
         <CardBody c={c} />
       </div>
       <div className="absolute top-1.5 right-1.5">

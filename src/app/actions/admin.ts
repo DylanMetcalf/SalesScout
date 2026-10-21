@@ -6,6 +6,7 @@ import * as z from "zod/v4";
 import { db, t } from "@/lib/db";
 import { assertAdmin } from "@/lib/admin";
 import { createInvite } from "@/lib/services/invites";
+import { createResetToken } from "@/lib/services/password-reset";
 import { attempt } from "./result";
 
 function check<S extends z.ZodType>(schema: S, input: unknown): z.infer<S> {
@@ -73,5 +74,15 @@ export async function setEnquiryStatusAction(id: string, status: string) {
     const s = check(z.enum(["new", "contacted", "closed"]), status);
     db.update(t.enquiries).set({ status: s }).where(eq(t.enquiries.id, id)).run();
     revalidatePath("/admin");
+  });
+}
+
+/** A one-time link the admin sends to someone who's locked out. Valid 24 hours. */
+export async function createResetLinkAction(userId: string) {
+  return attempt(async () => {
+    await assertAdmin();
+    const user = db.select({ id: t.users.id }).from(t.users).where(eq(t.users.id, userId)).get();
+    if (!user) throw new Error("That user no longer exists.");
+    return `/reset-password?token=${createResetToken(user.id)}`;
   });
 }

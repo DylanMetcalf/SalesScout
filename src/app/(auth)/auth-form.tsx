@@ -22,7 +22,7 @@ export function AuthForm({ mode, invite }: { mode: "login" | "signup"; invite?: 
           <Field label="Your name">{(p) => <Input {...p} name="name" autoComplete="name" defaultValue={f.name} required />}</Field>
         )}
         <Field label="Work email">{(p) => <Input {...p} name="email" type="email" autoComplete="email" defaultValue={f.email} required />}</Field>
-        <Field label="Password" hint={mode === "signup" ? "At least 8 characters." : undefined}>
+        <Field label="Password" hint={mode === "signup" ? "At least 8 characters." : "Forgotten it? Ask your administrator for a reset link."}>
           {(p) => <Input {...p} name="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} />}
         </Field>
         {mode === "signup" && (invite?.required || invite?.code || f.invite) && (

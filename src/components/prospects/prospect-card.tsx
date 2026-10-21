@@ -68,11 +68,11 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
         <header className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-              <h3 id={`p-${p.id}`} className="text-[16.5px] font-semibold">
+              <h2 id={`p-${p.id}`} className="font-sans text-[16.5px] font-semibold tracking-normal">
                 <Link href={`/prospects/${p.id}`} className="hover:underline">
                   {p.name}
                 </Link>
-              </h3>
+              </h2>
               {p.fit && <FitBadge level={p.fit.company.level} />}
               {p.inCrm && !rejected && <Badge tone={STATUS_META[p.status].tone} dot>{STATUS_META[p.status].label}</Badge>}
             </div>

@@ -63,9 +63,9 @@ function SectionCard({ section, facts, sourceLabels }: { section: BrainSection; 
     <section id={`brain-${section}`} className="scroll-mt-6 rounded-lg border border-border bg-surface shadow-sm" aria-labelledby={`brain-h-${section}`}>
       <header className="flex items-start justify-between gap-4 border-b border-border px-5 py-3.5">
         <div>
-          <h3 id={`brain-h-${section}`} className="font-semibold">
+          <h2 id={`brain-h-${section}`} className="font-sans text-base font-semibold tracking-normal">
             {meta.title}
-          </h3>
+          </h2>
           <p className="text-sm text-muted">{meta.question}</p>
         </div>
         <Button size="sm" variant="ghost" icon={<Plus className="size-4" />} onClick={() => setAdding(true)}>

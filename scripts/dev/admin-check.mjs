@@ -30,11 +30,12 @@ const code = (await admin.locator("p.font-mono").first().textContent()).trim();
 ok(`invite created ${code}`);
 await admin.screenshot({ path: `${OUT}/admin.png`, fullPage: true });
 
+const clientEmail = `eve${Date.now()}@example.com`;
 const client = await (await browser.newContext()).newPage();
 await client.goto(BASE + "/signup");
 await client.getByText("invite-only").waitFor();
 await client.getByLabel("Your name").fill("Eve Client");
-await client.getByLabel("Work email").fill(`eve${Date.now()}@example.com`);
+await client.getByLabel("Work email").fill(clientEmail);
 await client.getByLabel("Password").fill("password123");
 await client.getByLabel("Invite code").fill("WRONG-CODE1");
 await client.getByRole("button", { name: "Create account" }).click();
@@ -58,6 +59,24 @@ await reuse.getByLabel("Password").fill("password123");
 await reuse.getByRole("button", { name: "Create account" }).click();
 await reuse.getByText("isn't valid").waitFor();
 ok("single-use invite can't be reused");
+
+// Password reset: admin issues a link, the user sets a new password, the link can't be reused.
+await admin.reload();
+await admin.getByRole("button", { name: `Create a password reset link for ${clientEmail}` }).click();
+const resetLink = (await admin.locator("span.font-mono", { hasText: "/reset-password?token=" }).first().textContent()).trim();
+ok("reset link issued from Admin");
+const locked = await (await browser.newContext()).newPage();
+await locked.goto(resetLink);
+await locked.getByLabel("New password").fill("brand-new-pass");
+await locked.getByRole("button", { name: "Save and sign in" }).click();
+await locked.waitForURL(/\/home|\/onboarding/);
+ok("new password set via reset link, signed in");
+await locked.goto(resetLink);
+await locked.getByText("This link has expired").waitFor();
+ok("reset link can't be reused");
+const relog = await (await browser.newContext()).newPage();
+await login(relog, clientEmail, "brand-new-pass");
+ok("can sign in with the new password");
 
 console.log("ERRORS:", JSON.stringify(errors));
 await browser.close();

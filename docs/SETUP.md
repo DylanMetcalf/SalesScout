@@ -33,7 +33,7 @@ Want example data first? Run `npm run db:seed`, then sign in as `demo@salesscout
 
 ## Stage 2 — Put it online (Render + GitHub)
 
-Once it's online, a key set on the server is used in the background for **everyone** who uses your Sales Scout. Nobody has to paste anything. A key pasted in Settings still takes priority for that one account.
+Once it's online, the key set on the server is **yours**: administrators (the emails in `ADMIN_EMAILS`) use it without limits. Everyone else brings their own key in Settings, unless you grant them yours in **Admin**, optionally with a monthly allowance. A key pasted in Settings always takes priority for that account.
 
 **GitHub (one-time):** the code is on the branch `claude/stoic-rubin-jbjib7`. Either merge it into `main` (ask Claude to open a pull request), or point Render at this branch directly. Nothing else is needed on GitHub; Render reads the repo.
 
@@ -43,11 +43,13 @@ Once it's online, a key set on the server is used in the background for **everyo
    - a web service (paid **Starter** instance, needed for the persistent disk that holds your database; check Render's current pricing),
    - a 1 GB disk at `/var/data` for the database and uploads,
    - `APP_ENCRYPTION_KEY`, generated automatically. **Never change it**, or saved keys become unreadable.
-3. When asked for `ANTHROPIC_API_KEY`, paste your key. That's the "used in the background for everyone" key.
+3. When asked for `ANTHROPIC_API_KEY`, paste your key. When asked for `ADMIN_EMAILS`, enter the email you'll log in with.
 4. Click **Apply**. After a few minutes you'll get a URL like `https://sales-scout-xxxx.onrender.com`.
-5. Open it and create **your** account.
-6. **Close sign-ups:** in Render, go to the service → **Environment**, set `ALLOW_SIGNUPS` = `false`, and save (it redeploys). Otherwise anyone who finds the URL could sign up and spend your AI credit.
-7. Optional: **Settings → Custom Domains** to use your own domain.
+5. Open it and create **your** account with that email. You'll see **Admin** in the sidebar.
+6. Optional: set `ALLOW_SIGNUPS` = `false` (Environment tab) to make sign-up invite-only. Invite codes are created in **Admin**, and administrator emails can always sign up. Either way, new accounts can't spend your AI key unless you allow it.
+7. **Settings → Custom Domains** to use your own domain, then set `SITE_URL` (e.g. `https://salesscout.co`) so link previews and the sitemap use it.
+
+**Locked out?** In Admin, each user has a **Reset link** button: send them the one-time link. If you're the one locked out, open the service's **Shell** tab in Render and run `npm run reset-link -- you@example.com`.
 
 From then on, every push to the connected branch redeploys automatically. Your data on the disk is kept.
 

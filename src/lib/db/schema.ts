@@ -113,6 +113,15 @@ export const sessions = sqliteTable("sessions", {
   createdAt: createdAt(),
 });
 
+/** One-time password reset links, issued by an administrator. Only the SHA-256 of the token is stored. */
+export const passwordResets = sqliteTable("password_resets", {
+  id: id(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  usedAt: integer("used_at", { mode: "timestamp_ms" }),
+  createdAt: createdAt(),
+});
+
 // Workspaces -----------------------------------------------------------------
 
 export const workspaces = sqliteTable(
