@@ -8,6 +8,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AccountAccess, EnquiryStatus, InviteCreator, ResetLink, RevokeInvite } from "@/components/admin/admin-controls";
 import { formatDate } from "@/lib/format";
+import { processInfo, storage } from "@/lib/system";
 
 export const metadata = { title: "Admin" };
 
@@ -60,7 +61,16 @@ export default async function Admin() {
   const ownKeys = db.select({ n: count() }).from(t.accounts).where(isNotNull(t.accounts.anthropicKeyEnc)).get()!.n;
   const accountName = (id: string) => accounts.find((a) => a.id === id)?.name ?? "Deleted account";
 
+  const disk = storage();
+  const proc = processInfo();
+  const uptime = proc.uptimeSeconds < 3600 ? `${Math.max(1, Math.round(proc.uptimeSeconds / 60))} min` : proc.uptimeSeconds < 172_800 ? `${Math.round(proc.uptimeSeconds / 3600)} h` : `${Math.round(proc.uptimeSeconds / 86_400)} days`;
   const system = [
+    {
+      ok: disk.persistent !== false,
+      label: "Data storage",
+      detail: disk.persistent === false ? `NOT on a persistent disk (${disk.dir}). Every deploy wipes all accounts and data. Attach a Render disk at /var/data.` : disk.persistent ? `Persistent disk at ${disk.dir}` : `Local folder ${disk.dir}`,
+    },
+    { ok: proc.memoryMb < 420, label: "Server", detail: `Up ${uptime} since last restart · ${proc.memoryMb} MB memory in use${proc.memoryMb >= 420 ? " (close to the 512 MB limit)" : ""}` },
     { ok: Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN), label: "Server AI key", detail: process.env.ANTHROPIC_API_KEY ? "Set" : "Not set: only accounts with their own key can use AI" },
     { ok: adminEmails().length > 0, label: "ADMIN_EMAILS", detail: adminEmails().length ? adminEmails().join(", ") : "Not set: the first account is treated as admin" },
     { ok: process.env.ALLOW_SIGNUPS === "false", label: "Sign-ups", detail: process.env.ALLOW_SIGNUPS === "false" ? "Invite only" : "Open to anyone (new accounts must bring their own key)" },

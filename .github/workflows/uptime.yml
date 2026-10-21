@@ -1,0 +1,70 @@
+# Uptime agent: checks the live site every 10 minutes.
+# Down (after retries)  -> opens a "Sales Scout is down" issue (GitHub emails you).
+# Back up               -> closes it with how long it was down.
+# Data not on a disk    -> opens a "data is not on a persistent disk" issue.
+# The regular requests also stop a sleeping (free-plan) service from idling out.
+name: Uptime monitor
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      SITE: ${{ vars.SITE_URL || 'https://www.salesscout.co.za' }}
+      DOWN_TITLE: "Sales Scout is down"
+      DISK_TITLE: "Sales Scout data is not on a persistent disk"
+    steps:
+      - name: Check health (retrying through deploy restarts)
+        id: health
+        run: |
+          ok=false
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o body.json -w "%{http_code}" --max-time 60 "$SITE/api/health" || echo 000)
+            echo "attempt $i: HTTP $code $(cat body.json 2>/dev/null | head -c 200)"
+            if [ "$code" = "200" ] && grep -q '"ok":true' body.json; then ok=true; break; fi
+            sleep 15
+          done
+          echo "ok=$ok" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          if grep -q '"persistentDisk":false' body.json 2>/dev/null; then echo "disk=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Open or update the outage issue
+        if: steps.health.outputs.ok != 'true'
+        run: |
+          open=$(gh issue list --state open --search "in:title \"$DOWN_TITLE\"" --json number --jq '.[0].number // empty')
+          if [ -z "$open" ]; then
+            gh issue create --title "$DOWN_TITLE" --body "$(printf 'The uptime monitor could not reach %s/api/health (last HTTP status: %s) after retrying for about 90 seconds.\n\nWhat to check:\n1. Render dashboard → sales-scout → **Events** and **Logs**.\n2. If the service is suspended or out of memory, restart it with **Manual Deploy → Deploy latest commit**.\n\nThis issue closes itself when the site is back.' "$SITE" "${{ steps.health.outputs.code }}")"
+          else
+            echo "Outage issue #$open already open."
+          fi
+
+      - name: Close the outage issue when back up
+        if: steps.health.outputs.ok == 'true'
+        run: |
+          open=$(gh issue list --state open --search "in:title \"$DOWN_TITLE\"" --json number,createdAt --jq '.[0] // empty')
+          if [ -n "$open" ]; then
+            num=$(echo "$open" | jq -r .number)
+            since=$(echo "$open" | jq -r .createdAt)
+            mins=$(( ( $(date +%s) - $(date -d "$since" +%s) ) / 60 ))
+            gh issue close "$num" --comment "Back up. Down for roughly $mins minutes (between checks)."
+          fi
+
+      - name: Warn if data isn't on a persistent disk
+        if: steps.health.outputs.disk == 'false'
+        run: |
+          open=$(gh issue list --state open --search "in:title \"$DISK_TITLE\"" --json number --jq '.[0].number // empty')
+          [ -n "$open" ] || gh issue create --title "$DISK_TITLE" --body "The live site reports that its database is not on a persistent disk, so **every deploy or restart wipes all accounts and data**. In Render: upgrade the service to a paid instance (Starter or above) and add a Disk mounted at /var/data, with DATABASE_PATH=/var/data/salesscout.db."
