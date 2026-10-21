@@ -10,9 +10,9 @@ export function Eyebrow({ children, className }: { children: React.ReactNode; cl
 }
 
 /** Standard section heading: eyebrow, h2, optional lead paragraph. */
-export function SectionHead({ id, eyebrow, title, lead, className }: { id: string; eyebrow: string; title: string; lead?: string; className?: string }) {
+export function SectionHead({ id, eyebrow, title, lead, center, className }: { id: string; eyebrow: string; title: string; lead?: string; center?: boolean; className?: string }) {
   return (
-    <div className={cn("max-w-2xl", className)}>
+    <div className={cn("max-w-2xl", center && "mx-auto text-center", className)}>
       <Eyebrow>{eyebrow}</Eyebrow>
       <h2 id={id} className="mt-3 text-[30px] leading-tight sm:text-[40px]">{title}</h2>
       {lead && <p className="mt-4 text-lg leading-8 text-muted">{lead}</p>}
@@ -20,18 +20,29 @@ export function SectionHead({ id, eyebrow, title, lead, className }: { id: strin
   );
 }
 
-/** Dark branded hero used at the top of every inner page. */
-export function PageHero({ eyebrow, title, body, children }: { eyebrow: string; title: string; body: string; children?: React.ReactNode }) {
+/** Dark branded hero used at the top of every inner page. Optional visual on the right. */
+export function PageHero({ eyebrow, title, body, children, visual }: { eyebrow: string; title: string; body: string; children?: React.ReactNode; visual?: React.ReactNode }) {
   return (
     <section className="px-3 pt-4 sm:px-5">
-      <div className="theme-ink brand-hero mx-auto max-w-7xl overflow-hidden rounded-3xl px-6 py-14 sm:px-12 sm:py-20">
+      <div className={cn("theme-ink brand-hero hero-grid mx-auto grid max-w-7xl items-center gap-12 overflow-hidden rounded-3xl px-6 py-14 sm:px-12 sm:py-20", visual && "lg:grid-cols-[1fr_1fr]")}>
         <div className="max-w-3xl animate-rise">
           <Eyebrow>{eyebrow}</Eyebrow>
-          <h1 className="mt-4 text-[36px] leading-[1.08] sm:text-[52px]">{title}</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">{body}</p>
+          <h1 className="mt-4 text-[36px] leading-[1.06] sm:text-[52px]">{title}</h1>
+          <p className="mt-5 max-w-xl text-lg leading-8 text-muted">{body}</p>
           {children}
         </div>
+        {visual && <div className="animate-rise [animation-delay:120ms]">{visual}</div>}
       </div>
+    </section>
+  );
+}
+
+/** Page section with consistent spacing; `band` gives it the tinted full-width background. */
+export function Section({ id, band, narrow, children }: { id?: string; band?: boolean; narrow?: boolean; children: React.ReactNode }) {
+  const inner = <div className={cn("mx-auto px-4 py-20 sm:px-6 sm:py-24", narrow ? "max-w-3xl" : "max-w-6xl")}>{children}</div>;
+  return (
+    <section id={id} aria-labelledby={id ? `h-${id}` : undefined} className={cn("scroll-mt-20", band && "border-y border-border bg-surface-2/70")}>
+      {inner}
     </section>
   );
 }
@@ -40,7 +51,7 @@ export function PageHero({ eyebrow, title, body, children }: { eyebrow: string; 
 export function CtaBand({ title = "Tell us what you sell. We'll find out who needs it.", body = "Start with a short discovery call. No obligation, and no software to learn." }: { title?: string; body?: string }) {
   return (
     <section className="px-3 pb-6 sm:px-5" aria-labelledby="h-cta">
-      <div className="theme-ink brand-hero mx-auto flex max-w-7xl flex-col items-start gap-8 rounded-3xl px-6 py-14 sm:px-12 lg:flex-row lg:items-center lg:justify-between">
+      <div className="theme-ink brand-hero hero-grid mx-auto flex max-w-7xl flex-col items-start gap-8 rounded-3xl px-6 py-14 sm:px-12 lg:flex-row lg:items-center lg:justify-between">
         <div className="max-w-2xl">
           <LogoMark size={40} label={null} />
           <h2 id="h-cta" className="mt-5 text-[28px] leading-tight sm:text-[38px]">{title}</h2>
@@ -103,6 +114,8 @@ export function SiteFooter({ signedIn }: { signedIn: boolean }) {
       <div className="flex flex-col gap-2.5">
         <p className="font-semibold text-heading">Clients</p>
         <Link href={signedIn ? "/home" : "/login"} className="hover:text-accent-text">{signedIn ? "Open workspace" : "Client login"}</Link>
+        <Link href="/privacy" className="hover:text-accent-text">Privacy Policy</Link>
+        <Link href="/terms" className="hover:text-accent-text">Terms of Service</Link>
         <p className="mt-6 text-subtle">© {new Date().getFullYear()} {SITE.name}</p>
       </div>
     </footer>

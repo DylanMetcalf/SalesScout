@@ -35,6 +35,9 @@ export function EnquiryForm() {
       <Button type="submit" variant="primary" size="lg" loading={pending} className="mt-1 w-full sm:w-auto sm:self-start">
         Book a discovery call
       </Button>
+      <p className="text-xs text-subtle">
+        We use your details only to reply. See our <a href="/privacy" className="underline hover:text-accent-text">Privacy Policy</a>.
+      </p>
     </form>
   );
 }

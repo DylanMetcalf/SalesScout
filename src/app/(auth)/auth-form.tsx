@@ -31,6 +31,13 @@ export function AuthForm({ mode, invite }: { mode: "login" | "signup"; invite?: 
         <Button type="submit" variant="primary" size="lg" loading={pending} className="mt-2 w-full">
           {mode === "login" ? "Sign in" : "Create account"}
         </Button>
+        {mode === "signup" && (
+          <p className="text-xs text-subtle">
+            By creating an account you agree to our{" "}
+            <Link href="/terms" className="underline hover:text-accent-text">Terms</Link> and{" "}
+            <Link href="/privacy" className="underline hover:text-accent-text">Privacy Policy</Link>.
+          </p>
+        )}
       </form>
       <p className="mt-6 text-sm text-muted">
         {mode === "login" ? (
