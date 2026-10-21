@@ -9,7 +9,7 @@ import { cn } from "@/components/ui/cn";
  * use fictional example companies, and always say so.
  */
 
-export function AppWindow({ children, url = "app.salesscout.co", className }: { children: React.ReactNode; url?: string; className?: string }) {
+export function AppWindow({ children, url = "salesscout.co.za/discover", className }: { children: React.ReactNode; url?: string; className?: string }) {
   return (
     <div className={cn("theme-paper overflow-hidden rounded-2xl border border-border bg-surface text-text shadow-lg", className)} role="img" aria-label="Example screen from the Sales Scout platform">
       <div className="flex items-center gap-2 border-b border-border bg-surface-2 px-4 py-2.5">
@@ -87,7 +87,7 @@ export function ResearchMock() {
     ["Finding the right people", "todo"],
   ] as const;
   return (
-    <AppWindow url="app.salesscout.co/discover">
+    <AppWindow url="salesscout.co.za/discover">
       <div className="theme-ink brand-hero p-5">
         <div className="flex items-center gap-3">
           <LogoMark size={32} working label={null} />
@@ -115,7 +115,7 @@ export function ResearchMock() {
 export function FitMock() {
   const levels = ["strong", "strong", "strong", "moderate", "strong", "unknown"] as const;
   return (
-    <AppWindow url="app.salesscout.co/prospects/kopano">
+    <AppWindow url="salesscout.co.za/prospects/kopano">
       <div className="p-5">
         <p className="flex items-center gap-1.5 text-xs font-semibold text-accent-text"><Needle className="size-3.5" /> Why this lead?</p>
         <p className="mt-1 font-semibold text-heading">Strong on 4 of 6. One thing we couldn&apos;t confirm.</p>
@@ -145,7 +145,7 @@ export function PipelineMock() {
     ["Won", "border-t-strong", ["Karoo Cement"]],
   ] as const;
   return (
-    <AppWindow url="app.salesscout.co/pipeline">
+    <AppWindow url="salesscout.co.za/pipeline">
       <div className="grid grid-cols-4 gap-2 p-4 max-sm:grid-cols-2">
         {cols.map(([name, color, items]) => (
           <div key={name} className={cn("rounded-lg border border-border border-t-[3px] bg-surface-2 p-2", color)}>
@@ -165,7 +165,7 @@ export function PipelineMock() {
 /** Outreach draft, clearly for the user to send. */
 export function DraftMock() {
   return (
-    <AppWindow url="app.salesscout.co/prospects/kopano/outreach">
+    <AppWindow url="salesscout.co.za/prospects/kopano/outreach">
       <div className="p-5 text-[13px]">
         <p className="text-xs text-subtle">Draft for: Plant Engineering Manager · Kopano Platinum</p>
         <p className="mt-2 font-semibold text-heading">Subject: Keeping your mill pumps running through the expansion</p>
@@ -190,7 +190,7 @@ export function ExportMock() {
     [Download, "client-report.pdf", "Polished summary"],
   ] as const;
   return (
-    <AppWindow url="app.salesscout.co/exports">
+    <AppWindow url="salesscout.co.za/exports">
       <ul className="flex flex-col gap-2 p-4">
         {files.map(([Icon, name, note]) => (
           <li key={name} className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5">

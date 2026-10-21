@@ -5,6 +5,13 @@ const PUBLIC = ["/reset-password", "/opengraph-image", "/privacy", "/terms", "/r
 /** Cheap gate: bounce requests without a session cookie. Real validation happens server-side. */
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  // One public address: send visitors on the onrender.com host to the custom domain.
+  // Health checks stay on the original host so Render can still reach the app.
+  const host = req.headers.get("host") ?? "";
+  if (host.endsWith(".onrender.com") && pathname !== "/api/health") {
+    const target = new URL(req.nextUrl.pathname + req.nextUrl.search, process.env.SITE_URL || "https://www.salesscout.co.za");
+    return NextResponse.redirect(target, 308);
+  }
   if (pathname === "/" || PUBLIC.some((p) => pathname.startsWith(p))) return NextResponse.next();
   if (!req.cookies.get("ss_session")) {
     if (pathname.startsWith("/api/")) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
