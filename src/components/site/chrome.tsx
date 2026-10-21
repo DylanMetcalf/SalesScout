@@ -102,7 +102,7 @@ export function SiteFooter({ signedIn }: { signedIn: boolean }) {
       <div>
         <Logo />
         <p className="mt-3 max-w-xs leading-6">{SITE.tagline}. Real companies, real reasons, and nothing sent without you.</p>
-        <p className="mt-3 select-all font-medium text-accent-text">{SITE.contactEmail}</p>
+        <a href={`mailto:${SITE.contactEmail}`} className="mt-3 inline-block font-medium text-accent-text hover:underline">{SITE.contactEmail}</a>
       </div>
       <nav aria-label="Footer" className="flex flex-col gap-2.5">
         <p className="font-semibold text-heading">Explore</p>

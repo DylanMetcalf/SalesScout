@@ -47,7 +47,7 @@ Once it's online, the key set on the server is **yours**: administrators (the em
 4. Click **Apply**. After a few minutes you'll get a URL like `https://sales-scout-xxxx.onrender.com`.
 5. Open it and create **your** account with that email. You'll see **Admin** in the sidebar.
 6. Optional: set `ALLOW_SIGNUPS` = `false` (Environment tab) to make sign-up invite-only. Invite codes are created in **Admin**, and administrator emails can always sign up. Either way, new accounts can't spend your AI key unless you allow it.
-7. **Settings → Custom Domains** to use your own domain, then set `SITE_URL` (e.g. `https://salesscout.co`) so link previews and the sitemap use it.
+7. **Settings → Custom Domains** to use your own domain, (the site already defaults to `https://www.salesscout.co.za`; set `SITE_URL` only if that changes).
 
 **Locked out?** In Admin, each user has a **Reset link** button: send them the one-time link. If you're the one locked out, open the service's **Shell** tab in Render and run `npm run reset-link -- you@example.com`.
 

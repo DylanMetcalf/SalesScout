@@ -42,8 +42,8 @@ type Item = { icon: LucideIcon; title: string; text: string };
 export const SITE = {
   name: "Sales Scout",
   tagline: "AI sales intelligence, done for you",
-  // Shown in the footer and on the contact page. Replace with your own.
-  contactEmail: "hello@salesscout.co",
+  // Shown in the footer, contact page and legal pages.
+  contactEmail: "salesscout@meacreo.co.za",
 
   nav: [
     { href: "/platform", label: "Platform" },
