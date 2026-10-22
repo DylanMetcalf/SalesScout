@@ -15,6 +15,7 @@ import { notifyKept } from "@/lib/services/notifications";
 import { applySuggestion, ignoreSuggestion } from "@/lib/services/learning";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { attempt } from "./result";
+import { PROBLEM_REASONS, type ProblemReason } from "@/lib/feedback-reasons";
 
 const done = () => revalidatePath("/", "layout");
 
@@ -175,6 +176,19 @@ export async function addWritingPreferenceAction(rule: string, scope: "user" | "
     const tenant = await actionTenant();
     const r = z.string().trim().min(3).max(300).parse(rule);
     db.insert(t.writingPreferences).values({ id: newId("wp"), ...tenantCols(tenant), scope, userId: scope === "user" ? tenant.user.id : null, rule: r }).run();
+    done();
+  });
+}
+
+/** "Report a problem": a structured correction, kept for review and to improve future research. */
+export async function reportProblemAction(id: string, reason: string, note?: string) {
+  return attempt(async () => {
+    const tenant = await actionTenant();
+    const r = z.enum(Object.keys(PROBLEM_REASONS) as [ProblemReason, ...ProblemReason[]]).parse(reason);
+    const p = db.select({ id: t.prospects.id, runId: t.prospects.searchRunId }).from(t.prospects).where(inCompany(t.prospects, tenant, eq(t.prospects.id, id))).get();
+    if (!p) throw new Error("Prospect not found.");
+    db.insert(t.feedback).values({ id: newId("fb"), ...tenantCols(tenant), prospectId: p.id, searchRunId: p.runId, userId: tenant.user.id, kind: "correction", dimension: r, reason: note?.trim().slice(0, 500) || null }).run();
+    db.insert(t.activities).values({ id: newId("act"), ...tenantCols(tenant), prospectId: p.id, userId: tenant.user.id, type: "feedback", title: `Reported: ${PROBLEM_REASONS[r]}`, body: note?.trim().slice(0, 500) || null }).run();
     done();
   });
 }

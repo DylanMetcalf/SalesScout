@@ -1,5 +1,6 @@
 import { and, count, desc, eq, gte, isNotNull, sum } from "drizzle-orm";
 import { Activity, AlertTriangle, Building2, CheckCircle2, Coins, Globe, KeyRound, Mail, Search, ShieldCheck, Ticket, Users, XCircle } from "lucide-react";
+import Link from "next/link";
 import { db, t } from "@/lib/db";
 import { adminEmails, isAdminAccount, monthStart, requireAdmin } from "@/lib/admin";
 import { MODEL } from "@/lib/ai/core";
@@ -102,6 +103,11 @@ export default async function Admin() {
   return (
     <Page width="wide">
       <PageHeader eyebrow="Administration" title="Back office" description={`Everything about this installation. Model: ${MODEL}${process.env.RENDER_GIT_COMMIT ? ` · build ${process.env.RENDER_GIT_COMMIT.slice(0, 7)}` : ""}`} />
+      <div className="-mt-2 mb-6">
+        <Link href="/admin/operations" className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-accent-text hover:border-accent">
+          Operations: spend, quality and kill switches →
+        </Link>
+      </div>
 
       <div className="flex flex-col gap-6">
         <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

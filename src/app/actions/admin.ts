@@ -9,6 +9,7 @@ import { createInvite } from "@/lib/services/invites";
 import { createResetToken } from "@/lib/services/password-reset";
 import { adjustCredits } from "@/lib/billing/credits";
 import { PLANS } from "@/lib/billing/plans";
+import { setSwitch, type SwitchKey } from "@/lib/settings";
 import { attempt } from "./result";
 
 function check<S extends z.ZodType>(schema: S, input: unknown): z.infer<S> {
@@ -139,5 +140,16 @@ export async function adjustCreditsAction(accountId: string, amount: number, rea
     const n = check(z.number().int().min(-500).max(500).refine((x) => x !== 0, "Enter a number other than 0"), amount);
     adjustCredits(accountId, n, `${reason.trim().slice(0, 200) || "Adjustment"} (by ${admin.email})`);
     revalidatePath("/admin");
+  });
+}
+
+/** Kill switches: take effect immediately, before the next paid AI call. */
+export async function setSwitchAction(key: string, on: boolean, reason: string) {
+  return attempt(async () => {
+    const admin = await assertAdmin();
+    const k = check(z.enum(["ai_paused", "discovery_paused"]), key) as SwitchKey;
+    setSwitch(k, { on, reason: reason.trim().slice(0, 200) || undefined }, admin.email);
+    console.warn(`[ops] ${k} ${on ? "ON" : "off"} by ${admin.email}${reason ? `: ${reason}` : ""}`);
+    revalidatePath("/admin/operations");
   });
 }

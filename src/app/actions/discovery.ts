@@ -8,7 +8,7 @@ import type { SearchInterpretation } from "@/lib/db/schema";
 import { newId } from "@/lib/ids";
 import { actionTenant, inCompany, tenantCols } from "@/lib/tenant";
 import { acceptOpportunity, setOpportunityStatus, startMarketDiscovery } from "@/lib/services/markets";
-import { createSearchRun, createSimilarRun, startDeepResearch, startDiscovery, startManualProspect, startNextBatch } from "@/lib/services/discovery";
+import { cancelRun, createSearchRun, createSimilarRun, startDeepResearch, startDiscovery, startManualProspect, startNextBatch } from "@/lib/services/discovery";
 import { BATCH_SIZE } from "@/lib/billing/plans";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { audit } from "@/lib/audit";
@@ -115,6 +115,11 @@ export async function runDiscoveryAction(runId: string, interpretation: SearchIn
     limitAi(`ai:${tenant.account.id}`);
     return startDiscovery(tenant, runId, InterpSchema.parse({ ...interpretation, requested: BATCH_SIZE }), z.enum(["verified", "broad"]).parse(contactMode));
   });
+}
+
+/** Stop a running search. No new paid work starts; what's already researched is kept. */
+export async function cancelRunAction(runId: string) {
+  return attempt(async () => cancelRun(await actionTenant(), runId));
 }
 
 /** Up to five more prospects from the same search. */

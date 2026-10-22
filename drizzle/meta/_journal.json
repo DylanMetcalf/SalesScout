@@ -64,6 +64,13 @@
       "when": 1792645770060,
       "tag": "0008_run_candidate_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1792695477764,
+      "tag": "0009_cost_observability",
+      "breakpoints": true
     }
   ]
 }

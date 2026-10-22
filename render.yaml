@@ -72,4 +72,17 @@ services:
         sync: false
       - key: TWILIO_VERIFY_SERVICE_SID
         sync: false
+      # --- Cost estimates and guardrails (Admin → Operations). Prices from your Anthropic pricing. ---
+      - key: AI_PRICE_INPUT_USD_PER_MTOK
+        sync: false
+      - key: AI_PRICE_OUTPUT_USD_PER_MTOK
+        sync: false
+      - key: AI_PRICE_WEB_SEARCH_USD_PER_1000
+        sync: false
+      - key: AI_PRICE_CACHE_READ_USD_PER_MTOK
+        sync: false
+      - key: BATCH_TOKEN_BUDGET
+        value: "1500000"
+      - key: BATCH_BUDGET_USD
+        sync: false
 

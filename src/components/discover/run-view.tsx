@@ -15,7 +15,7 @@ import { cn } from "@/components/ui/cn";
 import { JobProgress } from "@/components/ai/job-progress";
 import { AiUnavailable } from "@/components/ai/ai-unavailable";
 import { ProspectCard } from "@/components/prospects/prospect-card";
-import { nextBatchAction, runDiscoveryAction } from "@/app/actions/discovery";
+import { cancelRunAction, nextBatchAction, runDiscoveryAction } from "@/app/actions/discovery";
 import type { SearchInterpretation } from "@/lib/db/schema";
 import type { ProspectView } from "@/lib/types";
 import { Search } from "lucide-react";
@@ -84,6 +84,7 @@ export function RunView({ run, prospects, aiConnected, query }: { run: Run; pros
 
   if (jobId) {
     return (
+      <div className="flex flex-col gap-3">
       <JobProgress
         jobId={jobId}
         title={
@@ -107,6 +108,20 @@ export function RunView({ run, prospects, aiConnected, query }: { run: Run; pros
           </>
         )}
       />
+        <Button
+          size="sm"
+          variant="ghost"
+          className="self-start"
+          onClick={() =>
+            start(async () => {
+              const r = await cancelRunAction(run.id);
+              toast(r.ok ? { title: "Stopping after the current company. What's done is kept." } : { kind: "error", title: r.error });
+            })
+          }
+        >
+          Stop searching
+        </Button>
+      </div>
     );
   }
 

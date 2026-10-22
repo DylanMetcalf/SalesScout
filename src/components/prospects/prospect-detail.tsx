@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CompanyLogo } from "@/components/ui/company-logo";
+import { PROBLEM_REASONS, type ProblemReason } from "@/lib/feedback-reasons";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -15,7 +16,7 @@ import { Tabs, TabPanel } from "@/components/ui/tabs";
 import { Notice } from "@/components/ui/error-state";
 import { cn } from "@/components/ui/cn";
 import { JobProgress } from "@/components/ai/job-progress";
-import { addToCrmAction } from "@/app/actions/prospects";
+import { addToCrmAction, reportProblemAction } from "@/app/actions/prospects";
 import { deepResearchAction, findSimilarAction } from "@/app/actions/discovery";
 import { formatDate, relativeDay } from "@/lib/format";
 import type { ProspectView } from "@/lib/types";
@@ -105,6 +106,15 @@ export function ProspectDetail({
         { type: "separator" as const },
         { label: "Export as CSV", icon: <Download />, onSelect: () => (window.location.href = `/api/export?format=csv&ids=${p.id}`) },
         { label: "Export report", icon: <FileText />, onSelect: () => window.open(`/reports/prospects?ids=${p.id}`, "_blank") },
+        { type: "separator" as const },
+        { type: "label" as const, label: "Report a problem" },
+        ...(Object.entries(PROBLEM_REASONS) as [ProblemReason, string][]).map(([key, label]) => ({
+          label,
+          onSelect: () => {
+            const note = key === "other" || key === "unsupported_claim" ? window.prompt("What's wrong? (optional)") ?? undefined : undefined;
+            run(() => reportProblemAction(p.id, key, note), { success: "Thanks: reported. We'll use it to improve future research." });
+          },
+        })),
       ]}
       trigger={({ ref, ...tp }) => (
         <IconButton ref={ref} {...tp} label="More actions" className="border border-border bg-surface shadow-sm">

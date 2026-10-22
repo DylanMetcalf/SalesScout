@@ -350,6 +350,8 @@ export const searchRuns = sqliteTable(
     requested: integer("requested").notNull().default(10),
     /** verified = fewer prospects, each with a named, sourced contact; broad = more prospects. */
     contactMode: text("contact_mode", { enum: ["verified", "broad"] }).notNull().default("broad"),
+    /** Set when the user presses Stop: no further paid work starts for this run. */
+    cancelRequestedAt: integer("cancel_requested_at", { mode: "timestamp_ms" }),
     batches: integer("batches").notNull().default(0),
     discovered: integer("discovered").notNull().default(0),
     duplicates: integer("duplicates").notNull().default(0),
@@ -620,13 +622,22 @@ export const aiInteractions = sqliteTable(
     model: text("model").notNull(),
     status: text("status", { enum: ["ok", "error", "refused"] }).notNull(),
     inputTokens: integer("input_tokens").notNull().default(0),
+    /** Part of inputTokens served from the prompt cache (cheaper). */
+    cacheReadTokens: integer("cache_read_tokens").notNull().default(0),
     outputTokens: integer("output_tokens").notNull().default(0),
     webSearches: integer("web_searches").notNull().default(0),
+    webFetches: integer("web_fetches").notNull().default(0),
+    /** What caused the call, for cost per search / per prospect. */
+    runId: text("run_id"),
+    prospectId: text("prospect_id"),
+    /** Estimated from configured prices (src/lib/ai/pricing.ts). Null = prices unknown. Never a provider-reported charge. */
+    costUsdMicros: integer("cost_usd_micros"),
+    pricingVersion: text("pricing_version"),
     durationMs: integer("duration_ms").notNull().default(0),
     error: text("error"),
     createdAt: createdAt(),
   },
-  (t) => [index("ai_interactions_ws_idx").on(t.workspaceId, t.createdAt)],
+  (t) => [index("ai_interactions_ws_idx").on(t.workspaceId, t.createdAt), index("ai_interactions_run_idx").on(t.runId), index("ai_interactions_created_idx").on(t.createdAt)],
 );
 
 export const auditLog = sqliteTable(
@@ -792,4 +803,12 @@ export const verificationCodes = sqliteTable("verification_codes", {
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
   consumedAt: integer("consumed_at", { mode: "timestamp_ms" }),
   createdAt: createdAt(),
+});
+
+/** Operator switches (kill switches etc.). Small key/value store, read on every paid operation. */
+export const systemSettings = sqliteTable("system_settings", {
+  key: text("key").primaryKey(),
+  value: json<unknown>("value"),
+  updatedBy: text("updated_by"),
+  updatedAt: updatedAt(),
 });

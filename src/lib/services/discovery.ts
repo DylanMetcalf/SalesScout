@@ -1,5 +1,6 @@
 import "server-only";
-import { and, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, sql } from "drizzle-orm";
+import { getSwitch } from "@/lib/settings";
 import { db, t } from "@/lib/db";
 import type { SearchInterpretation } from "@/lib/db/schema";
 import { newId } from "@/lib/ids";
@@ -205,12 +206,13 @@ export function startDiscovery(tenant: CompanyTenant, runId: string, edited?: Se
   const run = getRun(tenant, runId);
   if (run.status === "running" && run.jobId) return run.jobId; // double-click / refresh: same job
   if (!aiConfigured(tenant.account.id)) throw new Error("Prospect discovery needs live web research, which requires AI to be connected.");
+  assertDiscoveryOpen();
   assertNoOtherRunning(tenant, run.id);
   useAllowance(tenant.account, "search");
   const interp = { ...(edited ?? run.interpretation!), requested: BATCH_SIZE };
   const mode = contactMode ?? run.contactMode;
   const jobId = createJob(aiCtx(tenant), "discovery", DISCOVERY_STEPS);
-  db.update(t.searchRuns).set({ status: "running", interpretation: interp, requested: BATCH_SIZE, contactMode: mode, jobId }).where(eq(t.searchRuns.id, run.id)).run();
+  db.update(t.searchRuns).set({ status: "running", interpretation: interp, requested: BATCH_SIZE, contactMode: mode, jobId, cancelRequestedAt: null }).where(eq(t.searchRuns.id, run.id)).run();
 
   runInBackground(jobId, async (p) => {
     let searched = false;
@@ -235,12 +237,13 @@ export function startNextBatch(tenant: CompanyTenant, runId: string) {
   if (run.batches >= plan.limits.batchesPerSearch) {
     throw new LimitReachedError(`You've reviewed ${run.batches} batches from this search, the most your ${plan.name} plan allows per search. Start a new search with different criteria${plan.id === "free" ? ", or upgrade for more" : ""}.`);
   }
+  assertDiscoveryOpen();
   assertNoOtherRunning(tenant, run.id);
   const queued = db.select({ id: t.runCandidates.id }).from(t.runCandidates).where(inCompany(t.runCandidates, tenant, and(eq(t.runCandidates.runId, run.id), eq(t.runCandidates.status, "queued")))).all().length;
   if (!queued) useAllowance(tenant.account, "search");
   const interp = run.interpretation!;
   const jobId = createJob(aiCtx(tenant), "discovery", queued ? DISCOVERY_STEPS.filter((s) => !["search", "identify", "dedupe"].includes(s.key)) : DISCOVERY_STEPS);
-  db.update(t.searchRuns).set({ status: "running", jobId }).where(eq(t.searchRuns.id, run.id)).run();
+  db.update(t.searchRuns).set({ status: "running", jobId, cancelRequestedAt: null }).where(eq(t.searchRuns.id, run.id)).run();
   runInBackground(jobId, async (p) => {
     let searched = Boolean(queued);
     try {
@@ -255,6 +258,47 @@ export function startNextBatch(tenant: CompanyTenant, runId: string) {
   return jobId;
 }
 
+/**
+ * Safety ceiling per batch, in tokens (and in US dollars when prices are configured).
+ * Checked before each new company is researched; calls already running finish, so
+ * actual spend can slightly exceed it. Tune from Admin → Operations data.
+ */
+const BATCH_TOKEN_BUDGET = Number(process.env.BATCH_TOKEN_BUDGET) || 1_500_000;
+const BATCH_BUDGET_USD = Number(process.env.BATCH_BUDGET_USD) || null;
+
+export function runSpend(runId: string, since: Date) {
+  const r = db
+    .select({ tokens: sql<number>`coalesce(sum(${t.aiInteractions.inputTokens} + ${t.aiInteractions.outputTokens}),0)`, micros: sql<number | null>`sum(${t.aiInteractions.costUsdMicros})` })
+    .from(t.aiInteractions)
+    .where(and(eq(t.aiInteractions.runId, runId), gte(t.aiInteractions.createdAt, since)))
+    .get()!;
+  return { tokens: Number(r.tokens), usd: r.micros === null ? null : Number(r.micros) / 1e6 };
+}
+
+/** Why no more paid work should start for this run right now, or null. */
+function stopReason(runId: string, batchStart: Date): string | null {
+  const run = db.select({ cancel: t.searchRuns.cancelRequestedAt }).from(t.searchRuns).where(eq(t.searchRuns.id, runId)).get();
+  if (run?.cancel) return "Stopped by you. Everything already researched is kept.";
+  if (getSwitch("discovery_paused").on || getSwitch("ai_paused").on) return "Paused by the administrator. Everything already researched is kept.";
+  const spend = runSpend(runId, batchStart);
+  if (spend.tokens >= BATCH_TOKEN_BUDGET || (BATCH_BUDGET_USD !== null && spend.usd !== null && spend.usd >= BATCH_BUDGET_USD)) {
+    return "This batch reached its research budget, so we stopped early. Everything already researched is kept.";
+  }
+  return null;
+}
+
+function assertDiscoveryOpen() {
+  const s = getSwitch("discovery_paused");
+  if (s.on || getSwitch("ai_paused").on) throw new LimitReachedError(`New searches are paused by the administrator${s.reason ? `: ${s.reason}` : ""}. Your saved prospects are unaffected.`);
+}
+
+/** Stop button: no further paid work starts; what's done is kept. */
+export function cancelRun(tenant: CompanyTenant, runId: string) {
+  const run = getRun(tenant, runId);
+  if (run.status !== "running") return;
+  db.update(t.searchRuns).set({ cancelRequestedAt: new Date() }).where(eq(t.searchRuns.id, run.id)).run();
+}
+
 function failRun(runId: string, err: unknown) {
   db.update(t.searchRuns)
     .set({ status: "failed", error: err instanceof Error ? err.message : "Discovery failed", completedAt: new Date() })
@@ -264,7 +308,7 @@ function failRun(runId: string, err: unknown) {
 
 /** Cheap step: search the web for candidate companies, de-duplicate, and queue the new ones. */
 async function findCandidates(tenant: CompanyTenant, run: typeof t.searchRuns.$inferSelect, interp: SearchInterpretation, p: JobProgress): Promise<boolean> {
-  const ctx = aiCtx(tenant);
+  const ctx = { ...aiCtx(tenant), runId: run.id };
   const known = knownCompanies(tenant);
   const seed = run.similarToProspectId
     ? db.select().from(t.prospects).where(inCompany(t.prospects, tenant, eq(t.prospects.id, run.similarToProspectId))).get()
@@ -313,7 +357,8 @@ async function findCandidates(tenant: CompanyTenant, run: typeof t.searchRuns.$i
  * extra, because companies without a sourced contact are set aside.
  */
 async function researchBatch(tenant: CompanyTenant, run: typeof t.searchRuns.$inferSelect, interp: SearchInterpretation, p: JobProgress) {
-  const ctx = aiCtx(tenant);
+  const ctx = { ...aiCtx(tenant), runId: run.id };
+  const batchStart = new Date(Date.now() - 60_000); // include this batch's discovery search
   const digest = getDigest(tenant);
   const known = knownCompanies(tenant);
   const maxAttempts = run.contactMode === "verified" ? BATCH_SIZE * 2 : BATCH_SIZE;
@@ -333,6 +378,11 @@ async function researchBatch(tenant: CompanyTenant, run: typeof t.searchRuns.$in
   p.start("research", queue.length ? `0 of up to ${BATCH_SIZE}` : "Nothing new to research");
 
   for (let i = 0; i < queue.length && relevant < BATCH_SIZE; i += 3) {
+    const stop = stopReason(run.id, batchStart);
+    if (stop) {
+      limitNote = stop;
+      break;
+    }
     const slice = queue.slice(i, i + Math.min(3, BATCH_SIZE - relevant));
     const ready: typeof slice = [];
     for (const c of slice) {
@@ -510,7 +560,7 @@ export function startDeepResearch(tenant: CompanyTenant, prospectId: string) {
     job.start("read");
     const tick = setTimeout(() => job.start("news"), 15_000);
     const tick2 = setTimeout(() => job.start("people"), 35_000);
-    const { q, removed } = await qualifyCompany(aiCtx(tenant), getDigest(tenant), run?.interpretation ?? null, { name: p.name, website: p.website, what_they_do: p.whatTheyDo ?? undefined }, 3)
+    const { q, removed } = await qualifyCompany({ ...aiCtx(tenant), runId: p.searchRunId, prospectId: p.id }, getDigest(tenant), run?.interpretation ?? null, { name: p.name, website: p.website, what_they_do: p.whatTheyDo ?? undefined }, 3)
       .catch((err) => {
         refundAllowance(tenant.account, "deep_research"); // nothing delivered: don't count it
         throw err;
@@ -555,7 +605,7 @@ export function startManualProspect(tenant: CompanyTenant, input: { name: string
   const jobId = createJob(aiCtx(tenant), "prospect_research", DEEP_STEPS.slice(0, 1).concat(DEEP_STEPS.slice(2)));
   runInBackground(jobId, async (job) => {
     job.start("read");
-    const { q } = await qualifyCompany(aiCtx(tenant), getDigest(tenant), null, { name: input.name, website: input.website }, 2).catch((err) => {
+    const { q } = await qualifyCompany({ ...aiCtx(tenant), prospectId: id }, getDigest(tenant), null, { name: input.name, website: input.website }, 2).catch((err) => {
       refundAllowance(tenant.account, "preview");
       releaseCredit(tenant.account, { type: "prospect", id }, "Research failed");
       throw err;

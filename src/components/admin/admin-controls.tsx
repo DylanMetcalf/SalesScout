@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { useAction } from "@/components/prospects/shared";
-import { adjustCreditsAction, createInviteAction, createResetLinkAction, revokeInviteAction, setAccessUntilAction, setAccountAccessAction, setAccountPausedAction, setEnquiryStatusAction, setPlanAction } from "@/app/actions/admin";
+import { adjustCreditsAction, createInviteAction, createResetLinkAction, revokeInviteAction, setAccessUntilAction, setAccountAccessAction, setAccountPausedAction, setEnquiryStatusAction, setPlanAction, setSwitchAction } from "@/app/actions/admin";
 
 const toMillions = (tokens: number | null) => (tokens == null ? "" : String(tokens / 1_000_000));
 
@@ -210,6 +210,24 @@ export function PlanControl({ accountId, plan, source, credits, isAdmin }: { acc
         <Input aria-label="Add or remove credits" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="numeric" placeholder="+5" className="h-8 w-16 text-sm" />
         {amount && <Button type="submit" size="sm" loading={adjust.pending}>Apply</Button>}
       </form>
+    </div>
+  );
+}
+
+/** A kill switch with an optional reason shown to users. */
+export function SwitchControl({ id, label, detail, on, reason }: { id: string; label: string; detail: string; on: boolean; reason: string | null }) {
+  const set = useAction();
+  const [why, setWhy] = useState(reason ?? "");
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-border p-4 sm:flex-row sm:items-center">
+      <div className="flex-1">
+        <p className="font-medium">{label} {on && <span className="ml-1 rounded bg-weak-soft px-1.5 py-0.5 text-xs font-semibold text-weak">ON</span>}</p>
+        <p className="text-sm text-muted">{detail}</p>
+      </div>
+      {!on && <Input aria-label={`Reason for ${label}`} value={why} onChange={(e) => setWhy(e.target.value)} placeholder="Reason (shown to users)" className="h-9 sm:w-56" />}
+      <Button size="sm" variant={on ? "primary" : "danger"} loading={set.pending} onClick={() => set.run(() => setSwitchAction(id, !on, why), { success: on ? "Resumed" : "Paused" })}>
+        {on ? "Resume" : "Pause"}
+      </Button>
     </div>
   );
 }

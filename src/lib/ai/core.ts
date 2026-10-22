@@ -7,14 +7,17 @@ import { db, t } from "@/lib/db";
 import { decryptSecret } from "@/lib/security/secrets";
 import { newId } from "@/lib/ids";
 import { serverKeyAccess } from "@/lib/admin";
+import { DEFAULT_MODEL, modelFor } from "./models";
+import { estimateCost } from "./pricing";
+import { getSwitch } from "@/lib/settings";
 
-export const MODEL = process.env.SALES_SCOUT_MODEL || "claude-opus-5-5";
+export const MODEL = DEFAULT_MODEL;
 
 /** Server-side refusal fallback: if the model declines, the API retries on its default fallback. */
 const FALLBACK_BETA = "server-side-fallback-2026-07-01";
 
 /** Which tenant an AI call is made for. Used for usage tracking and scoped memory. */
-export type AiContext = { accountId: string; workspaceId: string; companyId: string | null };
+export type AiContext = { accountId: string; workspaceId: string; companyId: string | null; runId?: string | null; prospectId?: string | null };
 
 export class AiUnavailableError extends Error {
   constructor(message = "AI isn't connected. Paste an Anthropic API key in Settings, or set ANTHROPIC_API_KEY on the server.") {
@@ -56,6 +59,8 @@ export function aiConfigured(accountId: string): boolean {
 
 const clients = new Map<string, Anthropic>();
 function getClient(ctx: AiContext): Anthropic {
+  const pause = getSwitch("ai_paused");
+  if (pause.on) throw new AiUnavailableError(`AI research is paused by the administrator${pause.reason ? `: ${pause.reason}` : ""}. Nothing is being charged; please try again later.`);
   const resolved = resolveKey(ctx.accountId);
   if (!resolved) throw new AiUnavailableError(aiUnavailableReason(ctx.accountId));
   let client = clients.get(resolved.key);
@@ -89,8 +94,14 @@ function record(
   agent: string,
   purpose: string,
   started: number,
-  outcome: { status: "ok" | "error" | "refused"; usage?: Anthropic.Beta.BetaUsage; webSearches?: number; error?: string },
+  outcome: { status: "ok" | "error" | "refused"; usage?: Anthropic.Beta.BetaUsage; webSearches?: number; webFetches?: number; error?: string },
 ) {
+  const model = modelFor(agent);
+  const cacheRead = outcome.usage?.cache_read_input_tokens ?? 0;
+  const input = (outcome.usage?.input_tokens ?? 0) + cacheRead;
+  const output = outcome.usage?.output_tokens ?? 0;
+  const cost = estimateCost(model, { input, cacheRead, output, searches: outcome.webSearches ?? 0 });
+  // If usage can't be recorded, stop: paid work must never run unaccounted for.
   db.insert(t.aiInteractions)
     .values({
       id: newId("ai"),
@@ -99,11 +110,17 @@ function record(
       companyId: ctx.companyId,
       agent,
       purpose,
-      model: MODEL,
+      model,
       status: outcome.status,
-      inputTokens: (outcome.usage?.input_tokens ?? 0) + (outcome.usage?.cache_read_input_tokens ?? 0),
-      outputTokens: outcome.usage?.output_tokens ?? 0,
+      inputTokens: input,
+      cacheReadTokens: cacheRead,
+      outputTokens: output,
       webSearches: outcome.webSearches ?? 0,
+      webFetches: outcome.webFetches ?? 0,
+      runId: ctx.runId ?? null,
+      prospectId: ctx.prospectId ?? null,
+      costUsdMicros: cost?.micros ?? null,
+      pricingVersion: cost?.version ?? null,
       durationMs: Date.now() - started,
       error: outcome.error?.slice(0, 500) ?? null,
     })
@@ -134,7 +151,7 @@ export async function generate<S extends z.ZodType>({ ctx, agent, purpose, syste
   const started = Date.now();
   try {
     const res = await anthropic.beta.messages.parse({
-      model: MODEL,
+      model: modelFor(agent),
       max_tokens: 16000,
       betas: [FALLBACK_BETA],
       fallbacks: "default",
@@ -200,6 +217,7 @@ export async function research({
   const fetched = new Map<string, string>();
   const notes: string[] = [];
   let searches = 0;
+  let fetches = 0;
   const usage: Anthropic.Beta.BetaUsage = {
     input_tokens: 0,
     output_tokens: 0,
@@ -210,7 +228,7 @@ export async function research({
   try {
     for (let turn = 0; turn < 5; turn++) {
       const stream = anthropic.beta.messages.stream({
-        model: MODEL,
+        model: modelFor(agent),
         max_tokens: 32000,
         betas: [FALLBACK_BETA],
         fallbacks: "default",
@@ -225,10 +243,12 @@ export async function research({
       const res = await stream.finalMessage();
       usage.input_tokens += res.usage.input_tokens;
       usage.output_tokens += res.usage.output_tokens;
+      usage.cache_read_input_tokens = (usage.cache_read_input_tokens ?? 0) + (res.usage.cache_read_input_tokens ?? 0);
 
       for (const block of res.content) {
         if (block.type === "text") notes.push(block.text);
         else if (block.type === "server_tool_use" && block.name === "web_search") searches++;
+        else if (block.type === "server_tool_use" && block.name === "web_fetch") fetches++;
         else if (block.type === "web_search_tool_result" && Array.isArray(block.content)) {
           for (const r of block.content) {
             if (r.type === "web_search_result") sources.set(r.url, { url: r.url, title: r.title, pageAge: r.page_age ?? null });
@@ -242,19 +262,19 @@ export async function research({
       }
 
       if (res.stop_reason === "refusal") {
-        record(ctx, agent, purpose, started, { status: "refused", usage, webSearches: searches });
+        record(ctx, agent, purpose, started, { status: "refused", usage, webSearches: searches, webFetches: fetches });
         throw new AiFailedError("The AI declined this research request.");
       }
       if (res.stop_reason !== "pause_turn") break;
       // Server-side tool loop paused: send the turn back so it resumes where it left off.
       messages.push({ role: "assistant", content: res.content });
     }
-    record(ctx, agent, purpose, started, { status: "ok", usage, webSearches: searches });
+    record(ctx, agent, purpose, started, { status: "ok", usage, webSearches: searches, webFetches: fetches });
     return { notes: notes.join("\n").trim(), sources: [...sources.values()], fetched, searches };
   } catch (err) {
     if (err instanceof AiFailedError) throw err;
     const message = describeError(err);
-    record(ctx, agent, purpose, started, { status: "error", usage, webSearches: searches, error: message });
+    record(ctx, agent, purpose, started, { status: "error", usage, webSearches: searches, webFetches: fetches, error: message });
     throw new AiFailedError(message);
   }
 }
