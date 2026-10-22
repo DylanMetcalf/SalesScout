@@ -390,3 +390,25 @@
   text-underline-offset: 3px;
 }
 
+
+/* Print: one clean A4 document, no app chrome. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 16mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #18213a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .brief a {
+    text-decoration: none;
+  }
+  /* Fixed-position dialogs repeat on every printed page; briefs print from their own page instead. */
+  dialog {
+    display: none !important;
+  }
+}

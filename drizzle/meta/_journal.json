@@ -50,6 +50,20 @@
       "when": 1792619740497,
       "tag": "0006_account_access",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1792645769070,
+      "tag": "0007_commercial_and_discovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792645770060,
+      "tag": "0008_run_candidate_guards",
+      "breakpoints": true
     }
   ]
 }

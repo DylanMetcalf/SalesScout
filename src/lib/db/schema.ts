@@ -91,6 +91,15 @@ export const accounts = sqliteTable("accounts", {
   suspendedAt: integer("suspended_at", { mode: "timestamp_ms" }),
   /** Paid-up-to date. After it, sign-in stops working until an administrator extends it. Null = no end. */
   accessUntil: integer("access_until", { mode: "timestamp_ms" }),
+  /** Plan id from src/lib/billing/plans.ts. "manual" source = arranged by an administrator. */
+  plan: text("plan").notNull().default("free"),
+  planSource: text("plan_source", { enum: ["none", "paystack", "manual"] }).notNull().default("none"),
+  subscriptionStatus: text("subscription_status", { enum: ["none", "processing", "active", "past_due", "canceled", "expired"] }).notNull().default("none"),
+  billingCustomerCode: text("billing_customer_code"),
+  billingSubscriptionCode: text("billing_subscription_code"),
+  billingEmailToken: text("billing_email_token"),
+  currentPeriodEnd: integer("current_period_end", { mode: "timestamp_ms" }),
+  cancelAtPeriodEnd: integer("cancel_at_period_end", { mode: "boolean" }).notNull().default(false),
   createdAt: createdAt(),
 });
 
@@ -104,6 +113,14 @@ export const users = sqliteTable(
     passwordHash: text("password_hash").notNull(),
     lastWorkspaceId: text("last_workspace_id"),
     lastCompanyId: text("last_company_id"),
+    emailVerifiedAt: integer("email_verified_at", { mode: "timestamp_ms" }),
+    phone: text("phone"),
+    phoneVerifiedAt: integer("phone_verified_at", { mode: "timestamp_ms" }),
+    /** Email me a brief when I keep a prospect. */
+    notifyOnKeep: integer("notify_on_keep", { mode: "boolean" }).notNull().default(true),
+    /** Sender profile applied to outreach drafts. */
+    jobTitle: text("job_title"),
+    signature: text("signature"),
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex("users_email_idx").on(t.email)],
@@ -331,6 +348,9 @@ export const searchRuns = sqliteTable(
       .notNull()
       .default("interpreting"),
     requested: integer("requested").notNull().default(10),
+    /** verified = fewer prospects, each with a named, sourced contact; broad = more prospects. */
+    contactMode: text("contact_mode", { enum: ["verified", "broad"] }).notNull().default("broad"),
+    batches: integer("batches").notNull().default(0),
     discovered: integer("discovered").notNull().default(0),
     duplicates: integer("duplicates").notNull().default(0),
     relevant: integer("relevant").notNull().default(0),
@@ -381,6 +401,8 @@ export const prospects = sqliteTable(
     nextFollowUpAt: integer("next_follow_up_at", { mode: "timestamp_ms" }),
     origin: text("origin", { enum: ["web_research", "manual", "similar", "demo", "import"] }).notNull(),
     rejectionReason: text("rejection_reason"),
+    /** "Skip for now": hidden from the current batch, no credit used, can be kept later. */
+    skippedAt: integer("skipped_at", { mode: "timestamp_ms" }),
     isExample: integer("is_example", { mode: "boolean" }).notNull().default(false),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -425,6 +447,8 @@ export const contacts = sqliteTable(
     sourceUrl: text("source_url"),
     /** confirmed = named person found in a source; suggested = a role worth finding. */
     knowledge: text("knowledge", { enum: ["confirmed", "inferred", "suggested", "unknown"] }).notNull(),
+    /** Per-field verification evidence (src/lib/verification.ts). Never a single "verified" flag. */
+    checks: json<import("@/lib/verification").ContactChecks>("checks"),
     origin: text("origin", { enum: ["web_research", "manual", "demo"] }).notNull(),
     createdAt: createdAt(),
   },
@@ -670,9 +694,102 @@ export const invites = sqliteTable("invites", {
   email: text("email"),
   /** Days of access granted when the code is used. Null = no end date. */
   accessDays: integer("access_days"),
+  /** Plan granted to the account the code creates (manual billing). */
+  plan: text("plan"),
   maxUses: integer("max_uses").notNull().default(1),
   uses: integer("uses").notNull().default(0),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
   revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+  createdAt: createdAt(),
+});
+
+// Discovery queue -------------------------------------------------------------
+
+/** Companies found by a search but not yet researched. Researched five at a time. */
+export const runCandidates = sqliteTable(
+  "run_candidates",
+  {
+    id: id(),
+    workspaceId: text("workspace_id").notNull(),
+    companyId: text("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    runId: text("run_id").notNull(),
+    name: text("name").notNull(),
+    website: text("website"),
+    domain: text("domain"),
+    sourceUrls: json<string[]>("source_urls").notNull().default([]),
+    status: text("status", { enum: ["queued", "previewed", "discarded"] }).notNull().default("queued"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("run_candidates_run_idx").on(t.runId, t.status)],
+);
+
+// Billing & usage -------------------------------------------------------------
+
+/**
+ * Append-only credit ledger: the only source of truth for prospect-unlock credits.
+ * Balance = sum(amount). idempotencyKey makes every grant/charge happen at most once.
+ */
+export const creditLedger = sqliteTable(
+  "credit_ledger",
+  {
+    id: id(),
+    accountId: text("account_id").notNull(),
+    bucket: text("bucket", { enum: ["free", "plan", "bonus"] }).notNull(),
+    kind: text("kind", { enum: ["grant", "consume", "release", "adjust", "expire"] }).notNull(),
+    amount: integer("amount").notNull(),
+    /** Plan credits belong to a billing period ("2026-10"); free/bonus credits don't expire. */
+    period: text("period"),
+    reason: text("reason").notNull(),
+    refType: text("ref_type"),
+    refId: text("ref_id"),
+    idempotencyKey: text("idempotency_key").notNull().unique(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("credit_ledger_account_idx").on(t.accountId, t.bucket)],
+);
+
+/** Server-side counters for plan limits (searches per day, previews per month, ...). */
+export const usageCounters = sqliteTable(
+  "usage_counters",
+  {
+    accountId: text("account_id").notNull(),
+    metric: text("metric").notNull(),
+    period: text("period").notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (t) => [uniqueIndex("usage_counters_key").on(t.accountId, t.metric, t.period)],
+);
+
+/** Payment-provider webhooks already processed (duplicate deliveries are ignored). */
+export const webhookEvents = sqliteTable("webhook_events", {
+  id: text("id").primaryKey(),
+  provider: text("provider").notNull(),
+  type: text("type").notNull(),
+  accountId: text("account_id"),
+  createdAt: createdAt(),
+});
+
+/** Outgoing operational emails. idempotencyKey stops retries sending twice. */
+export const notifications = sqliteTable("notifications", {
+  id: id(),
+  idempotencyKey: text("idempotency_key").notNull().unique(),
+  accountId: text("account_id").notNull(),
+  userId: text("user_id"),
+  kind: text("kind").notNull(),
+  status: text("status", { enum: ["sending", "sent", "failed", "skipped"] }).notNull(),
+  error: text("error"),
+  createdAt: createdAt(),
+});
+
+/** One-time codes for email/phone verification. Only a hash is stored. */
+export const verificationCodes = sqliteTable("verification_codes", {
+  id: id(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  channel: text("channel", { enum: ["email", "phone"] }).notNull(),
+  target: text("target").notNull(),
+  codeHash: text("code_hash"),
+  attempts: integer("attempts").notNull().default(0),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  consumedAt: integer("consumed_at", { mode: "timestamp_ms" }),
   createdAt: createdAt(),
 });

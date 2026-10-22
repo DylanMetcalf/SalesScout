@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Printer } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FileText, Printer } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { salesBriefAction } from "@/app/actions/prospects";
@@ -42,7 +42,12 @@ export function BriefDialog({ open, onClose, prospectId, name }: { open: boolean
       size="lg"
       title={`Sales brief — ${name}`}
       description="Assembled directly from the research. Read it in under a minute before you make contact."
-      footer={<Button icon={<Printer className="size-4" />} onClick={() => window.print()}>Print</Button>}
+      footer={
+        <>
+          <ButtonLink href={`/reports/brief/${prospectId}`} target="_blank" variant="secondary" icon={<FileText className="size-4" />}>Open full brief</ButtonLink>
+          <ButtonLink href={`/reports/brief/${prospectId}?print=1`} target="_blank" variant="primary" icon={<Printer className="size-4" />}>Print or save as PDF</ButtonLink>
+        </>
+      }
     >
       {error && <p className="text-weak">{error}</p>}
       {!brief && !error && (

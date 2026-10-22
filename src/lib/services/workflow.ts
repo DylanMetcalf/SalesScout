@@ -15,7 +15,7 @@ export function getProspect(tenant: CompanyTenant, id: string) {
   return db.select().from(t.prospects).where(inCompany(t.prospects, tenant, eq(t.prospects.id, id))).get();
 }
 
-function mustGetProspect(tenant: CompanyTenant, id: string) {
+export function mustGetProspect(tenant: CompanyTenant, id: string) {
   const p = getProspect(tenant, id);
   if (!p) throw new Error("Prospect not found.");
   return p;
