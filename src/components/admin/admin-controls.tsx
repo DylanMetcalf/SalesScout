@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { useAction } from "@/components/prospects/shared";
-import { createInviteAction, createResetLinkAction, revokeInviteAction, setAccessUntilAction, setAccountAccessAction, setAccountPausedAction, setEnquiryStatusAction } from "@/app/actions/admin";
+import { adjustCreditsAction, createInviteAction, createResetLinkAction, revokeInviteAction, setAccessUntilAction, setAccountAccessAction, setAccountPausedAction, setEnquiryStatusAction, setPlanAction } from "@/app/actions/admin";
 
 const toMillions = (tokens: number | null) => (tokens == null ? "" : String(tokens / 1_000_000));
 
@@ -88,6 +88,16 @@ export function InviteCreator() {
       <Field label="Who is it for?">{(p) => <Input {...p} name="label" placeholder="e.g. Acme Engineering" required maxLength={80} />}</Field>
       <Field label="Their email" hint="Recommended: only this email can use the code." optional>{(p) => <Input {...p} name="email" type="email" placeholder="name@company.com" />}</Field>
       <Field label="Access length (days)" hint="From first sign-in, e.g. 30 for a month. Blank = until you pause it." optional>{(p) => <Input {...p} name="accessDays" type="number" min={1} max={3650} defaultValue={30} />}</Field>
+      <Field label="Plan" hint="What they've paid you for. Sets their monthly unlocks and limits.">
+        {(p) => (
+          <Select {...p} name="plan" defaultValue="">
+            <option value="">Free (5 unlocks, once)</option>
+            <option value="scout">Scout</option>
+            <option value="growth">Growth</option>
+            <option value="scale">Scale</option>
+          </Select>
+        )}
+      </Field>
       <Field label="AI usage">
         {(p) => (
           <Select {...p} name="aiAccess" value={aiAccess} onChange={(e) => setAccess(e.target.value)}>
@@ -168,6 +178,38 @@ export function AccessControl({ accountId, paused, until, isAdmin }: { accountId
           {paused ? "Resume" : "Pause"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+/** Manual plan (billed outside Paystack) and bonus credits. */
+export function PlanControl({ accountId, plan, source, credits, isAdmin }: { accountId: string; plan: string; source: string; credits: number; isAdmin: boolean }) {
+  const set = useAction();
+  const adjust = useAction();
+  const [amount, setAmount] = useState("");
+  if (isAdmin) return <span className="text-sm text-muted">Unlimited</span>;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <Select aria-label="Plan" value={plan} disabled={set.pending || source === "paystack"} onChange={(e) => set.run(() => setPlanAction(accountId, e.target.value), { success: "Plan updated" })} className="h-9 w-auto">
+          <option value="free">Free</option>
+          <option value="scout">Scout</option>
+          <option value="growth">Growth</option>
+          <option value="scale">Scale</option>
+        </Select>
+        <span className="text-xs text-muted">{source === "paystack" ? "Paystack" : source === "manual" ? "Manual" : ""}</span>
+      </div>
+      <form
+        className="flex items-center gap-1.5"
+        onSubmit={(e) => {
+          e.preventDefault();
+          adjust.run(() => adjustCreditsAction(accountId, Number(amount), "Manual adjustment"), { success: "Credits adjusted", then: () => setAmount("") });
+        }}
+      >
+        <span className="text-xs text-muted tabular-nums">{credits} left</span>
+        <Input aria-label="Add or remove credits" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="numeric" placeholder="+5" className="h-8 w-16 text-sm" />
+        {amount && <Button type="submit" size="sm" loading={adjust.pending}>Apply</Button>}
+      </form>
     </div>
   );
 }

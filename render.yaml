@@ -46,3 +46,30 @@ services:
       # Resend API key: emails each website enquiry to ENQUIRY_EMAIL (default: site contact email).
       - key: RESEND_API_KEY
         sync: false
+      # --- Billing (Paystack). Plans go on sale online once these are set. ---
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PLAN_SCOUT
+        sync: false
+      - key: PAYSTACK_PLAN_GROWTH
+        sync: false
+      - key: PAYSTACK_PLAN_SCALE
+        sync: false
+      - key: PLAN_PRICE_ZAR_SCOUT
+        sync: false
+      - key: PLAN_PRICE_ZAR_GROWTH
+        sync: false
+      - key: PLAN_PRICE_ZAR_SCALE
+        sync: false
+      # --- Free-account protection. "true" = required before the 5 free unlocks. ---
+      - key: REQUIRE_EMAIL_VERIFICATION
+        sync: false
+      - key: REQUIRE_PHONE_VERIFICATION
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_VERIFY_SERVICE_SID
+        sync: false
+

@@ -8,12 +8,12 @@ import { normaliseUrl } from "@/lib/security/url";
 import { audit } from "@/lib/audit";
 import { createDemoCompany } from "./demo";
 
-export async function createAccountWithUser(input: { name: string; email: string; password: string; aiAccess?: "server" | "own_key"; aiMonthlyTokenLimit?: number | null; accessUntil?: Date | null }) {
+export async function createAccountWithUser(input: { name: string; email: string; password: string; aiAccess?: "server" | "own_key"; aiMonthlyTokenLimit?: number | null; accessUntil?: Date | null; plan?: string; planSource?: "manual" }) {
   const accountId = newId("acc");
   const userId = newId("usr");
   const passwordHash = await hashPassword(input.password);
   db.transaction((tx) => {
-    tx.insert(t.accounts).values({ id: accountId, name: `${input.name.split(" ")[0]}'s account`, aiAccess: input.aiAccess ?? "own_key", aiMonthlyTokenLimit: input.aiMonthlyTokenLimit ?? null, accessUntil: input.accessUntil ?? null }).run();
+    tx.insert(t.accounts).values({ id: accountId, name: `${input.name.split(" ")[0]}'s account`, aiAccess: input.aiAccess ?? "own_key", aiMonthlyTokenLimit: input.aiMonthlyTokenLimit ?? null, accessUntil: input.accessUntil ?? null, plan: input.plan ?? "free", planSource: input.planSource ?? "none" }).run();
     tx.insert(t.users).values({ id: userId, accountId, email: input.email, name: input.name, passwordHash }).run();
   });
   return { accountId, userId };

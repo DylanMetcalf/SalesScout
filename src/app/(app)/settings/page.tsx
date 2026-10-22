@@ -11,6 +11,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { WorkspaceSettings } from "@/components/settings/workspace-settings";
 import { PasswordForm } from "@/components/settings/password-form";
+import { balance, ensureGrants, entitlement } from "@/lib/billing/credits";
+import { freeEligible } from "@/lib/billing/eligibility";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { formatDate } from "@/lib/format";
 
@@ -37,6 +39,9 @@ export default async function Settings() {
   const resolved = resolveKey(tenant.account.id);
   const ai = resolved !== null;
   const admin = isAdminAccount(tenant.account.id);
+  ensureGrants(tenant.account, { freeEligible: freeEligible(tenant.account.id) });
+  const planEnt = entitlement(tenant.account);
+  const planBal = balance(tenant.account);
 
   return (
     <Page width="narrow">
@@ -47,6 +52,14 @@ export default async function Settings() {
           <div className="px-5 pb-5">
             <WorkspaceSettings initial={{ name: ws.name, description: ws.description ?? "", context: ws.context ?? "" }} canEdit={tenant.role !== "member"} />
           </div>
+        </Card>
+
+        <Card id="plan">
+          <CardHeader
+            title={`Plan: ${planEnt.unlimited ? "Administrator" : planEnt.plan.name}`}
+            description={planEnt.unlimited ? "No limits." : `${planBal.total} prospect unlock${planBal.total === 1 ? "" : "s"} left.`}
+            action={<ButtonLink href="/settings/billing" size="sm" variant="secondary">Plan and usage</ButtonLink>}
+          />
         </Card>
 
         <Card id="profile">

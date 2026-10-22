@@ -26,6 +26,7 @@ export type InviteInput = {
   expiresAt: Date | null;
   email: string | null;
   accessDays: number | null;
+  plan: string | null;
 };
 
 export function createInvite(input: InviteInput) {
@@ -49,6 +50,7 @@ export function inviteGrant(invite: typeof t.invites.$inferSelect) {
     aiAccess: invite.aiAccess,
     aiMonthlyTokenLimit: invite.aiMonthlyTokenLimit,
     accessUntil: invite.accessDays ? new Date(Date.now() + invite.accessDays * 86_400_000) : null,
+    ...(invite.plan && { plan: invite.plan, planSource: "manual" as const }),
   };
 }
 

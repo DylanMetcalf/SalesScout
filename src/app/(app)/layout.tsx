@@ -3,6 +3,7 @@ import { db, t } from "@/lib/db";
 import { requireTenant } from "@/lib/tenant";
 import { aiConfigured } from "@/lib/ai/core";
 import { isAdminAccount } from "@/lib/admin";
+import { freeEligible, verificationPolicy } from "@/lib/billing/eligibility";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileTabBar, MobileTopBar } from "@/components/shell/mobile-nav";
 import { CommandPalette } from "@/components/shell/command-palette";
@@ -30,6 +31,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     companies: tenant.companies.map((co) => ({ id: co.id, name: co.name, isDemo: co.isDemo })),
   };
   const user = { name: tenant.user.name, email: tenant.user.email };
+  const policy = verificationPolicy();
+  const needsVerify = (policy.email || policy.phone) && !isAdminAccount(tenant.account.id) && !freeEligible(tenant.account.id);
 
   return (
     <div className="flex min-h-dvh">
@@ -39,6 +42,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <Sidebar switcher={switcher} user={user} counts={{ followUpsDue, toReview }} aiConnected={aiConfigured(tenant.account.id)} admin={isAdminAccount(tenant.account.id)} />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileTopBar switcher={switcher} user={user} />
+        {needsVerify && (
+          <section aria-label="Account verification" className="border-b border-insight-border bg-insight px-5 py-2 text-center text-sm">
+            Verify your account to receive your 5 free prospect unlocks.{" "}
+            <a href="/verify" className="font-medium text-accent-text underline underline-offset-2">Verify now</a>
+          </section>
+        )}
         {c?.isDemo && (
           <section aria-label="Demo notice" className="theme-ink sidebar-brand border-b border-border px-5 py-2 text-center text-sm text-muted">
             You&apos;re exploring <span className="font-medium text-signal">example data</span>. Companies and people here are fictional.{" "}

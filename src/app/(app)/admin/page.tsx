@@ -6,7 +6,13 @@ import { MODEL } from "@/lib/ai/core";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AccessControl, AccountAccess, EnquiryStatus, InviteCreator, ResetLink, RevokeInvite } from "@/components/admin/admin-controls";
+import { AccessControl, AccountAccess, EnquiryStatus, InviteCreator, PlanControl, ResetLink, RevokeInvite } from "@/components/admin/admin-controls";
+import { balance } from "@/lib/billing/credits";
+import { paystackConfigured } from "@/lib/billing/paystack";
+import { PAID_PLANS, planPrice } from "@/lib/billing/plans";
+import { verificationPolicy } from "@/lib/billing/eligibility";
+import { phoneVerificationAvailable } from "@/lib/services/verify";
+import { unitEconomics } from "@/lib/billing/economics";
 import { formatDate } from "@/lib/format";
 import { processInfo, storage } from "@/lib/system";
 import { bookingUrl } from "@/lib/booking";
@@ -48,6 +54,7 @@ export default async function Admin() {
     usage: usageByAccount.get(a.id) ?? { calls: 0, tokens: 0, searches: 0 },
     prospects: prospectsByAccount.get(a.id) ?? 0,
     admin: isAdminAccount(a.id),
+    credits: balance(a).total,
   }));
   const totals = [...usageByAccount.values()].reduce((s, u) => ({ calls: s.calls + u.calls, tokens: s.tokens + u.tokens, searches: s.searches + u.searches }), { calls: 0, tokens: 0, searches: 0 });
   const errors = db
@@ -61,6 +68,7 @@ export default async function Admin() {
   const invites = db.select().from(t.invites).orderBy(desc(t.invites.createdAt)).limit(30).all();
   const enquiries = db.select().from(t.enquiries).orderBy(desc(t.enquiries.createdAt)).limit(50).all();
   const ownKeys = db.select({ n: count() }).from(t.accounts).where(isNotNull(t.accounts.anthropicKeyEnc)).get()!.n;
+  const econ = unitEconomics(accounts.filter((a) => !a.admin).map((a) => ({ plan: a.plan, paid: a.plan !== "free" && (a.planSource === "manual" || ["active", "past_due"].includes(a.subscriptionStatus)), price: a.plan !== "free" ? planPrice(a.plan as (typeof PAID_PLANS)[number]) : null })));
   const accountName = (id: string) => accounts.find((a) => a.id === id)?.name ?? "Deleted account";
 
   const disk = storage();
@@ -78,6 +86,8 @@ export default async function Admin() {
     { ok: process.env.ALLOW_SIGNUPS === "false", label: "Sign-ups", detail: process.env.ALLOW_SIGNUPS === "false" ? "Invite only" : "Open to anyone (new accounts must bring their own key)" },
     { ok: Boolean(bookingUrl()), label: "Discovery-call booking", detail: bookingUrl() ? `Calendar shown on Contact: ${bookingUrl()}` : "Not set: add BOOKING_URL (Calendly, Cal.com or Google appointment page) to show a calendar" },
     { ok: enquiryEmailsEnabled(), label: "Enquiry emails", detail: enquiryEmailsEnabled() ? `New enquiries are emailed to ${process.env.ENQUIRY_EMAIL || "the site contact email"}` : "Not set: add RESEND_API_KEY to get an email for each enquiry" },
+    { ok: paystackConfigured() && PAID_PLANS.some((p) => process.env[`PAYSTACK_PLAN_${p.toUpperCase()}`]), label: "Online payments (Paystack)", detail: paystackConfigured() ? `Plans on sale: ${PAID_PLANS.filter((p) => process.env[`PAYSTACK_PLAN_${p.toUpperCase()}`]).join(", ") || "none (add PAYSTACK_PLAN_SCOUT/GROWTH/SCALE)"}` : "Not set: add PAYSTACK_SECRET_KEY and plan codes. Until then, use manual plans below." },
+    { ok: true, label: "Sign-up verification", detail: [verificationPolicy().email ? "Email required" : "Email optional", verificationPolicy().phone ? (phoneVerificationAvailable() ? "Phone required" : "Phone required but Twilio isn't set up") : "Phone optional"].join(" · ") },
     { ok: Boolean(process.env.APP_ENCRYPTION_KEY), label: "Encryption key", detail: process.env.APP_ENCRYPTION_KEY ? "Set from environment" : "Generated on disk" },
   ];
   const stats = [
@@ -125,7 +135,7 @@ export default async function Admin() {
             description={`Who can use your AI key. "Own key" accounts never touch your bill. ${ownKeys} account${ownKeys === 1 ? "" : "s"} saved their own key.`}
           />
           <div className="overflow-x-auto border-t border-border">
-            <table className="w-full min-w-[1040px] text-left text-sm">
+            <table className="w-full min-w-[1240px] text-left text-sm">
               <thead className="bg-surface-2 text-xs text-muted">
                 <tr>
                   <th scope="col" className="px-5 py-2.5 font-medium">Account</th>
@@ -134,6 +144,7 @@ export default async function Admin() {
                   <th scope="col" className="px-3 py-2.5 font-medium">AI this month</th>
                   <th scope="col" className="px-3 py-2.5 font-medium">Key</th>
                   <th scope="col" className="px-3 py-2.5 font-medium">Sign-in access</th>
+                  <th scope="col" className="px-3 py-2.5 font-medium">Plan and credits</th>
                   <th scope="col" className="px-5 py-2.5 font-medium">AI access</th>
                 </tr>
               </thead>
@@ -157,6 +168,7 @@ export default async function Admin() {
                       <span className="block text-xs text-subtle">{a.usage.calls} requests · {a.usage.searches} searches</span>
                     </td>
                     <td className="px-3 py-3">{a.anthropicKeyHint ? <span className="inline-flex items-center gap-1 font-mono text-xs"><KeyRound className="size-3.5 text-strong" aria-hidden />…{a.anthropicKeyHint}</span> : <span className="text-subtle">None</span>}</td>
+                    <td className="px-3 py-3"><PlanControl accountId={a.id} plan={a.plan} source={a.planSource} credits={a.credits} isAdmin={a.admin} /></td>
                     <td className="px-3 py-3"><AccessControl accountId={a.id} paused={Boolean(a.suspendedAt)} until={a.accessUntil ? a.accessUntil.toISOString().slice(0, 10) : ""} isAdmin={a.admin} /></td>
                     <td className="px-5 py-3"><AccountAccess accountId={a.id} access={a.aiAccess} limit={a.aiMonthlyTokenLimit} isAdmin={a.admin} /></td>
                   </tr>
@@ -218,6 +230,19 @@ export default async function Admin() {
               ))}
             </ul>
           )}
+        </Card>
+
+        <Card>
+          <CardHeader title="Unit economics (last 30 days)" description="From recorded usage. Money figures appear only once you set real prices (see the note below); nothing here is guessed." />
+          <dl className="grid grid-cols-2 gap-px border-t border-border bg-border sm:grid-cols-4">
+            {econ.rows.map((r) => (
+              <div key={r.label} className="bg-surface px-5 py-3.5">
+                <dt className="text-xs text-muted">{r.label}</dt>
+                <dd className="mt-1 font-semibold tabular-nums">{r.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="border-t border-border px-5 py-3 text-xs text-subtle">{econ.note}</p>
         </Card>
 
         <Card>

@@ -57,6 +57,18 @@ Once it's online, the key set on the server is **yours**: administrators (the em
 
 **Monitoring:** `.github/workflows/uptime.yml` checks the live site every 10 minutes and opens a GitHub issue (which emails you) if it's down, closing it when it's back.
 
+**Selling subscriptions (Paystack):**
+1. Create a Paystack business account (paystack.com) and complete its verification.
+2. In Paystack → Products → Plans, create monthly plans (Scout, Growth, Scale) in ZAR. Copy each plan code (`PLN_…`).
+3. In Paystack → Settings → API Keys & Webhooks, set the webhook URL to `https://www.salesscout.co.za/api/billing/paystack` and copy the secret key.
+4. In Render → Environment set `PAYSTACK_SECRET_KEY`, `PAYSTACK_PLAN_SCOUT/GROWTH/SCALE` and `PLAN_PRICE_ZAR_SCOUT/GROWTH/SCALE` (the same prices as the Paystack plans).
+5. Test with Paystack's test keys first (`sk_test_…` and a test card), then switch to live keys.
+Until then, put clients on plans manually in **Admin → Accounts → Plan** (credits and limits apply the same way).
+
+**Plans and limits** live in `src/lib/billing/plans.ts`. Free accounts get 5 unlocks once (one per mailbox; Gmail aliases share it). Keeping a prospect uses 1 unlock; previews, skips and rejections don't. Searches, previews and deep research have monthly/daily limits per plan.
+
+**Free-account protection:** set `REQUIRE_EMAIL_VERIFICATION=true` (needs a verified sending domain in Resend) and/or `REQUIRE_PHONE_VERIFICATION=true` with Twilio Verify credentials. The free unlocks then arrive only after verification, and one phone number can't claim them twice.
+
 **Locked out?** In Admin, each user has a **Reset link** button: send them the one-time link. If you're the one locked out, open the service's **Shell** tab in Render and run `npm run reset-link -- you@example.com`.
 
 From then on, every push to the connected branch redeploys automatically. Your data on the disk is kept.

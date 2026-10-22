@@ -17,5 +17,5 @@ await page.getByLabel("Work email").fill("demo@salesscout.app");
 await page.getByLabel("Password").fill("salesscout-demo");
 await page.getByRole("button", { name: "Sign in" }).click();
 await page.waitForURL(/\/home/);
-for (const p of ["/home", "/discover", "/prospects", "/pipeline", "/follow-ups", "/company", "/settings", "/admin"]) await scan(p);
+for (const p of ["/home", "/discover", "/prospects", "/pipeline", "/follow-ups", "/company", "/settings", "/settings/billing", "/verify", "/admin"]) await scan(p);
 await b.close();

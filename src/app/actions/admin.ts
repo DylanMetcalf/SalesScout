@@ -7,6 +7,8 @@ import { db, t } from "@/lib/db";
 import { assertAdmin, isAdminAccount } from "@/lib/admin";
 import { createInvite } from "@/lib/services/invites";
 import { createResetToken } from "@/lib/services/password-reset";
+import { adjustCredits } from "@/lib/billing/credits";
+import { PLANS } from "@/lib/billing/plans";
 import { attempt } from "./result";
 
 function check<S extends z.ZodType>(schema: S, input: unknown): z.infer<S> {
@@ -44,6 +46,7 @@ const InviteSchema = z.object({
   expiresInDays: z.union([z.literal(""), z.coerce.number().int().min(1).max(365)]),
   email: z.union([z.literal(""), z.email("That email doesn't look right")]).transform((e) => (e ? e.toLowerCase() : null)),
   accessDays: z.union([z.literal(""), z.coerce.number().int().min(1).max(3650)]).transform((d) => (d === "" ? null : d)),
+  plan: z.union([z.literal(""), z.enum(["scout", "growth", "scale"])]).optional().transform((p) => p || null),
 });
 
 export async function createInviteAction(input: Record<string, string>) {
@@ -58,6 +61,7 @@ export async function createInviteAction(input: Record<string, string>) {
       expiresAt: v.expiresInDays === "" ? null : new Date(Date.now() + v.expiresInDays * 86_400_000),
       email: v.email,
       accessDays: v.accessDays,
+      plan: v.plan ?? null,
     });
     revalidatePath("/admin");
     return code;
@@ -111,6 +115,29 @@ export async function setAccessUntilAction(accountId: string, until: string) {
     await assertAdmin();
     const date = until ? new Date(`${check(z.iso.date("Pick a date"), until)}T23:59:59`) : null;
     db.update(t.accounts).set({ accessUntil: date }).where(eq(t.accounts.id, accountId)).run();
+    revalidatePath("/admin");
+  });
+}
+
+/** Manual billing: put an account on a plan you've arranged with them (billed outside Paystack). */
+export async function setPlanAction(accountId: string, plan: string) {
+  return attempt(async () => {
+    await assertAdmin();
+    const id = check(z.enum(Object.keys(PLANS) as [string, ...string[]]), plan);
+    const acc = db.select().from(t.accounts).where(eq(t.accounts.id, accountId)).get();
+    if (!acc) throw new Error("That account no longer exists.");
+    if (acc.planSource === "paystack" && ["active", "past_due"].includes(acc.subscriptionStatus)) throw new Error("This account pays through Paystack. Change its plan there, or cancel the subscription first.");
+    db.update(t.accounts).set({ plan: id, planSource: id === "free" ? "none" : "manual" }).where(eq(t.accounts.id, accountId)).run();
+    revalidatePath("/admin");
+  });
+}
+
+/** Bonus or corrective credits (negative to remove). Recorded in the ledger with your reason. */
+export async function adjustCreditsAction(accountId: string, amount: number, reason: string) {
+  return attempt(async () => {
+    const admin = await assertAdmin();
+    const n = check(z.number().int().min(-500).max(500).refine((x) => x !== 0, "Enter a number other than 0"), amount);
+    adjustCredits(accountId, n, `${reason.trim().slice(0, 200) || "Adjustment"} (by ${admin.email})`);
     revalidatePath("/admin");
   });
 }
