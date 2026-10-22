@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { emailState, phoneState, type FieldState } from "@/lib/verification";
+import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Mail, Phone, Plus, Trash2, UserCheck, UserRound } from "lucide-react";
 import { Button, IconButton } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -41,8 +43,18 @@ export function People({ prospectId, contacts, isExample, onDraft }: { prospectI
                   {!c.name && <p className="text-sm text-subtle">A role worth finding — no named person confirmed in the sources.</p>}
                   <p className="mt-1 text-[14.5px] text-text/85">{c.relevance}</p>
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                    {c.email && <a href={`mailto:${c.email}`} className="inline-flex items-center gap-1.5 text-accent-text hover:underline"><Mail className="size-3.5" />{c.email}</a>}
-                    {c.phone && <a href={`tel:${c.phone}`} className="inline-flex items-center gap-1.5 text-accent-text hover:underline"><Phone className="size-3.5" />{c.phone}</a>}
+                    {c.email && (
+                      <span className="inline-flex flex-wrap items-center gap-1.5">
+                        <a href={`mailto:${c.email}`} className="inline-flex items-center gap-1.5 text-accent-text hover:underline"><Mail className="size-3.5" />{c.email}</a>
+                        <FieldTag state={c.origin === "manual" ? MANUAL : emailState(c.checks, true)} />
+                      </span>
+                    )}
+                    {c.phone && (
+                      <span className="inline-flex flex-wrap items-center gap-1.5">
+                        <a href={`tel:${c.phone}`} className="inline-flex items-center gap-1.5 text-accent-text hover:underline"><Phone className="size-3.5" />{c.phone}</a>
+                        <FieldTag state={c.origin === "manual" ? MANUAL : phoneState(c.checks, true)} />
+                      </span>
+                    )}
                     {c.profileUrl && <a href={c.profileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-accent-text hover:underline"><ExternalLink className="size-3.5" />Professional profile</a>}
                     {c.sourceUrl && !isExample && <a href={c.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-muted hover:text-text"><ExternalLink className="size-3.5" />Where we found them</a>}
                     {c.sourceUrl && isExample && <span className="text-subtle">Found on: {c.sourceUrl} (example)</span>}
@@ -92,5 +104,17 @@ function AddContact({ open, onClose, prospectId }: { open: boolean; onClose: () 
         <Field label="Professional profile" optional>{(p) => <Input {...p} value={f.profileUrl} onChange={set("profileUrl")} placeholder="https://" />}</Field>
       </div>
     </Dialog>
+  );
+}
+
+const MANUAL: FieldState = { label: "Added by you", tone: "neutral", detail: "Entered manually; not checked by Sales Scout." };
+
+/** One field's verification label. Hover/focus explains exactly what was checked. */
+function FieldTag({ state }: { state: FieldState | null }) {
+  if (!state) return null;
+  return (
+    <Badge tone={state.tone} title={state.detail} className="h-5 px-2 text-[11px]">
+      {state.label}
+    </Badge>
   );
 }

@@ -36,4 +36,5 @@ export type ContactFull = {
   sourceUrl: string | null;
   knowledge: string;
   origin: string;
+  checks?: import("@/lib/verification").ContactChecks | null;
 };

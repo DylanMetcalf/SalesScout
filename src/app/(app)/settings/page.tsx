@@ -11,6 +11,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { WorkspaceSettings } from "@/components/settings/workspace-settings";
 import { PasswordForm } from "@/components/settings/password-form";
+import { ProfileForm } from "@/components/settings/profile-form";
 import { formatDate } from "@/lib/format";
 
 export const metadata = { title: "Settings" };
@@ -45,6 +46,13 @@ export default async function Settings() {
           <CardHeader title="Workspace" description="Workspace context is shared with Sales Scout for every company in this workspace." />
           <div className="px-5 pb-5">
             <WorkspaceSettings initial={{ name: ws.name, description: ws.description ?? "", context: ws.context ?? "" }} canEdit={tenant.role !== "member"} />
+          </div>
+        </Card>
+
+        <Card id="profile">
+          <CardHeader title="Sender profile and emails" description="How your outreach drafts sign off, and what Sales Scout emails you." />
+          <div className="px-5 pb-5">
+            <ProfileForm initial={{ jobTitle: tenant.user.jobTitle ?? "", signature: tenant.user.signature ?? "", notifyOnKeep: tenant.user.notifyOnKeep }} />
           </div>
         </Card>
 

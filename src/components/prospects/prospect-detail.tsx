@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { CompanyLogo } from "@/components/ui/company-logo";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, CalendarCheck, Check, CircleHelp, Download, ExternalLink, FileText, Layers, MoreHorizontal, Send, Telescope, CircleCheck, CircleDashed,
@@ -59,7 +60,7 @@ function Block({ title, children, action }: { title: string; children: React.Rea
 }
 
 export function ProspectDetail({
-  p, extra, contacts, activities, followUps, drafts, audit, aiConnected, jobId: initialJob, initialTab, sender,
+  p, extra, contacts, activities, followUps, drafts, audit, aiConnected, jobId: initialJob, initialTab, initialDraft, sender,
 }: {
   p: ProspectView;
   extra: Extra;
@@ -71,6 +72,8 @@ export function ProspectDetail({
   aiConnected: boolean;
   jobId: string | null;
   initialTab?: string;
+  /** From the "prospect kept" email: open the outreach drawer on arrival. */
+  initialDraft?: "email" | "follow_up";
   sender: { name: string; company: string };
 }) {
   const router = useRouter();
@@ -86,6 +89,9 @@ export function ProspectDetail({
   const research = () => run(() => deepResearchAction(p.id), { refresh: false, then: (id) => setJob(id) });
   const similar = () => run(() => findSimilarAction(p.id), { refresh: false, then: (id) => router.push(`/discover/runs/${id}`) });
   const openDraft = (contactId?: string) => setOutreach({ open: true, draft: null, contactId });
+  useEffect(() => {
+    if (initialDraft) setOutreach({ open: true, draft: null });
+  }, [initialDraft]);
   const latestDraft = drafts[0];
   const moreMenu = (
     <Menu
@@ -116,7 +122,9 @@ export function ProspectDetail({
       </Link>
 
       <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="min-w-0">
+        <div className="flex min-w-0 items-start gap-4">
+          <CompanyLogo name={p.name} domain={extra.domain} size={52} className="mt-1" />
+          <div className="min-w-0">
           <h1 className="text-[30px] leading-tight sm:text-[34px]">{p.name}</h1>
           <p className="mt-1 text-muted">
             {[p.industry, p.location].filter(Boolean).join(" · ") || "Industry and location unknown"}
@@ -137,6 +145,7 @@ export function ProspectDetail({
               <CircleHelp className="size-4" aria-hidden /> Why this lead?
             </button>
             {p.isExample && <Badge tone="violet">Example data</Badge>}
+          </div>
           </div>
         </div>
         <div className="hidden flex-wrap items-center gap-2 md:flex">
@@ -392,6 +401,7 @@ export function ProspectDetail({
         prospectName={p.name}
         contacts={contacts}
         preferredContactId={outreach.contactId}
+        initialChannel={initialDraft}
         existing={outreach.draft}
         aiConnected={aiConnected}
       />

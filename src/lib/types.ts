@@ -9,7 +9,10 @@ export type ProspectView = Pick<
   ProspectRow,
   | "id" | "name" | "website" | "industry" | "location" | "whatTheyDo" | "whyRelevant" | "potentialOpportunity" | "suggestedNextStep"
   | "fit" | "confirmedFacts" | "inferences" | "unknowns" | "status" | "inCrm" | "rejectionReason" | "isExample" | "researchDepth" | "origin"
+  | "domain" | "skippedAt"
 > & {
+  /** Counts only, so previews can show contact quality without exposing details before a prospect is kept. */
+  contactQuality: { named: number; sourced: number; emails: number; phones: number };
   contacts: Pick<ContactRow, "id" | "name" | "role" | "relevance" | "knowledge" | "sourceUrl">[];
   evidence: Pick<EvidenceRow, "id" | "kind" | "title" | "url" | "snippet" | "supports">[];
   criteria?: { label: string; values: string[] }[];

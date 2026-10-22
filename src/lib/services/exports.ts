@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, inArray, ne, type SQL } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, or, type SQL } from "drizzle-orm";
 import { db, t } from "@/lib/db";
 import type { CrmStatus } from "@/lib/db/schema";
 import { newId } from "@/lib/ids";
@@ -20,6 +20,8 @@ export function exportRows(tenant: CompanyTenant, filter: ExportFilter) {
   else if (filter.scope === "crm") where.push(eq(t.prospects.inCrm, true), ne(t.prospects.status, "rejected"));
   else if (filter.scope === "run" && filter.runId) where.push(eq(t.prospects.searchRunId, filter.runId), ne(t.prospects.status, "rejected"));
   else where.push(ne(t.prospects.status, "rejected"));
+  // Exports carry contact details, which only kept prospects (or example data) unlock.
+  where.push(or(eq(t.prospects.inCrm, true), eq(t.prospects.isExample, true)));
   if (filter.statuses?.length) where.push(inArray(t.prospects.status, filter.statuses));
 
   const prospects = db.select().from(t.prospects).where(inCompany(t.prospects, tenant, ...where)).orderBy(desc(t.prospects.updatedAt)).all();

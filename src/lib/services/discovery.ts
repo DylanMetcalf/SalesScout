@@ -9,6 +9,10 @@ import { createJob, runInBackground, type JobProgress } from "@/lib/jobs";
 import { audit } from "@/lib/audit";
 import { domainOf, normaliseUrl } from "@/lib/security/url";
 import { inCompany, tenantCols, type CompanyTenant } from "@/lib/tenant";
+import { BATCH_SIZE } from "@/lib/billing/plans";
+import { consumeCredit, entitlement, LimitReachedError, refundAllowance, releaseCredit, useAllowance } from "@/lib/billing/credits";
+import { freeEligible } from "@/lib/billing/eligibility";
+import { checkEmailDomains, sourceChecks } from "./contact-checks";
 import { aiCtx, getDigest } from "./brain";
 
 export function strategyText(s: typeof t.leadStrategies.$inferSelect) {
@@ -174,48 +178,110 @@ export const DISCOVERY_STEPS = [
   { key: "present", label: "Preparing your results" },
 ];
 
-/** Step 2 of discovery: the full research pipeline, as a background job. */
-export function startDiscovery(tenant: CompanyTenant, runId: string, edited?: SearchInterpretation) {
+function getRun(tenant: CompanyTenant, runId: string) {
   const run = db.select().from(t.searchRuns).where(inCompany(t.searchRuns, tenant, eq(t.searchRuns.id, runId))).get();
   if (!run) throw new Error("Search not found.");
+  return run;
+}
+
+/** One search at a time per account: a second click joins the running one instead of starting another. */
+function assertNoOtherRunning(tenant: CompanyTenant, runId: string) {
+  const busy = db
+    .select({ id: t.searchRuns.id })
+    .from(t.searchRuns)
+    .innerJoin(t.workspaces, eq(t.workspaces.id, t.searchRuns.workspaceId))
+    .where(and(eq(t.workspaces.accountId, tenant.account.id), eq(t.searchRuns.status, "running")))
+    .all()
+    .filter((r) => r.id !== runId);
+  if (busy.length) throw new LimitReachedError("Another search is still running. It'll finish in a few minutes; then you can start this one.");
+}
+
+/**
+ * Starts a search: finds candidate companies (cheap), queues them, and researches
+ * the first batch of up to five for you to review. Nothing more is researched
+ * until you ask for the next batch.
+ */
+export function startDiscovery(tenant: CompanyTenant, runId: string, edited?: SearchInterpretation, contactMode?: "verified" | "broad") {
+  const run = getRun(tenant, runId);
+  if (run.status === "running" && run.jobId) return run.jobId; // double-click / refresh: same job
   if (!aiConfigured(tenant.account.id)) throw new Error("Prospect discovery needs live web research, which requires AI to be connected.");
-  const interp = edited ?? run.interpretation!;
+  assertNoOtherRunning(tenant, run.id);
+  useAllowance(tenant.account, "search");
+  const interp = { ...(edited ?? run.interpretation!), requested: BATCH_SIZE };
+  const mode = contactMode ?? run.contactMode;
   const jobId = createJob(aiCtx(tenant), "discovery", DISCOVERY_STEPS);
-  db.update(t.searchRuns).set({ status: "running", interpretation: interp, requested: interp.requested, jobId }).where(eq(t.searchRuns.id, run.id)).run();
+  db.update(t.searchRuns).set({ status: "running", interpretation: interp, requested: BATCH_SIZE, contactMode: mode, jobId }).where(eq(t.searchRuns.id, run.id)).run();
 
   runInBackground(jobId, async (p) => {
+    let searched = false;
     try {
-      await discoveryPipeline(tenant, run, interp, p);
+      searched = await findCandidates(tenant, { ...run, contactMode: mode }, interp, p);
+      await researchBatch(tenant, { ...run, contactMode: mode }, interp, p);
     } catch (err) {
-      db.update(t.searchRuns)
-        .set({ status: "failed", error: err instanceof Error ? err.message : "Discovery failed", completedAt: new Date() })
-        .where(eq(t.searchRuns.id, run.id))
-        .run();
+      if (!searched) refundAllowance(tenant.account, "search"); // failed before any search work: don't count it
+      failRun(run.id, err);
       throw err;
     }
   });
   return jobId;
 }
 
-async function discoveryPipeline(tenant: CompanyTenant, run: typeof t.searchRuns.$inferSelect, interp: SearchInterpretation, p: JobProgress) {
+/** The next batch of up to five: from the queue if there is one, else a fresh search (counts as a search). */
+export function startNextBatch(tenant: CompanyTenant, runId: string) {
+  const run = getRun(tenant, runId);
+  if (run.status === "running" && run.jobId) return run.jobId;
+  if (!aiConfigured(tenant.account.id)) throw new Error("Prospect discovery needs live web research, which requires AI to be connected.");
+  const { plan } = entitlement(tenant.account);
+  if (run.batches >= plan.limits.batchesPerSearch) {
+    throw new LimitReachedError(`You've reviewed ${run.batches} batches from this search, the most your ${plan.name} plan allows per search. Start a new search with different criteria${plan.id === "free" ? ", or upgrade for more" : ""}.`);
+  }
+  assertNoOtherRunning(tenant, run.id);
+  const queued = db.select({ id: t.runCandidates.id }).from(t.runCandidates).where(inCompany(t.runCandidates, tenant, and(eq(t.runCandidates.runId, run.id), eq(t.runCandidates.status, "queued")))).all().length;
+  if (!queued) useAllowance(tenant.account, "search");
+  const interp = run.interpretation!;
+  const jobId = createJob(aiCtx(tenant), "discovery", queued ? DISCOVERY_STEPS.filter((s) => !["search", "identify", "dedupe"].includes(s.key)) : DISCOVERY_STEPS);
+  db.update(t.searchRuns).set({ status: "running", jobId }).where(eq(t.searchRuns.id, run.id)).run();
+  runInBackground(jobId, async (p) => {
+    let searched = Boolean(queued);
+    try {
+      if (!queued) searched = await findCandidates(tenant, run, interp, p);
+      await researchBatch(tenant, run, interp, p);
+    } catch (err) {
+      if (!searched) refundAllowance(tenant.account, "search");
+      failRun(run.id, err);
+      throw err;
+    }
+  });
+  return jobId;
+}
+
+function failRun(runId: string, err: unknown) {
+  db.update(t.searchRuns)
+    .set({ status: "failed", error: err instanceof Error ? err.message : "Discovery failed", completedAt: new Date() })
+    .where(eq(t.searchRuns.id, runId))
+    .run();
+}
+
+/** Cheap step: search the web for candidate companies, de-duplicate, and queue the new ones. */
+async function findCandidates(tenant: CompanyTenant, run: typeof t.searchRuns.$inferSelect, interp: SearchInterpretation, p: JobProgress): Promise<boolean> {
   const ctx = aiCtx(tenant);
-  const digest = getDigest(tenant);
   const known = knownCompanies(tenant);
   const seed = run.similarToProspectId
     ? db.select().from(t.prospects).where(inCompany(t.prospects, tenant, eq(t.prospects.id, run.similarToProspectId))).get()
     : undefined;
+  const queuedBefore = db.select({ name: t.runCandidates.name, domain: t.runCandidates.domain }).from(t.runCandidates).where(inCompany(t.runCandidates, tenant, eq(t.runCandidates.runId, run.id))).all();
 
   p.start("search");
-  const found = await discoverCompanies(ctx, digest, interp, {
-    avoidDomains: [...known.domains.keys()],
-    avoidNames: db.select({ n: t.prospects.name }).from(t.prospects).where(inCompany(t.prospects, tenant)).all().map((r) => r.n),
+  // Ask for a few more than one batch: some won't qualify, and the rest wait in the queue.
+  const found = await discoverCompanies(ctx, getDigest(tenant), { ...interp, requested: BATCH_SIZE * 3 }, {
+    avoidDomains: [...known.domains.keys(), ...queuedBefore.map((c) => c.domain).filter((d): d is string => Boolean(d))],
+    avoidNames: [...db.select({ n: t.prospects.name }).from(t.prospects).where(inCompany(t.prospects, tenant)).all().map((r) => r.n), ...queuedBefore.map((c) => c.name)],
     seed: seed ? `${seed.name} (${seed.website ?? "no website"}): ${seed.whatTheyDo ?? ""} Industry: ${seed.industry ?? "?"}. Location: ${seed.location ?? "?"}` : undefined,
   });
   p.step("search", "done", `${found.research.searches} searches, ${found.research.sources.length} pages found`);
 
   p.start("identify");
-  // Deduplicate within the batch by domain/name.
-  const seen = new Set<string>();
+  const seen = new Set<string>(queuedBefore.map((c) => c.domain ?? normName(c.name)));
   const unique = found.candidates.filter((c) => {
     const k = domainOf(c.website) ?? normName(c.name);
     if (seen.has(k)) return false;
@@ -231,55 +297,97 @@ async function discoveryPipeline(tenant: CompanyTenant, run: typeof t.searchRuns
     if (why) duplicates++;
     return !why;
   });
-  p.step("dedupe", "done", duplicates ? `${duplicates} already known or excluded — skipped` : "No duplicates");
-  db.update(t.searchRuns).set({ discovered: unique.length, duplicates }).where(eq(t.searchRuns.id, run.id)).run();
-
-  if (!fresh.length) {
-    db.update(t.searchRuns).set({ status: "completed", completedAt: new Date() }).where(eq(t.searchRuns.id, run.id)).run();
-    p.finish({ relevant: 0, rejected: 0, duplicates, discovered: unique.length });
-    return;
+  if (fresh.length) {
+    db.insert(t.runCandidates)
+      .values(fresh.map((c) => ({ id: newId("rc"), ...tenantCols(tenant), runId: run.id, name: c.name, website: normaliseUrl(c.website), domain: domainOf(c.website), sourceUrls: c.source_urls })))
+      .run();
   }
+  p.step("dedupe", "done", duplicates ? `${duplicates} already known, reviewed or excluded — skipped` : "No duplicates");
+  db.update(t.searchRuns).set({ discovered: run.discovered + unique.length, duplicates: run.duplicates + duplicates }).where(eq(t.searchRuns.id, run.id)).run();
+  return true;
+}
 
-  const batch = fresh.slice(0, interp.requested);
-  p.start("research", `0 of ${batch.length}`);
-  let done = 0;
+/**
+ * Researches queued candidates until up to five are ready to review (or the queue
+ * or the plan's preview allowance runs out). Verified-contacts mode tries a few
+ * extra, because companies without a sourced contact are set aside.
+ */
+async function researchBatch(tenant: CompanyTenant, run: typeof t.searchRuns.$inferSelect, interp: SearchInterpretation, p: JobProgress) {
+  const ctx = aiCtx(tenant);
+  const digest = getDigest(tenant);
+  const known = knownCompanies(tenant);
+  const maxAttempts = run.contactMode === "verified" ? BATCH_SIZE * 2 : BATCH_SIZE;
+  const queue = db
+    .select()
+    .from(t.runCandidates)
+    .where(inCompany(t.runCandidates, tenant, and(eq(t.runCandidates.runId, run.id), eq(t.runCandidates.status, "queued"))))
+    .orderBy(t.runCandidates.createdAt)
+    .limit(maxAttempts)
+    .all();
+
   let relevant = 0;
   let rejected = 0;
+  let attempted = 0;
+  let limitNote: string | null = null;
   const failures: string[] = [];
+  p.start("research", queue.length ? `0 of up to ${BATCH_SIZE}` : "Nothing new to research");
 
-  await mapLimit(batch, 3, async (c) => {
-    try {
-      const { q } = await qualifyCompany(ctx, digest, interp, c, 2);
-      const outcome = saveQualifiedProspect(tenant, q, { runId: run.id, strategyId: run.strategyId, origin: run.mode === "similar" ? "similar" : "web_research", fallbackWebsite: c.website, fallbackSources: c.source_urls, known });
-      if (outcome === "relevant") relevant++;
-      else if (outcome === "rejected") rejected++;
-    } catch (err) {
-      failures.push(`${c.name}: ${err instanceof Error ? err.message : "failed"}`);
+  for (let i = 0; i < queue.length && relevant < BATCH_SIZE; i += 3) {
+    const slice = queue.slice(i, i + Math.min(3, BATCH_SIZE - relevant));
+    const ready: typeof slice = [];
+    for (const c of slice) {
+      try {
+        useAllowance(tenant.account, "preview");
+        ready.push(c);
+      } catch (err) {
+        limitNote = err instanceof Error ? err.message : "Plan limit reached.";
+        break;
+      }
     }
-    done++;
-    p.step("research", "running", `${done} of ${batch.length} researched`);
-    db.update(t.searchRuns).set({ relevant, rejected }).where(eq(t.searchRuns.id, run.id)).run();
-  });
+    await Promise.all(
+      ready.map(async (c) => {
+        attempted++;
+        try {
+          const { q } = await qualifyCompany(ctx, digest, interp, { name: c.name, website: c.website, source_urls: c.sourceUrls }, 2);
+          const outcome = saveQualifiedProspect(tenant, q, { runId: run.id, strategyId: run.strategyId, origin: run.mode === "similar" ? "similar" : "web_research", fallbackWebsite: c.website, fallbackSources: c.sourceUrls, known, contactMode: run.contactMode });
+          if (outcome === "relevant") relevant++;
+          else if (outcome === "rejected") rejected++;
+          db.update(t.runCandidates).set({ status: outcome === "relevant" || outcome === "rejected" ? "previewed" : "discarded" }).where(eq(t.runCandidates.id, c.id)).run();
+          const saved = db.select({ id: t.prospects.id }).from(t.prospects).where(inCompany(t.prospects, tenant, and(eq(t.prospects.searchRunId, run.id), eq(t.prospects.name, q.canonical_name)))).get();
+          if (saved) await checkEmailDomains(tenant, saved.id);
+        } catch (err) {
+          refundAllowance(tenant.account, "preview");
+          db.update(t.runCandidates).set({ status: "discarded" }).where(eq(t.runCandidates.id, c.id)).run();
+          failures.push(`${c.name}: ${err instanceof Error ? err.message : "failed"}`);
+        }
+        p.step("research", "running", `${relevant} ready to review · ${attempted} researched`);
+      }),
+    );
+    if (limitNote) break;
+  }
 
-  p.step("research", failures.length === batch.length ? "failed" : "done", `${done - failures.length} of ${batch.length} researched${failures.length ? ` · ${failures.length} couldn't be completed` : ""}`);
-  p.step("qualify", "done", `${relevant} look relevant · ${rejected} set aside`);
+  const prior = db.select().from(t.searchRuns).where(eq(t.searchRuns.id, run.id)).get()!;
+  const totals = { relevant: prior.relevant + relevant, rejected: prior.rejected + rejected };
+  const allFailed = attempted > 0 && failures.length === attempted;
+  p.step("research", allFailed ? "failed" : "done", `${attempted - failures.length} researched${failures.length ? ` · ${failures.length} couldn't be completed` : ""}${limitNote ? " · plan limit reached" : ""}`);
+  p.step("qualify", "done", `${relevant} ready to review · ${rejected} set aside`);
   p.step("people", "done");
   p.start("present");
 
-  const status = failures.length === batch.length ? "failed" : failures.length ? "partial" : "completed";
+  const status = allFailed ? "failed" : failures.length || limitNote ? "partial" : "completed";
   db.update(t.searchRuns)
-    .set({ status, relevant, rejected, completedAt: new Date(), error: failures.length ? failures.slice(0, 5).join("\n") : null })
+    .set({ status, ...totals, batches: prior.batches + 1, completedAt: new Date(), error: limitNote ?? (failures.length ? failures.slice(0, 5).join("\n") : null) })
     .where(eq(t.searchRuns.id, run.id))
     .run();
   audit(tenant, {
     entityType: "search_run",
     entityId: run.id,
-    action: "completed",
+    action: "batch_completed",
     source: "web_research",
-    summary: `Discovery found ${unique.length} companies: ${relevant} relevant, ${rejected} set aside, ${duplicates} duplicates`,
+    summary: `Batch ${prior.batches + 1}: ${relevant} ready to review, ${rejected} set aside${failures.length ? `, ${failures.length} failed` : ""}`,
   });
-  if (status === "failed") throw new Error("We couldn't complete research on any of the companies found.");
-  p.finish({ relevant, rejected, duplicates, discovered: unique.length }, status === "partial");
+  if (allFailed) throw new Error("We couldn't complete research on any of the companies found.");
+  p.finish({ relevant: totals.relevant, rejected: totals.rejected, duplicates: prior.duplicates, discovered: prior.discovered }, status === "partial");
 }
 
 /** Persists a qualified company with its evidence and people. Returns how it was classified. */
@@ -294,13 +402,16 @@ export function saveQualifiedProspect(
     fallbackSources?: string[];
     known: ReturnType<typeof knownCompanies>;
     existingId?: string;
+    contactMode?: "verified" | "broad";
   },
 ): "relevant" | "rejected" | "duplicate" | "invalid" {
   if (!q.is_real_company) return "invalid";
   const website = normaliseUrl(q.website ?? opts.fallbackWebsite);
   const domain = domainOf(website);
   if (!opts.existingId && opts.known.check(q.canonical_name, website)) return "duplicate";
-  const weak = q.fit.company.level === "weak";
+  // Verified-contacts mode only presents companies with a named person found on a cited page.
+  const noSourcedContact = opts.contactMode === "verified" && !q.people.some((c) => c.name && c.source_url);
+  const weak = q.fit.company.level === "weak" || noSourcedContact;
   const id = opts.existingId ?? newId("pr");
   let conflicted = false;
 
@@ -338,7 +449,7 @@ export function saveQualifiedProspect(
           strategyId: opts.strategyId,
           origin: opts.origin,
           status: weak ? "rejected" : "new",
-          rejectionReason: weak ? `Weak fit: ${q.fit.company.explanation}` : null,
+          rejectionReason: noSourcedContact ? "No named contact found on a public source (Verified contacts mode)" : weak ? `Weak fit: ${q.fit.company.explanation}` : null,
         })
         .onConflictDoNothing()
         .run();
@@ -366,6 +477,7 @@ export function saveQualifiedProspect(
             relevance: c.relevance,
             sourceUrl: c.source_url,
             knowledge: c.name ? ("confirmed" as const) : ("suggested" as const),
+            checks: sourceChecks(c),
             origin: "web_research" as const,
           })),
         )
@@ -390,18 +502,26 @@ export function startDeepResearch(tenant: CompanyTenant, prospectId: string) {
   const p = db.select().from(t.prospects).where(inCompany(t.prospects, tenant, eq(t.prospects.id, prospectId))).get();
   if (!p) throw new Error("Prospect not found.");
   if (!aiConfigured(tenant.account.id)) throw new Error("Deep research needs AI to be connected.");
+  if (!p.inCrm && !p.isExample) throw new Error("Keep this prospect first; deep research is part of a kept prospect's full profile.");
+  useAllowance(tenant.account, "deep_research");
   const run = p.searchRunId ? db.select().from(t.searchRuns).where(inCompany(t.searchRuns, tenant, eq(t.searchRuns.id, p.searchRunId))).get() : undefined;
   const jobId = createJob(aiCtx(tenant), "deep_research", DEEP_STEPS);
   runInBackground(jobId, async (job) => {
     job.start("read");
     const tick = setTimeout(() => job.start("news"), 15_000);
     const tick2 = setTimeout(() => job.start("people"), 35_000);
-    const { q, removed } = await qualifyCompany(aiCtx(tenant), getDigest(tenant), run?.interpretation ?? null, { name: p.name, website: p.website, what_they_do: p.whatTheyDo ?? undefined }, 3).finally(() => {
-      clearTimeout(tick);
-      clearTimeout(tick2);
-    });
+    const { q, removed } = await qualifyCompany(aiCtx(tenant), getDigest(tenant), run?.interpretation ?? null, { name: p.name, website: p.website, what_they_do: p.whatTheyDo ?? undefined }, 3)
+      .catch((err) => {
+        refundAllowance(tenant.account, "deep_research"); // nothing delivered: don't count it
+        throw err;
+      })
+      .finally(() => {
+        clearTimeout(tick);
+        clearTimeout(tick2);
+      });
     job.start("assess");
     saveQualifiedProspect(tenant, q, { runId: p.searchRunId, strategyId: p.strategyId, origin: "web_research", fallbackWebsite: p.website, known: knownCompanies(tenant), existingId: p.id });
+    await checkEmailDomains(tenant, p.id);
     db.update(t.prospects).set({ researchDepth: 3 }).where(eq(t.prospects.id, p.id)).run();
     audit(tenant, { entityType: "prospect", entityId: p.id, action: "deep_research", source: "web_research", summary: `Deep research on ${p.name}`, detail: removed });
     job.finish({ prospectId: p.id });
@@ -415,18 +535,34 @@ export function startManualProspect(tenant: CompanyTenant, input: { name: string
   const dup = known.check(input.name, input.website);
   if (dup) throw new Error(`${input.name} is ${dup}.`);
   const id = newId("pr");
+  const ai = aiConfigured(tenant.account.id);
+  // Researching a company you add yourself delivers a full profile, so it uses an unlock (refunded if research fails).
+  if (ai) {
+    useAllowance(tenant.account, "preview");
+    try {
+      consumeCredit(tenant.account, { type: "prospect", id }, { freeEligible: freeEligible(tenant.account.id) });
+    } catch (err) {
+      refundAllowance(tenant.account, "preview");
+      throw err;
+    }
+  }
   db.insert(t.prospects)
     .values({ id, ...tenantCols(tenant), name: input.name, website: normaliseUrl(input.website), domain: domainOf(input.website), origin: "manual", inCrm: true, status: "new", vetting: "discovered" })
     .run();
   db.insert(t.activities).values({ id: newId("act"), ...tenantCols(tenant), prospectId: id, userId: tenant.user.id, type: "created", title: "Added by you" }).run();
   audit(tenant, { entityType: "prospect", entityId: id, action: "created", source: "user", summary: `Added ${input.name} manually` });
-  if (!aiConfigured(tenant.account.id)) return { id, jobId: null };
+  if (!ai) return { id, jobId: null };
   const jobId = createJob(aiCtx(tenant), "prospect_research", DEEP_STEPS.slice(0, 1).concat(DEEP_STEPS.slice(2)));
   runInBackground(jobId, async (job) => {
     job.start("read");
-    const { q } = await qualifyCompany(aiCtx(tenant), getDigest(tenant), null, { name: input.name, website: input.website }, 2);
+    const { q } = await qualifyCompany(aiCtx(tenant), getDigest(tenant), null, { name: input.name, website: input.website }, 2).catch((err) => {
+      refundAllowance(tenant.account, "preview");
+      releaseCredit(tenant.account, { type: "prospect", id }, "Research failed");
+      throw err;
+    });
     job.start("assess");
     saveQualifiedProspect(tenant, q, { runId: null, strategyId: null, origin: "manual", fallbackWebsite: input.website, known, existingId: id });
+    await checkEmailDomains(tenant, id);
     db.update(t.prospects).set({ researchDepth: 2 }).where(eq(t.prospects.id, id)).run();
     job.finish({ prospectId: id });
   });

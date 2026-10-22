@@ -19,6 +19,11 @@ export function toViews(tenant: CompanyTenant, rows: ProspectRow[]): ProspectVie
       whyRelevant: p.whyRelevant, potentialOpportunity: p.potentialOpportunity, suggestedNextStep: p.suggestedNextStep, fit: p.fit,
       confirmedFacts: p.confirmedFacts, inferences: p.inferences, unknowns: p.unknowns, status: p.status, inCrm: p.inCrm,
       rejectionReason: p.rejectionReason, isExample: p.isExample, researchDepth: p.researchDepth, origin: p.origin,
+      domain: p.domain, skippedAt: p.skippedAt,
+      contactQuality: (() => {
+        const cs = contacts.filter((c) => c.prospectId === p.id);
+        return { named: cs.filter((c) => c.name).length, sourced: cs.filter((c) => c.name && c.sourceUrl).length, emails: cs.filter((c) => c.email).length, phones: cs.filter((c) => c.phone).length };
+      })(),
       contacts: contacts.filter((c) => c.prospectId === p.id).map((c) => ({ id: c.id, name: c.name, role: c.role, relevance: c.relevance, knowledge: c.knowledge, sourceUrl: c.sourceUrl })),
       evidence: evidence.filter((e) => e.prospectId === p.id).map((e) => ({ id: e.id, kind: e.kind, title: e.title, url: e.url, snippet: e.snippet, supports: e.supports })),
       criteria: i

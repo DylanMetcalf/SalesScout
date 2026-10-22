@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { ArrowLeft } from "lucide-react";
 import { db, t } from "@/lib/db";
 import { inCompany, requireCompany } from "@/lib/tenant";
@@ -9,6 +9,7 @@ import { prospectsForRun } from "@/lib/services/discovery";
 import { toViews } from "@/lib/prospect-view";
 import { Page } from "@/components/layout/page";
 import { RunView } from "@/components/discover/run-view";
+import { entitlement } from "@/lib/billing/credits";
 import { formatDate } from "@/lib/format";
 
 export default async function RunPage({ params }: { params: Promise<{ id: string }> }) {
@@ -35,6 +36,8 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
         run={{
           id: run.id, status: run.status, interpretation: run.interpretation, jobId: run.jobId, error: run.error,
           requested: run.requested, discovered: run.discovered, duplicates: run.duplicates, relevant: run.relevant, rejected: run.rejected, mode: run.mode,
+          contactMode: run.contactMode, batches: run.batches, batchLimit: entitlement(tenant.account).plan.limits.batchesPerSearch,
+          queued: db.select({ id: t.runCandidates.id }).from(t.runCandidates).where(inCompany(t.runCandidates, tenant, and(eq(t.runCandidates.runId, run.id), eq(t.runCandidates.status, "queued")))).all().length,
         }}
         prospects={prospects}
         query={run.query}

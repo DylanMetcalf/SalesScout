@@ -26,6 +26,12 @@ export type Draft = { id: string; channel: Channel; subject: string | null; body
  * "How should we approach them?" Sales Scout drafts; the user reviews,
  * edits and sends from their own email. Nothing is ever sent automatically.
  */
+const MAIL_CLIENTS = [
+  { id: "mailto", label: "Outlook Desktop", hint: "Opens your default email app (Outlook if it's your default)" },
+  { id: "outlook", label: "Outlook on the web", hint: "Opens a new message in Outlook on the web" },
+  { id: "gmail", label: "Gmail", hint: "Opens a new message in Gmail" },
+] as const;
+
 export function OutreachDrawer({
   open,
   onClose,
@@ -35,6 +41,7 @@ export function OutreachDrawer({
   existing,
   aiConnected,
   preferredContactId,
+  initialChannel,
 }: {
   open: boolean;
   onClose: () => void;
@@ -44,8 +51,16 @@ export function OutreachDrawer({
   existing?: Draft | null;
   aiConnected: boolean;
   preferredContactId?: string;
+  initialChannel?: Channel;
 }) {
   const toast = useToast();
+  const [preferred, setPreferred] = useState<"gmail" | "outlook" | "mailto">("mailto");
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("ss-mail-client");
+      if (v === "gmail" || v === "outlook" || v === "mailto") setPreferred(v);
+    } catch {}
+  }, []);
   const [channel, setChannel] = useState<Channel>(existing?.channel ?? "email");
   const [contactId, setContactId] = useState<string>(existing?.contactId ?? contacts.find((c) => c.name)?.id ?? contacts[0]?.id ?? "");
   const [draft, setDraft] = useState<{ id: string; generatedBy: string } | null>(existing ? { id: existing.id, generatedBy: existing.generatedBy } : null);
@@ -61,6 +76,7 @@ export function OutreachDrawer({
     setSubject(existing?.subject ?? "");
     setBody(existing?.body ?? "");
     if (existing) setChannel(existing.channel);
+    else if (initialChannel) setChannel(initialChannel);
     setContactId(existing?.contactId ?? preferredContactId ?? contacts.find((c) => c.name)?.id ?? contacts[0]?.id ?? "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, existing, preferredContactId]);
@@ -79,7 +95,12 @@ export function OutreachDrawer({
   const persist = (handOff: boolean, then?: () => void) =>
     draft && save.run(() => saveDraftAction(draft.id, { subject: subject || null, body, handOff }), { success: handOff ? "Saved to the prospect's activity" : "Draft saved", then });
 
+  const [desktopHelp, setDesktopHelp] = useState(false);
   const handOff = (target: "gmail" | "outlook" | "mailto") => {
+    try {
+      localStorage.setItem("ss-mail-client", target);
+    } catch {}
+    if (target === "mailto") setDesktopHelp(true);
     const to = contact?.email ?? "";
     const enc = encodeURIComponent;
     const url =
@@ -147,9 +168,11 @@ export function OutreachDrawer({
             <div className="flex flex-wrap gap-2">
               {isEmail && (
                 <>
-                  <Button variant="primary" icon={<ExternalLink className="size-4" />} onClick={() => handOff("gmail")}>Open in Gmail</Button>
-                  <Button icon={<ExternalLink className="size-4" />} onClick={() => handOff("outlook")}>Open in Outlook</Button>
-                  <Button variant="ghost" icon={<Mail className="size-4" />} onClick={() => handOff("mailto")}>Email app</Button>
+                  {MAIL_CLIENTS.map((m) => (
+                    <Button key={m.id} variant={m.id === preferred ? "primary" : "secondary"} icon={m.id === "mailto" ? <Mail className="size-4" /> : <ExternalLink className="size-4" />} onClick={() => handOff(m.id)} title={m.hint}>
+                      {m.label}
+                    </Button>
+                  ))}
                 </>
               )}
               <Button variant={isEmail ? "ghost" : "primary"} icon={copied ? <Check className="size-4" /> : <Copy className="size-4" />} onClick={() => { copy(); if (!isEmail) persist(true); }}>
@@ -158,6 +181,11 @@ export function OutreachDrawer({
               <Button variant="ghost" loading={save.pending} onClick={() => persist(false)}>Save draft</Button>
               <Button variant="ghost" className={cn("ml-auto")} loading={gen.pending} onClick={generate}>Start over</Button>
             </div>
+            {isEmail && desktopHelp && (
+              <p className="rounded-lg bg-surface-2 px-3 py-2.5 text-xs text-muted">
+                &ldquo;Outlook Desktop&rdquo; opens your computer&apos;s default email app. If a different app opened, make Outlook the default: on Windows, Settings → Apps → Default apps → Outlook; on a Mac, Mail → Settings → General → Default email reader. Or use Copy and paste into Outlook. Nothing is sent until you press Send there.
+              </p>
+            )}
           </div>
         )}
       </div>

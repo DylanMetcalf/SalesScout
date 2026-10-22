@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Ban, Check, CircleHelp, Layers, MoreHorizontal, RotateCcw, ThumbsDown, UserRound, UserCheck } from "lucide-react";
+import { Ban, Check, CircleHelp, Clock, Layers, Link2, Mail, MoreHorizontal, RotateCcw, ThumbsDown, UserRound, UserCheck } from "lucide-react";
 import { Button, IconButton } from "@/components/ui/button";
 import { FitBadge } from "@/components/ui/fit";
 import { Menu } from "@/components/ui/menu";
@@ -12,7 +12,8 @@ import { useToast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/cn";
 import { STATUS_META } from "@/lib/status";
 import type { ProspectView } from "@/lib/types";
-import { addToCrmAction, feedbackAction, restoreAction } from "@/app/actions/prospects";
+import { addToCrmAction, feedbackAction, restoreAction, skipAction } from "@/app/actions/prospects";
+import { CompanyLogo } from "@/components/ui/company-logo";
 import { findSimilarAction } from "@/app/actions/discovery";
 import { WhyPanel } from "./why-panel";
 
@@ -66,6 +67,7 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
     >
       <div className="flex flex-col gap-4 p-5">
         <header className="flex items-start gap-3">
+          <CompanyLogo name={p.name} domain={p.domain} size={40} className="mt-0.5" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
               <h2 id={`p-${p.id}`} className="font-sans text-[16.5px] font-semibold tracking-normal">
@@ -77,6 +79,7 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
               {p.inCrm && !rejected && <Badge tone={STATUS_META[p.status].tone} dot>{STATUS_META[p.status].label}</Badge>}
             </div>
             <p className="mt-0.5 text-sm text-muted">{[p.industry, p.location].filter(Boolean).join(" · ") || "Industry and location unknown"}</p>
+            <ContactQuality p={p} />
           </div>
           <Button size="sm" variant="subtle" onClick={() => setWhy(true)} icon={<CircleHelp className="size-4" />} aria-label={`Why was ${p.name} suggested?`}>
             Why?
@@ -123,8 +126,21 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
         ) : (
           <>
             {!p.inCrm ? (
-              <Button size="sm" variant="primary" icon={<Check className="size-4" />} onClick={() => act(() => addToCrmAction(p.id), `${p.name} is in your pipeline`)}>
-                Keep
+              <Button
+                size="sm"
+                variant="primary"
+                icon={<Check className="size-4" />}
+                title={p.isExample ? "Example data: free" : "Unlocks the full profile and brief. Uses 1 prospect unlock."}
+                onClick={() =>
+                  start(async () => {
+                    const r = await addToCrmAction(p.id);
+                    if (!r.ok) return toast({ kind: "error", title: r.error, action: /unlock|plan/i.test(r.error) ? { label: "See plans", onClick: () => router.push("/settings/billing") } : undefined });
+                    toast({ title: `Kept ${p.name}. Full profile unlocked.`, action: { label: "Open", onClick: () => router.push(`/prospects/${p.id}`) } });
+                    router.refresh();
+                  })
+                }
+              >
+                Keep{!p.isExample && <span className="font-normal opacity-80"> · 1 unlock</span>}
               </Button>
             ) : (
               <Link href={`/prospects/${p.id}`} className="text-sm font-medium text-accent-text hover:underline">
@@ -133,9 +149,11 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
             )}
             {!p.inCrm && (
               <>
-                <Button size="sm" variant="ghost" onClick={() => act(() => feedbackAction(p.id, "already_known"), "Marked as already known", () => restoreAction(p.id))}>
-                  Already know them
-                </Button>
+                {!p.skippedAt && (
+                  <Button size="sm" variant="ghost" icon={<Clock className="size-4" />} onClick={() => act(() => skipAction(p.id), "Skipped for now. It's under Skipped, no unlock used.", () => restoreAction(p.id))}>
+                    Skip for now
+                  </Button>
+                )}
                 <Menu
                   width={250}
                   items={[
@@ -160,6 +178,7 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
                 width={220}
                 items={[
                   { label: "Find similar", icon: <Layers />, onSelect: similar },
+                  ...(!p.inCrm ? [{ label: "Already know them", icon: <UserCheck />, onSelect: () => act(() => feedbackAction(p.id, "already_known"), "Marked as already known", () => restoreAction(p.id)) }] : []),
                   { label: "Exclude this company", icon: <Ban />, onSelect: () => act(() => feedbackAction(p.id, "exclude"), "Excluded — we won't suggest it again", () => restoreAction(p.id)) },
                   { label: "It's a competitor", icon: <Ban />, onSelect: () => act(() => feedbackAction(p.id, "competitor"), "Marked as a competitor", () => restoreAction(p.id)) },
                 ]}
@@ -175,5 +194,23 @@ export function ProspectCard({ p, index = 0 }: { p: ProspectView; index?: number
       </footer>
       <WhyPanel p={p} open={why} onClose={() => setWhy(false)} />
     </article>
+  );
+}
+
+/** What the user will get on keeping it: counts only, never the details themselves. */
+function ContactQuality({ p }: { p: ProspectView }) {
+  const q = p.contactQuality;
+  const sources = p.evidence.filter((e) => e.url).length;
+  const items = [
+    q.sourced ? { icon: <UserCheck className="size-3.5 text-strong" aria-hidden />, text: `${q.sourced} named contact${q.sourced === 1 ? "" : "s"} on a public source` } : { icon: <UserRound className="size-3.5 text-subtle" aria-hidden />, text: "Roles to find, no named contact yet" },
+    q.emails ? { icon: <Mail className="size-3.5 text-accent" aria-hidden />, text: `${q.emails} published email${q.emails === 1 ? "" : "s"}` } : null,
+    sources ? { icon: <Link2 className="size-3.5 text-accent" aria-hidden />, text: `${sources} source${sources === 1 ? "" : "s"}` } : null,
+  ].filter(Boolean) as { icon: React.ReactNode; text: string }[];
+  return (
+    <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+      {items.map((i) => (
+        <span key={i.text} className="inline-flex items-center gap-1">{i.icon}{i.text}</span>
+      ))}
+    </p>
   );
 }

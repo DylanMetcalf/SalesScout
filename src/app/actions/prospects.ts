@@ -9,8 +9,9 @@ import { newId } from "@/lib/ids";
 import { actionTenant, inCompany, tenantCols } from "@/lib/tenant";
 import {
   addContact, addNote, addToCrm, buildSalesBrief, createDraft, createFollowUp, giveFeedback, logTouch, removeContact,
-  rescheduleFollowUp, restoreProspect, saveDraft, setFollowUpDone, setStatus,
+  rescheduleFollowUp, restoreProspect, saveDraft, setFollowUpDone, setStatus, skipProspect,
 } from "@/lib/services/workflow";
+import { notifyKept } from "@/lib/services/notifications";
 import { applySuggestion, ignoreSuggestion } from "@/lib/services/learning";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { attempt } from "./result";
@@ -26,7 +27,17 @@ export async function setStatusAction(id: string, status: string) {
 
 export async function addToCrmAction(id: string) {
   return attempt(async () => {
-    addToCrm(await actionTenant(), id);
+    const tenant = await actionTenant();
+    const r = addToCrm(tenant, id);
+    if (r.kept) await notifyKept(tenant, id).catch((err: unknown) => console.error("[keep] notification failed", err));
+    done();
+    return r;
+  });
+}
+
+export async function skipAction(id: string) {
+  return attempt(async () => {
+    skipProspect(await actionTenant(), id);
     done();
   });
 }

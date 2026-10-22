@@ -1,4 +1,6 @@
 import "server-only";
+import { consumeCredit, releaseCredit } from "@/lib/billing/credits";
+import { freeEligible } from "@/lib/billing/eligibility";
 import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { db, t } from "@/lib/db";
 import type { CrmStatus } from "@/lib/db/schema";
@@ -40,14 +42,33 @@ export function setStatus(tenant: CompanyTenant, id: string, status: CrmStatus) 
   audit(tenant, { entityType: "prospect", entityId: p.id, action: "status_changed", source: "user", summary: `${p.name}: ${STATUS_META[p.status].label} → ${STATUS_META[status].label}` });
 }
 
-export function addToCrm(tenant: CompanyTenant, id: string) {
+/**
+ * Keep: unlocks the full profile and adds it to the pipeline. Uses one credit,
+ * at most once per prospect (repeat clicks and retries are free). Example data is free.
+ */
+export function addToCrm(tenant: CompanyTenant, id: string): { kept: boolean; charged: boolean } {
   const p = mustGetProspect(tenant, id);
-  db.update(t.prospects)
-    .set({ inCrm: true, status: p.status === "new" || p.status === "rejected" ? "reviewed" : p.status, rejectionReason: null, ownerUserId: p.ownerUserId ?? tenant.user.id, updatedAt: new Date() })
-    .where(eq(t.prospects.id, p.id))
-    .run();
+  if (p.inCrm) return { kept: false, charged: false };
+  const charge = p.isExample ? "unlimited" : consumeCredit(tenant.account, { type: "prospect", id: p.id }, { freeEligible: freeEligible(tenant.account.id) });
+  try {
+    db.update(t.prospects)
+      .set({ inCrm: true, skippedAt: null, status: p.status === "new" || p.status === "rejected" ? "reviewed" : p.status, rejectionReason: null, ownerUserId: p.ownerUserId ?? tenant.user.id, updatedAt: new Date() })
+      .where(eq(t.prospects.id, p.id))
+      .run();
+  } catch (err) {
+    if (charge === "charged") releaseCredit(tenant.account, { type: "prospect", id: p.id }, "Keep failed");
+    throw err;
+  }
   db.insert(t.feedback).values({ id: newId("fb"), ...tenantCols(tenant), prospectId: p.id, searchRunId: p.searchRunId, userId: tenant.user.id, kind: "keep" }).run();
-  activity(tenant, p.id, "status", "Added to your pipeline");
+  activity(tenant, p.id, "status", "Kept: added to your pipeline");
+  return { kept: true, charged: charge === "charged" };
+}
+
+/** Skip for now: out of the current batch, no credit used, can be kept later. */
+export function skipProspect(tenant: CompanyTenant, id: string) {
+  const p = mustGetProspect(tenant, id);
+  if (p.inCrm) return;
+  db.update(t.prospects).set({ skippedAt: new Date(), updatedAt: new Date() }).where(eq(t.prospects.id, p.id)).run();
 }
 
 /** Records a triage decision on a discovered prospect and learns from it. */
@@ -83,7 +104,7 @@ export function giveFeedback(
 
 export function restoreProspect(tenant: CompanyTenant, id: string) {
   const p = mustGetProspect(tenant, id);
-  db.update(t.prospects).set({ status: p.inCrm ? "reviewed" : "new", rejectionReason: null, updatedAt: new Date() }).where(eq(t.prospects.id, p.id)).run();
+  db.update(t.prospects).set({ status: p.inCrm ? "reviewed" : "new", rejectionReason: null, skippedAt: null, updatedAt: new Date() }).where(eq(t.prospects.id, p.id)).run();
   activity(tenant, p.id, "status", "Restored");
 }
 
@@ -185,6 +206,7 @@ export function buildSalesBrief(tenant: CompanyTenant, prospectId: string) {
 
 export async function createDraft(tenant: CompanyTenant, input: { prospectId: string; contactId: string | null; channel: "email" | "linkedin" | "call" | "follow_up" }) {
   const p = mustGetProspect(tenant, input.prospectId);
+  if (!p.inCrm && !p.isExample) throw new Error("Keep this prospect first; outreach drafts are part of the full profile.");
   const contact = input.contactId ? contactsOf(tenant, p.id).find((c) => c.id === input.contactId) : undefined;
   const prefs = preferencesFor(tenant).map((w) => w.rule);
   let subject: string | null = null;
@@ -198,7 +220,7 @@ export async function createDraft(tenant: CompanyTenant, input: { prospectId: st
       contact: contact ? `${contact.name ?? "[Name]"}, ${contact.role}. Why them: ${contact.relevance}` : "[Name], a relevant decision maker",
       channel: input.channel,
       preferences: prefs,
-      senderName: tenant.user.name,
+      senderName: tenant.user.jobTitle ? `${tenant.user.name}, ${tenant.user.jobTitle}` : tenant.user.name,
     });
     subject = r.subject;
     body = r.body;
@@ -221,6 +243,11 @@ export async function createDraft(tenant: CompanyTenant, input: { prospectId: st
       .filter((l) => l !== undefined)
       .join("\n")
       .replace(/\n{3,}/g, "\n\n");
+  }
+  // The user's saved signature replaces a bare sign-off on emails.
+  const signature = tenant.user.signature?.trim();
+  if (signature && (input.channel === "email" || input.channel === "follow_up")) {
+    body = body.replace(new RegExp(`\\n${tenant.user.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`), "").trimEnd() + `\n\n${signature}`;
   }
   const id = newId("od");
   db.insert(t.outreachDrafts)

@@ -13,12 +13,13 @@ import type { SearchInterpretation } from "@/lib/db/schema";
 
 type Mode = "discover" | "specific";
 const FILTERS: { key: keyof SearchInterpretation; label: string; placeholder: string }[] = [
-  { key: "industries", label: "Industry", placeholder: "e.g. Mining" },
-  { key: "geographies", label: "Geography", placeholder: "e.g. Gauteng" },
-  { key: "buyerRoles", label: "Job titles", placeholder: "e.g. Operations Manager" },
+  { key: "industries", label: "Industry and sub-industry", placeholder: "e.g. Mining, platinum processing" },
+  { key: "geographies", label: "Country, province or city", placeholder: "e.g. South Africa, Gauteng, Rustenburg" },
+  { key: "buyerRoles", label: "Job titles, seniority or department", placeholder: "e.g. Operations Manager, Head of Maintenance" },
   { key: "companySizes", label: "Company size", placeholder: "e.g. 50–500 employees" },
-  { key: "companyTypes", label: "Company type", placeholder: "e.g. Mining contractors" },
-  { key: "keywords", label: "Keywords", placeholder: "e.g. conveyor, crusher" },
+  { key: "companyTypes", label: "Company type or business model", placeholder: "e.g. Contractors, manufacturers, B2B services" },
+  { key: "keywords", label: "Products, services or keywords", placeholder: "e.g. conveyor, crusher, inspection" },
+  { key: "exclusions", label: "Leave out", placeholder: "e.g. Government, companies under 10 staff" },
 ];
 
 export function DiscoverForm({
@@ -128,7 +129,9 @@ export function DiscoverForm({
 
         {showFilters && (
           <div className="mt-3 grid gap-4 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2 animate-rise">
-            <p className="text-sm text-muted sm:col-span-2">All optional. Anything you add here overrides my interpretation.</p>
+            <p className="text-sm text-muted sm:col-span-2">
+              All optional, and anything you add here overrides my interpretation. More specific filters can reduce the number of matching prospects while improving relevance.
+            </p>
             {FILTERS.map((f) => (
               <div key={f.key} className="flex flex-col gap-1.5">
                 <label htmlFor={`f-${f.key}`} className="text-sm font-medium">{f.label}</label>
