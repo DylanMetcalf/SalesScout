@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import * as z from "zod/v4";
 import { db, t } from "@/lib/db";
 import { assertAdmin, isAdminAccount } from "@/lib/admin";
@@ -10,6 +10,8 @@ import { createResetToken } from "@/lib/services/password-reset";
 import { adjustCredits } from "@/lib/billing/credits";
 import { PLANS } from "@/lib/billing/plans";
 import { setSwitch, type SwitchKey } from "@/lib/settings";
+import { AGENTS } from "@/lib/ai/models";
+import { RESOLUTIONS } from "@/lib/feedback-reasons";
 import { attempt } from "./result";
 
 function check<S extends z.ZodType>(schema: S, input: unknown): z.infer<S> {
@@ -147,9 +149,20 @@ export async function adjustCreditsAction(accountId: string, amount: number, rea
 export async function setSwitchAction(key: string, on: boolean, reason: string) {
   return attempt(async () => {
     const admin = await assertAdmin();
-    const k = check(z.enum(["ai_paused", "discovery_paused"]), key) as SwitchKey;
+    const k = check(z.enum(["ai_paused", "discovery_paused", ...Object.keys(AGENTS).map((a) => `agent_paused:${a}`)]), key) as SwitchKey;
     setSwitch(k, { on, reason: reason.trim().slice(0, 200) || undefined }, admin.email);
     console.warn(`[ops] ${k} ${on ? "ON" : "off"} by ${admin.email}${reason ? `: ${reason}` : ""}`);
+    revalidatePath("/admin/operations");
+  });
+}
+
+/** Triage a reported problem. Recorded with who resolved it and when. */
+export async function resolveReportAction(id: string, resolution: string) {
+  return attempt(async () => {
+    const admin = await assertAdmin();
+    const r = check(z.enum(Object.keys(RESOLUTIONS) as [string, ...string[]]), resolution) as keyof typeof RESOLUTIONS;
+    const res = db.update(t.feedback).set({ resolution: r, resolvedBy: admin.email, resolvedAt: new Date() }).where(and(eq(t.feedback.id, id), eq(t.feedback.kind, "correction"), isNull(t.feedback.resolvedAt))).run();
+    if (res.changes !== 1) throw new Error("That report was already resolved or no longer exists.");
     revalidatePath("/admin/operations");
   });
 }

@@ -10,6 +10,8 @@ import { serverKeyAccess } from "@/lib/admin";
 import { DEFAULT_MODEL, modelFor } from "./models";
 import { estimateCost } from "./pricing";
 import { getSwitch } from "@/lib/settings";
+import { serverBudgetBlock } from "./budget";
+import { AGENTS, type Agent } from "./models";
 
 export const MODEL = DEFAULT_MODEL;
 
@@ -58,11 +60,21 @@ export function aiConfigured(accountId: string): boolean {
 }
 
 const clients = new Map<string, Anthropic>();
-function getClient(ctx: AiContext): Anthropic {
+/** The client for one paid call, after every kill switch and budget check. Throws AiUnavailableError if any says stop. */
+function getClient(ctx: AiContext, agent: string): { anthropic: Anthropic; source: KeySource } {
   const pause = getSwitch("ai_paused");
   if (pause.on) throw new AiUnavailableError(`AI research is paused by the administrator${pause.reason ? `: ${pause.reason}` : ""}. Nothing is being charged; please try again later.`);
+  const step = getSwitch(`agent_paused:${agent}`);
+  if (step.on) throw new AiUnavailableError(`${AGENTS[agent as Agent] ?? "This step"} is paused by the administrator${step.reason ? `: ${step.reason}` : ""}. Nothing is being charged; please try again later.`);
   const resolved = resolveKey(ctx.accountId);
   if (!resolved) throw new AiUnavailableError(aiUnavailableReason(ctx.accountId));
+  if (resolved.source === "server") {
+    const block = serverBudgetBlock();
+    if (block) {
+      console.warn(`[ops] AI blocked by monthly budget: ${block}`);
+      throw new AiUnavailableError(block);
+    }
+  }
   let client = clients.get(resolved.key);
   if (!client) {
     const useAuthToken = resolved.source === "server" && !process.env.ANTHROPIC_API_KEY;
@@ -73,7 +85,7 @@ function getClient(ctx: AiContext): Anthropic {
     });
     clients.set(resolved.key, client);
   }
-  return client;
+  return { anthropic: client, source: resolved.source };
 }
 
 /** Checks a key works without spending tokens (a model lookup). */
@@ -94,13 +106,16 @@ function record(
   agent: string,
   purpose: string,
   started: number,
+  keySource: KeySource,
   outcome: { status: "ok" | "error" | "refused"; usage?: Anthropic.Beta.BetaUsage; webSearches?: number; webFetches?: number; error?: string },
 ) {
   const model = modelFor(agent);
+  // The API reports fresh, cache-read and cache-write input separately; all of it is input.
   const cacheRead = outcome.usage?.cache_read_input_tokens ?? 0;
-  const input = (outcome.usage?.input_tokens ?? 0) + cacheRead;
+  const cacheWrite = outcome.usage?.cache_creation_input_tokens ?? 0;
+  const input = (outcome.usage?.input_tokens ?? 0) + cacheRead + cacheWrite;
   const output = outcome.usage?.output_tokens ?? 0;
-  const cost = estimateCost(model, { input, cacheRead, output, searches: outcome.webSearches ?? 0 });
+  const cost = estimateCost(model, { input, cacheRead, cacheWrite, output, searches: outcome.webSearches ?? 0 });
   // If usage can't be recorded, stop: paid work must never run unaccounted for.
   db.insert(t.aiInteractions)
     .values({
@@ -114,6 +129,8 @@ function record(
       status: outcome.status,
       inputTokens: input,
       cacheReadTokens: cacheRead,
+      cacheWriteTokens: cacheWrite,
+      keySource,
       outputTokens: output,
       webSearches: outcome.webSearches ?? 0,
       webFetches: outcome.webFetches ?? 0,
@@ -147,7 +164,7 @@ type GenerateArgs<S extends z.ZodType> = {
 
 /** One structured call: returns data validated against `schema`, or throws. */
 export async function generate<S extends z.ZodType>({ ctx, agent, purpose, system, prompt, schema, effort = "medium" }: GenerateArgs<S>): Promise<z.infer<S>> {
-  const anthropic = getClient(ctx);
+  const { anthropic, source } = getClient(ctx, agent);
   const started = Date.now();
   try {
     const res = await anthropic.beta.messages.parse({
@@ -160,19 +177,19 @@ export async function generate<S extends z.ZodType>({ ctx, agent, purpose, syste
       output_config: { effort, format: betaZodOutputFormat(schema) },
     });
     if (res.stop_reason === "refusal") {
-      record(ctx, agent, purpose, started, { status: "refused", usage: res.usage });
+      record(ctx, agent, purpose, started, source, { status: "refused", usage: res.usage });
       throw new AiFailedError("The AI declined this request.");
     }
     if (res.parsed_output == null) {
-      record(ctx, agent, purpose, started, { status: "error", usage: res.usage, error: `unparsed (${res.stop_reason})` });
+      record(ctx, agent, purpose, started, source, { status: "error", usage: res.usage, error: `unparsed (${res.stop_reason})` });
       throw new AiFailedError("The AI response couldn't be read. Please try again.");
     }
-    record(ctx, agent, purpose, started, { status: "ok", usage: res.usage });
+    record(ctx, agent, purpose, started, source, { status: "ok", usage: res.usage });
     return res.parsed_output as z.infer<S>;
   } catch (err) {
     if (err instanceof AiFailedError) throw err;
     const message = describeError(err);
-    record(ctx, agent, purpose, started, { status: "error", error: message });
+    record(ctx, agent, purpose, started, source, { status: "error", error: message });
     throw new AiFailedError(message);
   }
 }
@@ -210,7 +227,7 @@ export async function research({
   maxSearches?: number;
   maxFetches?: number;
 }): Promise<ResearchResult> {
-  const anthropic = getClient(ctx);
+  const { anthropic, source } = getClient(ctx, agent);
   const started = Date.now();
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: prompt }];
   const sources = new Map<string, ResearchSource>();
@@ -244,6 +261,7 @@ export async function research({
       usage.input_tokens += res.usage.input_tokens;
       usage.output_tokens += res.usage.output_tokens;
       usage.cache_read_input_tokens = (usage.cache_read_input_tokens ?? 0) + (res.usage.cache_read_input_tokens ?? 0);
+      usage.cache_creation_input_tokens = (usage.cache_creation_input_tokens ?? 0) + (res.usage.cache_creation_input_tokens ?? 0);
 
       for (const block of res.content) {
         if (block.type === "text") notes.push(block.text);
@@ -262,19 +280,19 @@ export async function research({
       }
 
       if (res.stop_reason === "refusal") {
-        record(ctx, agent, purpose, started, { status: "refused", usage, webSearches: searches, webFetches: fetches });
+        record(ctx, agent, purpose, started, source, { status: "refused", usage, webSearches: searches, webFetches: fetches });
         throw new AiFailedError("The AI declined this research request.");
       }
       if (res.stop_reason !== "pause_turn") break;
       // Server-side tool loop paused: send the turn back so it resumes where it left off.
       messages.push({ role: "assistant", content: res.content });
     }
-    record(ctx, agent, purpose, started, { status: "ok", usage, webSearches: searches, webFetches: fetches });
+    record(ctx, agent, purpose, started, source, { status: "ok", usage, webSearches: searches, webFetches: fetches });
     return { notes: notes.join("\n").trim(), sources: [...sources.values()], fetched, searches };
   } catch (err) {
     if (err instanceof AiFailedError) throw err;
     const message = describeError(err);
-    record(ctx, agent, purpose, started, { status: "error", usage, webSearches: searches, webFetches: fetches, error: message });
+    record(ctx, agent, purpose, started, source, { status: "error", usage, webSearches: searches, webFetches: fetches, error: message });
     throw new AiFailedError(message);
   }
 }

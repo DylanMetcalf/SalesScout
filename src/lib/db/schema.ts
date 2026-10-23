@@ -552,6 +552,10 @@ export const feedback = sqliteTable(
     dimension: text("dimension"),
     value: text("value"),
     reason: text("reason"),
+    /** Operator triage of a reported problem. Unresolved while null. */
+    resolution: text("resolution", { enum: ["correction_confirmed", "customer_preference", "policy_change", "duplicate", "not_an_issue"] }),
+    resolvedBy: text("resolved_by"),
+    resolvedAt: integer("resolved_at", { mode: "timestamp_ms" }),
     createdAt: createdAt(),
   },
   (t) => [index("feedback_company_idx").on(t.companyId)],
@@ -624,6 +628,9 @@ export const aiInteractions = sqliteTable(
     inputTokens: integer("input_tokens").notNull().default(0),
     /** Part of inputTokens served from the prompt cache (cheaper). */
     cacheReadTokens: integer("cache_read_tokens").notNull().default(0),
+    cacheWriteTokens: integer("cache_write_tokens").notNull().default(0),
+    /** Whose key paid: "server" spend is the business's; "account" spend is the customer's own. */
+    keySource: text("key_source", { enum: ["account", "server"] }),
     outputTokens: integer("output_tokens").notNull().default(0),
     webSearches: integer("web_searches").notNull().default(0),
     webFetches: integer("web_fetches").notNull().default(0),

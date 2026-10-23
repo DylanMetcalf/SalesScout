@@ -29,7 +29,16 @@ What's confirmed from the code, what's still a guess, and what was changed. No f
 | Guardrails | A per-batch token budget (and an optional USD budget) stops research early and keeps the results. The admin kill switches are **Pause all AI** and **Pause new searches**; both are DB-backed, take effect at once, and are recorded with who changed them. |
 | Cancellation | Users can stop a running search; the work already done is kept. |
 | Feedback | A structured "Report a problem" with 11 reasons, on every prospect. |
+| Monthly budget (pass 2) | `AI_MONTHLY_BUDGET_USD` / `AI_MONTHLY_TOKEN_BUDGET` cap the **server key's** spend each month, checked before every paid call. It fails closed: a USD cap without prices pauses AI. Customers' own-key spend is tracked separately (`key_source`) and never counted against the cap. (`ai/budget.ts`) |
+| Per-step kill switches (pass 2) | Each AI step (Brain, market suggestions, discovery and research, qualification, outreach) can be paused on its own. |
+| Accounting fix (pass 2) | Cache-write tokens were not recorded, so input could have been undercounted once caching is used. They are now counted and priced. |
+| Feedback triage (pass 2) | Operators classify each report: confirmed error, customer preference, policy change, duplicate, or no problem. Only confirmed errors should count as data-quality failures. |
 | Operator view | Admin → Operations shows spend by step and model, cost per search and per kept prospect, quality rates, problem reports, the stage funnel (with no causal claims) and stuck jobs. It shows metadata only, with no prospect content. |
+
+## Confirmed in pass 2
+- **Restart recovery:** `db/connection.ts` marks interrupted jobs and searches as failed on boot. Kept prospects and charged credits survive.
+- **Concurrency:** one running search per account (`assertNoOtherRunning`). Double-clicks reuse the same job.
+- **Printing:** the brief and print pages assemble stored data only and never call AI.
 
 ## Security & tenancy (unchanged, re-checked)
 - New per-tenant writes (feedback, cancel) go through `inCompany`/`getRun` scoping.
@@ -44,7 +53,8 @@ What's confirmed from the code, what's still a guess, and what was changed. No f
 - **Shared cross-tenant intelligence or caching:** deferred for privacy (POPIA). Results are cached only within a tenant.
 - **Prompt caching** of the system prompt and company digest: likely cheap to add, but it should be measured first.
 - **Provider fallback; mailbox-level email verification:** each needs an external provider account.
-- **A resolution workflow for problem reports**, which today are counted but not triaged.
+- **Using triaged feedback** to change ranking or qualification automatically: deferred until enough confirmed corrections exist to justify it.
+- **Per-account USD budgets and reservations:** per-account monthly token allowances, credits and one-search-at-a-time already bound spend. A reservation ledger is worth it only with concurrent self-service.
 - **Durable job queue:** only worth it with more than one instance.
 
 ## Recommended next experiment

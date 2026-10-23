@@ -1,6 +1,9 @@
 import "server-only";
-import { and, desc, eq, gte, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import { db, t } from "@/lib/db";
+import { PROBLEM_REASONS } from "@/lib/feedback-reasons";
+
+const REPORT_REASONS = Object.keys(PROBLEM_REASONS);
 
 /**
  * Installation-wide operational metrics for the administrator: counts, tokens
@@ -100,9 +103,9 @@ export function qualityMetrics(days = 30) {
   const withNamed = new Set(contacts.filter((c) => c.name && c.source).map((c) => c.prospectId)).size;
   const withEmail = new Set(contacts.filter((c) => c.email).map((c) => c.prospectId)).size;
   const reports = db
-    .select({ reason: t.feedback.dimension, n: sql<number>`count(*)` })
+    .select({ reason: t.feedback.dimension, n: sql<number>`count(*)`, open: sql<number>`sum(case when ${t.feedback.resolvedAt} is null then 1 else 0 end)` })
     .from(t.feedback)
-    .where(and(eq(t.feedback.kind, "correction"), gte(t.feedback.createdAt, since(days)), isNotNull(t.feedback.dimension)))
+    .where(and(eq(t.feedback.kind, "correction"), gte(t.feedback.createdAt, since(days)), inArray(t.feedback.dimension, REPORT_REASONS)))
     .groupBy(t.feedback.dimension)
     .all();
   const pct = (a: number, b: number) => (b > 0 ? `${Math.round((a / b) * 100)}%` : "—");
@@ -115,7 +118,7 @@ export function qualityMetrics(days = 30) {
       { label: "Published email found", value: pct(withEmail, previews.length), hint: "Previews with an email from a public page" },
       { label: "Kept (acceptance) rate", value: pct(kept, previews.length), hint: `${kept} of ${previews.length} previews kept` },
     ],
-    reports: reports.map((r) => ({ reason: r.reason!, n: n(r.n) })),
+    reports: reports.map((r) => ({ reason: r.reason!, n: n(r.n), open: n(r.open) })),
   };
 }
 
@@ -135,5 +138,61 @@ export function stuckJobs() {
     .select({ id: t.jobs.id, type: t.jobs.type, updatedAt: t.jobs.updatedAt })
     .from(t.jobs)
     .where(and(inArray(t.jobs.status, ["queued", "running"]), sql`${t.jobs.updatedAt} < ${Date.now() - 20 * 60_000}`))
+    .all();
+}
+
+/**
+ * Spend and results per account: the basis for unit economics. "Server" spend is
+ * the business's cost; "own key" spend is billed to the customer by Anthropic.
+ */
+export function spendByAccount(days = 30) {
+  const spend = db
+    .select({
+      accountId: t.aiInteractions.accountId,
+      calls: sql<number>`count(*)`,
+      tokens: sql<number>`sum(${t.aiInteractions.inputTokens} + ${t.aiInteractions.outputTokens})`,
+      micros: sql<number | null>`sum(${t.aiInteractions.costUsdMicros})`,
+      serverCalls: sql<number>`sum(case when ${t.aiInteractions.keySource} = 'account' then 0 else 1 end)`,
+      unpriced: sql<number>`sum(case when ${t.aiInteractions.costUsdMicros} is null then 1 else 0 end)`,
+    })
+    .from(t.aiInteractions)
+    .where(gte(t.aiInteractions.createdAt, since(days)))
+    .groupBy(t.aiInteractions.accountId)
+    .all();
+  if (!spend.length) return [];
+  const ids = spend.map((r) => r.accountId);
+  const names = new Map(db.select({ id: t.accounts.id, name: t.accounts.name, plan: t.accounts.plan }).from(t.accounts).where(inArray(t.accounts.id, ids)).all().map((a) => [a.id, a]));
+  const kept = new Map(
+    db
+      .select({ accountId: t.workspaces.accountId, n: sql<number>`count(*)` })
+      .from(t.prospects)
+      .innerJoin(t.workspaces, eq(t.workspaces.id, t.prospects.workspaceId))
+      .where(and(eq(t.prospects.inCrm, true), eq(t.prospects.isExample, false), gte(t.prospects.createdAt, since(days)), inArray(t.workspaces.accountId, ids)))
+      .groupBy(t.workspaces.accountId)
+      .all()
+      .map((r) => [r.accountId, n(r.n)]),
+  );
+  return spend
+    .map((r) => {
+      const usd = r.micros === null ? null : n(r.micros) / 1e6;
+      const k = kept.get(r.accountId) ?? 0;
+      const calls = n(r.calls);
+      const keySource = n(r.serverCalls) === calls ? "Server" : n(r.serverCalls) === 0 ? "Own key" : "Both";
+      return { accountId: r.accountId, name: names.get(r.accountId)?.name ?? "Deleted account", plan: names.get(r.accountId)?.plan ?? "—", calls, tokens: n(r.tokens), usd, unpriced: n(r.unpriced), kept: k, usdPerKept: usd !== null && k ? usd / k : null, keySource };
+    })
+    .sort((a, b) => b.tokens - a.tokens);
+}
+
+/** Reported problems no operator has triaged yet, newest first. */
+export function openReports(limit = 20) {
+  return db
+    .select({ id: t.feedback.id, reason: t.feedback.dimension, note: t.feedback.reason, createdAt: t.feedback.createdAt, prospect: t.prospects.name, account: t.accounts.name })
+    .from(t.feedback)
+    .innerJoin(t.workspaces, eq(t.workspaces.id, t.feedback.workspaceId))
+    .innerJoin(t.accounts, eq(t.accounts.id, t.workspaces.accountId))
+    .leftJoin(t.prospects, eq(t.prospects.id, t.feedback.prospectId))
+    .where(and(eq(t.feedback.kind, "correction"), inArray(t.feedback.dimension, REPORT_REASONS), isNull(t.feedback.resolvedAt)))
+    .orderBy(desc(t.feedback.createdAt))
+    .limit(limit)
     .all();
 }

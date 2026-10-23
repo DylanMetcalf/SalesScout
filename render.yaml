@@ -85,4 +85,8 @@ services:
         value: "1500000"
       - key: BATCH_BUDGET_USD
         sync: false
+      - key: AI_MONTHLY_BUDGET_USD
+        sync: false
+      - key: AI_MONTHLY_TOKEN_BUDGET
+        sync: false
 

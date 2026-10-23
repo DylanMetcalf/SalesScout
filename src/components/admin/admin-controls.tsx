@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { useAction } from "@/components/prospects/shared";
-import { adjustCreditsAction, createInviteAction, createResetLinkAction, revokeInviteAction, setAccessUntilAction, setAccountAccessAction, setAccountPausedAction, setEnquiryStatusAction, setPlanAction, setSwitchAction } from "@/app/actions/admin";
+import { adjustCreditsAction, createInviteAction, createResetLinkAction, revokeInviteAction, setAccessUntilAction, setAccountAccessAction, setAccountPausedAction, setEnquiryStatusAction, setPlanAction, setSwitchAction, resolveReportAction } from "@/app/actions/admin";
+import { RESOLUTIONS } from "@/lib/feedback-reasons";
 
 const toMillions = (tokens: number | null) => (tokens == null ? "" : String(tokens / 1_000_000));
 
@@ -228,6 +229,33 @@ export function SwitchControl({ id, label, detail, on, reason }: { id: string; l
       <Button size="sm" variant={on ? "primary" : "danger"} loading={set.pending} onClick={() => set.run(() => setSwitchAction(id, !on, why), { success: on ? "Resumed" : "Paused" })}>
         {on ? "Resume" : "Pause"}
       </Button>
+    </div>
+  );
+}
+
+/** Compact on/off for one AI step. */
+export function StepSwitch({ id, label, on }: { id: string; label: string; on: boolean }) {
+  const set = useAction();
+  return (
+    <li className="flex items-center justify-between gap-3 py-2 text-sm">
+      <span>{label} {on && <span className="ml-1 rounded bg-weak-soft px-1.5 py-0.5 text-xs font-semibold text-weak">PAUSED</span>}</span>
+      <Button size="sm" variant={on ? "primary" : "secondary"} aria-label={`${on ? "Resume" : "Pause"} ${label}`} loading={set.pending} onClick={() => set.run(() => setSwitchAction(id, !on, ""), { success: on ? `${label} resumed` : `${label} paused` })}>
+        {on ? "Resume" : "Pause"}
+      </Button>
+    </li>
+  );
+}
+
+export function ResolveReport({ id }: { id: string }) {
+  const set = useAction();
+  const [value, setValue] = useState("");
+  return (
+    <div className="flex gap-2">
+      <Select aria-label="How was this resolved?" value={value} onChange={(e) => setValue(e.target.value)} className="h-9 w-auto min-w-0 flex-1">
+        <option value="">Resolve as…</option>
+        {Object.entries(RESOLUTIONS).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+      </Select>
+      <Button size="sm" disabled={!value} loading={set.pending} onClick={() => set.run(() => resolveReportAction(id, value), { success: "Resolved" })}>Save</Button>
     </div>
   );
 }

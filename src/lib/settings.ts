@@ -7,8 +7,9 @@ import { db, t } from "@/lib/db";
  * without a deploy. Checked before every paid AI call.
  *   ai_paused         - all AI work stops (drafting, research, discovery)
  *   discovery_paused  - new searches and batches stop; everything else works
+ *   agent_paused:<agent> - one AI step stops (e.g. outreach drafts); the rest works
  */
-export type SwitchKey = "ai_paused" | "discovery_paused";
+export type SwitchKey = "ai_paused" | "discovery_paused" | `agent_paused:${string}`;
 type Switch = { on: boolean; reason?: string };
 
 export function getSwitch(key: SwitchKey): Switch {

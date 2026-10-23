@@ -35,7 +35,7 @@ test("costs split fresh input, cached input, output and searches", () => {
   const e = estimateCost("m", { input: 1_000_000, cacheRead: 500_000, output: 100_000, searches: 100 })!;
   // 0.5M fresh × $10 + 0.5M cached × $1 + 0.1M out × $50 + 100 searches × $0.01
   assert.equal(e.micros, (5 + 0.5 + 5 + 1) * 1e6);
-  assert.match(e.version, /^m:in10\/out50\/cache1\/search10$/);
+  assert.match(e.version, /^m:in10\/out50\/cache1\/write12.5\/search10$/);
   process.env.AI_PRICE_M_OUTPUT_USD_PER_MTOK = "0";
   assert.equal(estimateCost("m", { input: 0, cacheRead: 0, output: 1e6, searches: 0 })!.micros, 0);
   for (const k of Object.keys(process.env)) if (k.startsWith("AI_PRICE_")) delete process.env[k];
@@ -67,4 +67,49 @@ test("run spend only counts this run, from the batch start, and stays unknown wh
   row("i3", "run_2", 0, 7);
   assert.deepEqual(runSpend("run_1", new Date(Date.now() - 60_000)), { tokens: 110, usd: null });
   assert.deepEqual(runSpend("run_2", new Date(0)), { tokens: 110, usd: 7 / 1e6 });
+});
+
+test("cache writes are counted as input and priced at their own rate", () => {
+  Object.assign(process.env, { AI_PRICE_INPUT_USD_PER_MTOK: "10", AI_PRICE_OUTPUT_USD_PER_MTOK: "0", AI_PRICE_WEB_SEARCH_USD_PER_1000: "0" });
+  // 1M input of which 1M are cache writes at the default 1.25 × input.
+  assert.equal(estimateCost("m", { input: 1e6, cacheRead: 0, cacheWrite: 1e6, output: 0, searches: 0 })!.micros, 12.5e6);
+  for (const k of Object.keys(process.env)) if (k.startsWith("AI_PRICE_")) delete process.env[k];
+});
+
+test("one paused step stops only that step", async () => {
+  const ctx = { accountId: "acc_x", workspaceId: "ws", companyId: null };
+  setSwitch("agent_paused:outreach", { on: true }, "owner@example.com");
+  await assert.rejects(generate({ ctx, agent: "outreach", purpose: "t", system: "s", prompt: "p", schema: z.object({}) }), (e: unknown) => e instanceof AiUnavailableError && /Outreach drafts is paused/.test((e as Error).message));
+  // Another step gets past the switch (and stops later, at the missing account's key).
+  await assert.rejects(generate({ ctx, agent: "qualification", purpose: "t", system: "s", prompt: "p", schema: z.object({}) }), (e: unknown) => e instanceof AiUnavailableError && !/paused/.test((e as Error).message));
+  setSwitch("agent_paused:outreach", { on: false }, "owner@example.com");
+});
+
+test("the monthly budget counts only the business's key and fails closed without prices", async () => {
+  const { serverSpendThisMonth, serverBudgetBlock } = await import("../src/lib/ai/budget");
+  const db = getDb();
+  const base = { accountId: "a", workspaceId: "w", agent: "x", purpose: "p", model: "m", status: "ok" as const, outputTokens: 0 };
+  db.delete(t.aiInteractions).run();
+  db.insert(t.aiInteractions).values({ ...base, id: "s1", inputTokens: 600, keySource: "server", costUsdMicros: 2_000_000 }).run();
+  db.insert(t.aiInteractions).values({ ...base, id: "s2", inputTokens: 300, keySource: null }).run();
+  db.insert(t.aiInteractions).values({ ...base, id: "o1", inputTokens: 99_999, keySource: "account", costUsdMicros: 9e9 }).run();
+  assert.deepEqual(serverSpendThisMonth(), { tokens: 900, usd: 2, unpriced: 1, tokenCap: null, usdCap: null });
+  assert.equal(serverBudgetBlock(), null);
+  process.env.AI_MONTHLY_TOKEN_BUDGET = "900";
+  assert.match(serverBudgetBlock()!, /budget has been used/);
+  process.env.AI_MONTHLY_TOKEN_BUDGET = "901";
+  assert.equal(serverBudgetBlock(), null);
+  delete process.env.AI_MONTHLY_TOKEN_BUDGET;
+  process.env.AI_MONTHLY_BUDGET_USD = "5";
+  assert.match(serverBudgetBlock()!, /prices aren't/);
+  Object.assign(process.env, { AI_PRICE_INPUT_USD_PER_MTOK: "1", AI_PRICE_OUTPUT_USD_PER_MTOK: "1", AI_PRICE_WEB_SEARCH_USD_PER_1000: "1" });
+  assert.equal(serverBudgetBlock(), null);
+  process.env.AI_MONTHLY_BUDGET_USD = "2";
+  assert.match(serverBudgetBlock()!, /budget has been used/);
+
+  // And it actually stops a server-key call before any request is made.
+  db.insert(t.accounts).values({ id: "acc_first", name: "Owner", createdAt: new Date(1) }).run();
+  await assert.rejects(generate({ ctx: { accountId: "acc_first", workspaceId: "w", companyId: null }, agent: "outreach", purpose: "t", system: "s", prompt: "p", schema: z.object({}) }), (e: unknown) => e instanceof AiUnavailableError && /budget/.test((e as Error).message));
+  delete process.env.AI_MONTHLY_BUDGET_USD;
+  for (const k of Object.keys(process.env)) if (k.startsWith("AI_PRICE_")) delete process.env[k];
 });

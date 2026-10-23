@@ -13,3 +13,13 @@ export const PROBLEM_REASONS = {
   other: "Something else",
 } as const;
 export type ProblemReason = keyof typeof PROBLEM_REASONS;
+
+/** How an operator classifies a report. Only confirmed corrections say the data was wrong. */
+export const RESOLUTIONS = {
+  correction_confirmed: "Confirmed: our data was wrong",
+  customer_preference: "Customer preference, not an error",
+  policy_change: "Qualification rules need changing",
+  duplicate: "Duplicate: now suppressed",
+  not_an_issue: "Checked: no problem found",
+} as const;
+export type Resolution = keyof typeof RESOLUTIONS;

@@ -8,6 +8,8 @@ import { DiscoverForm } from "@/components/discover/discover-form";
 import { AiUnavailable } from "@/components/ai/ai-unavailable";
 import { RunStatus } from "@/components/discover/run-status";
 import { formatDate } from "@/lib/format";
+import { getSwitch } from "@/lib/settings";
+import { Notice } from "@/components/ui/error-state";
 
 export const metadata = { title: "Discover" };
 
@@ -17,6 +19,7 @@ export default async function Discover({ searchParams }: { searchParams: Promise
   const strategies = db.select().from(t.leadStrategies).where(inCompany(t.leadStrategies, tenant, eq(t.leadStrategies.status, "active"))).orderBy(desc(t.leadStrategies.updatedAt)).all();
   const runs = db.select().from(t.searchRuns).where(inCompany(t.searchRuns, tenant)).orderBy(desc(t.searchRuns.createdAt)).limit(30).all();
   const ai = aiConfigured(tenant.account.id);
+  const paused = [getSwitch("ai_paused"), getSwitch("discovery_paused"), getSwitch("agent_paused:prospect_discovery")].find((s) => s.on);
 
   return (
     <Page width="narrow" className="sm:py-14">
@@ -39,6 +42,11 @@ export default async function Discover({ searchParams }: { searchParams: Promise
       />
       </div>
 
+      {paused && (
+        <Notice tone="moderate" title="New searches are paused for now" className="mt-6">
+          {paused.reason ? `${paused.reason}. ` : ""}Your saved prospects, briefs and pipeline all still work. Please try searching again later.
+        </Notice>
+      )}
       {!ai && <AiUnavailable feature="Searching for real companies" className="mt-6" />}
 
       <section className="mt-14" aria-labelledby="h-runs">
