@@ -1,13 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { SITE, type Hue } from "@/content/site";
+import { SITE } from "@/content/site";
 import { cn } from "@/components/ui/cn";
+import { HUE_VAR } from "./hues";
 
-const HUE_VAR: Record<Hue, string> = {
-  cobalt: "var(--hue-cobalt)", vermilion: "var(--hue-vermilion)", jade: "var(--hue-jade)", saffron: "var(--hue-saffron)",
-  orchid: "var(--hue-orchid)", sky: "var(--hue-sky)", rose: "var(--hue-rose)", olive: "var(--hue-olive)",
-};
 
 /** A tangled line: how a problem feels before anyone has looked at it properly. */
 function Tangle({ className }: { className?: string }) {
@@ -34,13 +31,13 @@ export function HeroRoute() {
   };
 
   return (
-    <figure className="theme-ink brand-hero hero-grid relative overflow-hidden rounded-[28px] p-5 shadow-lg sm:p-8" aria-labelledby="fig-route">
+    <figure className="theme-ink brand-hero hero-grid relative overflow-hidden rounded-panel border border-border p-5 shadow-lg sm:p-8" aria-labelledby="fig-route">
       <figcaption id="fig-route" className="flex flex-wrap items-center justify-between gap-3">
         <span className="caption-mono text-subtle">Fig. 01 · A problem, routed</span>
         <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted">Example</span>
       </figcaption>
 
-      <div role="radiogroup" aria-label="Choose an example problem" className="-mx-1 mt-5 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin">
+      <div role="radiogroup" aria-label="Choose an example problem" className="-mx-1 mt-5 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin [mask-image:linear-gradient(90deg,#000_85%,transparent)] sm:[mask-image:none]">
         {routes.map((x, i) => (
           <button
             key={x.key}
@@ -55,6 +52,8 @@ export function HeroRoute() {
             onKeyDown={(e) => {
               if (e.key === "ArrowRight" || e.key === "ArrowDown") move(i + 1);
               else if (e.key === "ArrowLeft" || e.key === "ArrowUp") move(i - 1);
+              else if (e.key === "Home") move(0);
+              else if (e.key === "End") move(routes.length - 1);
               else return;
               e.preventDefault();
             }}
@@ -70,7 +69,9 @@ export function HeroRoute() {
         ))}
       </div>
 
-      <div key={r.key} className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,2fr)] lg:gap-6" aria-live="polite">
+      {/* Stable live region; only its keyed child is replaced, so screen readers announce the change. */}
+      <div aria-live="polite">
+      <div key={r.key} className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,2fr)] lg:gap-6">
         <div style={{ ["--hue" as string]: HUE_VAR[r.hue] }} className="hue relative rounded-2xl border border-[var(--hue-line)] bg-[var(--hue-soft)] p-5 animate-rise">
           <Tangle className="absolute top-4 right-4 w-20 text-[var(--hue)] opacity-80" />
           <p className="caption-mono text-[var(--hue-ink)]">In their words</p>
@@ -98,6 +99,7 @@ export function HeroRoute() {
             );
           })}
         </ol>
+      </div>
       </div>
     </figure>
   );

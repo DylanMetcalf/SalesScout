@@ -170,14 +170,6 @@
   --color-heading: var(--heading);
   --color-accent-bright: var(--accent-bright);
   --color-brand-deep: var(--brand-deep);
-  --color-hue-cobalt: var(--hue-cobalt);
-  --color-hue-vermilion: var(--hue-vermilion);
-  --color-hue-jade: var(--hue-jade);
-  --color-hue-saffron: var(--hue-saffron);
-  --color-hue-orchid: var(--hue-orchid);
-  --color-hue-sky: var(--hue-sky);
-  --color-hue-rose: var(--hue-rose);
-  --color-hue-olive: var(--hue-olive);
 
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
@@ -187,8 +179,9 @@
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
-  --radius-2xl: 22px;
-  --radius-3xl: 28px;
+  /* Public-site cards and hero panels. */
+  --radius-card: 22px;
+  --radius-panel: 28px;
 
   /* Type scale: never smaller than 12px, body at 14.5px for calm reading. */
   --text-xs: 12px;
@@ -379,7 +372,7 @@
   color-scheme: light;
 }
 .sidebar-brand {
-  background: #16161d;
+  background: var(--sidebar);
 }
 /* Ink with two quiet glows: cobalt (the work) and vermilion (the route). Hero moments only. */
 .brand-hero {
@@ -416,13 +409,13 @@
   --hue-ink: color-mix(in srgb, var(--hue) 78%, #000);
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .hue {
+  :where(:root:not([data-theme="light"])) .hue {
     --hue-ink: color-mix(in srgb, var(--hue) 85%, #fff);
     --hue-soft: color-mix(in srgb, var(--hue) 14%, var(--surface));
   }
 }
 .theme-ink .hue {
-  --hue-ink: color-mix(in srgb, var(--hue) 70%, #fff);
+  --hue-ink: color-mix(in srgb, var(--hue) 60%, #fff);
   --hue-soft: color-mix(in srgb, var(--hue) 16%, var(--surface));
   --hue-line: color-mix(in srgb, var(--hue) 40%, var(--surface));
 }

@@ -274,7 +274,7 @@ export function ProspectDetail({
               </section>
 
               <section className="rounded-xl bg-brand-tile p-5 text-brand-tile-fg">
-                <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.1em] text-signal">Next step</h2>
+                <h2 className="flex items-center gap-2 font-sans text-xs font-semibold uppercase tracking-[0.1em] text-brand-tile-fg/80"><span aria-hidden className="size-1.5 rounded-full bg-signal" />Next step</h2>
                 <p className="mt-1.5 text-[16px] font-medium leading-7">{p.suggestedNextStep ?? "Review the research, then decide whether to reach out."}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button onClick={() => setFollowUp(true)} className="inline-flex h-8 items-center gap-2 rounded-md bg-brand-tile-fg px-3 text-sm font-medium text-brand-tile transition-opacity hover:opacity-90">

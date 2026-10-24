@@ -51,7 +51,7 @@ export function LegalPage({ title, intro, sections, summary }: { title: string; 
               </div>
             </section>
           ))}
-          <section id="contact" className="scroll-mt-24 rounded-[22px] border border-border bg-surface p-6" aria-labelledby="l-contact">
+          <section id="contact" className="scroll-mt-24 rounded-card border border-border bg-surface p-6" aria-labelledby="l-contact">
             <h2 id="l-contact" className="text-xl">Contact us</h2>
             <p className="mt-2 leading-7 text-muted">
               Questions or requests: <a href={`mailto:${LEGAL.email}`} className="font-medium text-accent-text hover:underline">{LEGAL.email}</a>

@@ -23,6 +23,10 @@ export function MobileMenu({ nav, cta, signedIn }: { nav: { href: string; label:
       document.removeEventListener("mousedown", onClick);
     };
   }, [open]);
+  // Move focus into the sheet when it opens, so keyboard and screen-reader users land in it.
+  useEffect(() => {
+    if (open) ref.current?.querySelector<HTMLElement>("#mobile-menu a")?.focus();
+  }, [open]);
   const close = () => setOpen(false);
   return (
     <div ref={ref} className="md:hidden">
@@ -35,7 +39,7 @@ export function MobileMenu({ nav, cta, signedIn }: { nav: { href: string; label:
             <Link key={n.href} href={n.href} onClick={close} className="rounded-lg px-3 py-3 text-base font-medium hover:bg-surface-2">{n.label}</Link>
           ))}
           {signedIn && <Link href="/home" onClick={close} className="rounded-lg px-3 py-3 text-base font-medium hover:bg-surface-2">Open workspace</Link>}
-          <ButtonLink href="/start" onClick={close} variant="primary" size="lg" className="mt-2 rounded-full" trailing={<ArrowRight className="size-4" />}>{cta}</ButtonLink>
+          <ButtonLink href="/start" onClick={close} variant="primary" size="lg" shape="pill" className="mt-2" trailing={<ArrowRight className="size-4" />}>{cta}</ButtonLink>
         </nav>
       )}
     </div>

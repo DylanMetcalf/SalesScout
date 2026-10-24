@@ -73,7 +73,7 @@ export function IntakeForm({ idempotencyKey, initialArea }: { idempotencyKey: st
           </ul>
         </div>
       </aside>
-    <form action={action} className="flex flex-col gap-6 rounded-[22px] border border-border bg-surface p-5 shadow-md sm:p-9" noValidate>
+    <form action={action} className="flex flex-col gap-6 rounded-card border border-border bg-surface p-5 shadow-md sm:p-9" noValidate>
       <div className="lg:hidden">
         <Waypoints label="Your progress" steps={STEPS.map((l, i) => ({ label: l, state: stepStates(i) }))} />
       </div>
@@ -181,10 +181,10 @@ export function IntakeForm({ idempotencyKey, initialArea }: { idempotencyKey: st
         {step < 3 ? (
           <div className="flex items-center gap-2">
             {step === 2 && <Button type="button" variant="ghost" onClick={() => setStep(3)}>Skip</Button>}
-            <Button type="button" variant="primary" size="lg" className="rounded-full px-6" onClick={next} trailing={<ArrowRight className="size-4" />}>Continue</Button>
+            <Button type="button" variant="primary" size="xl" shape="pill" onClick={next} trailing={<ArrowRight className="size-4" />}>Continue</Button>
           </div>
         ) : (
-          <Button type="submit" variant="primary" size="lg" className="rounded-full px-6" loading={pending} trailing={<ArrowRight className="size-4" />}>{pending ? "Sending…" : "Send my problem"}</Button>
+          <Button type="submit" variant="primary" size="xl" shape="pill" loading={pending} trailing={<ArrowRight className="size-4" />}>{pending ? "Sending…" : "Send my problem"}</Button>
         )}
       </div>
     </form>

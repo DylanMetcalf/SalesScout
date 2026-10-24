@@ -41,7 +41,7 @@ export function Section({ id, band, narrow, children, className }: { id?: string
 export function CtaBand({ title, body = "A few minutes in your own words. We’ll take it from there." }: { title?: React.ReactNode; body?: string }) {
   return (
     <section className="px-3 pb-6 sm:px-5" aria-labelledby="h-cta">
-      <div className="theme-ink brand-hero hero-grid relative mx-auto overflow-hidden rounded-[28px] px-6 py-16 sm:px-14 sm:py-20">
+      <div className="theme-ink brand-hero hero-grid relative mx-auto overflow-hidden rounded-panel border border-border px-6 py-16 sm:px-14 sm:py-20">
         <svg aria-hidden className="pointer-events-none absolute inset-x-0 bottom-10 hidden h-24 w-full lg:block" viewBox="0 0 1200 96" preserveAspectRatio="none" fill="none">
           <path d="M-10 70 C 180 70 220 20 420 26 S 700 88 880 60 S 1060 40 1130 48" stroke="var(--signal)" strokeOpacity=".55" strokeWidth="2" strokeDasharray="2 8" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         </svg>
@@ -54,7 +54,7 @@ export function CtaBand({ title, body = "A few minutes in your own words. We’l
             <p className="mt-4 max-w-lg text-lg text-muted">{body}</p>
           </div>
           <div className="flex flex-col items-start gap-3">
-            <ButtonLink href="/start" variant="primary" size="lg" className="h-12 rounded-full px-6" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
+            <ButtonLink href="/start" variant="primary" size="xl" shape="pill" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
             <Link href="/book" className="text-sm text-muted underline-offset-4 hover:text-text hover:underline">Prefer to talk first? Book a call</Link>
           </div>
         </div>
@@ -78,7 +78,7 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
         <div className="ml-auto flex items-center gap-2">
           {signedIn && <ButtonLink href="/home" variant="ghost" className="max-sm:hidden">Open workspace</ButtonLink>}
           <div className="max-sm:hidden">
-            <ButtonLink href="/start" variant="primary" className="rounded-full px-4" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
+            <ButtonLink href="/start" variant="primary" shape="pill" className="px-4" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
           </div>
           <MobileMenu nav={SITE.nav} cta={SITE.cta} signedIn={signedIn} />
         </div>

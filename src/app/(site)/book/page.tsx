@@ -56,7 +56,7 @@ export default async function Book({ searchParams }: { searchParams: Promise<{ r
           <>
             <p className="mt-4 text-lg text-muted">Start by telling us briefly what’s not working. Then we’ll contact you to arrange a conversation.</p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <ButtonLink href="/start" variant="primary" size="lg" className="h-12 rounded-full px-6" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
+              <ButtonLink href="/start" variant="primary" size="xl" shape="pill" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
               <p className="text-sm text-muted">Or email <Email /></p>
             </div>
           </>
@@ -76,7 +76,7 @@ export default async function Book({ searchParams }: { searchParams: Promise<{ r
   return (
     <section className="px-3 pt-4 pb-6 sm:px-5" aria-labelledby="h-book">
       {s && <BookingOpened refId={ref!} />}
-      <div className="theme-ink brand-hero hero-grid mx-auto grid max-w-7xl gap-12 rounded-[28px] px-6 py-14 sm:px-12 lg:grid-cols-[0.8fr_1.2fr] lg:py-16">
+      <div className="theme-ink brand-hero hero-grid mx-auto grid max-w-7xl gap-12 rounded-panel px-6 py-14 sm:px-12 lg:grid-cols-[0.8fr_1.2fr] lg:py-16">
         <div>
           <Eyebrow index="→">Book a call</Eyebrow>
           <h1 id="h-book" className="mt-5 text-[38px] leading-[1.02] tracking-[-0.035em] sm:text-[54px]">{s ? <>Pick a time, <span className="accent-serif text-signal">{s.firstName}.</span></> : <>Pick a time that <span className="accent-serif text-signal">suits you.</span></>}</h1>

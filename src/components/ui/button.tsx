@@ -4,7 +4,8 @@ import { LoaderCircle } from "lucide-react";
 import { cn } from "./cn";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "subtle";
-type Size = "sm" | "md" | "lg";
+type Size = "sm" | "md" | "lg" | "xl";
+type Shape = "default" | "pill";
 
 const base =
   "group inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-[background,border-color,color,box-shadow,transform] duration-150 select-none disabled:opacity-55 active:translate-y-px focus-visible:shadow-[var(--ring)] outline-none";
@@ -16,13 +17,16 @@ const variants: Record<Variant, string> = {
   danger: "bg-surface text-weak border border-border hover:bg-weak-soft hover:border-weak/30",
 };
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-3 text-sm rounded-md",
-  md: "h-9 px-3.5 text-[14px] rounded-md",
-  lg: "h-11 px-5 text-base rounded-lg",
+  sm: "h-8 px-3 text-sm",
+  md: "h-9 px-3.5 text-[14px]",
+  lg: "h-11 px-5 text-base",
+  xl: "h-12 px-6 text-[16px]",
 };
+const radius: Record<Size, string> = { sm: "rounded-md", md: "rounded-md", lg: "rounded-lg", xl: "rounded-lg" };
 
-export function buttonClass(variant: Variant = "secondary", size: Size = "md", className?: string) {
-  return cn(base, variants[variant], sizes[size], className);
+/** `cn` doesn't merge Tailwind classes, so shape and size are options rather than className overrides. */
+export function buttonClass(variant: Variant = "secondary", size: Size = "md", className?: string, shape: Shape = "default") {
+  return cn(base, variants[variant], sizes[size], shape === "pill" ? "rounded-full" : radius[size], className);
 }
 
 type ButtonProps = ComponentProps<"button"> & {
@@ -32,6 +36,8 @@ type ButtonProps = ComponentProps<"button"> & {
   icon?: ReactNode;
   /** Shown after the label and nudged forward on hover: use for "go somewhere" actions. */
   trailing?: ReactNode;
+  /** "pill" for the public site's calls to action. */
+  shape?: Shape;
 };
 
 const Trailing = ({ children }: { children: ReactNode }) => (
@@ -39,14 +45,14 @@ const Trailing = ({ children }: { children: ReactNode }) => (
 );
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "secondary", size = "md", loading, icon, trailing, className, children, disabled, type = "button", ...props },
+  { variant = "secondary", size = "md", loading, icon, trailing, shape, className, children, disabled, type = "button", ...props },
   ref,
 ) {
   return (
     <button
       ref={ref}
       type={type}
-      className={buttonClass(variant, size, className)}
+      className={buttonClass(variant, size, className, shape)}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       {...props}
@@ -58,11 +64,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   );
 });
 
-type LinkProps = ComponentProps<typeof Link> & { variant?: Variant; size?: Size; icon?: ReactNode; trailing?: ReactNode };
+type LinkProps = ComponentProps<typeof Link> & { variant?: Variant; size?: Size; icon?: ReactNode; trailing?: ReactNode; shape?: Shape };
 
-export function ButtonLink({ variant = "secondary", size = "md", icon, trailing, className, children, ...props }: LinkProps) {
+export function ButtonLink({ variant = "secondary", size = "md", icon, trailing, shape, className, children, ...props }: LinkProps) {
   return (
-    <Link className={buttonClass(variant, size, className)} {...props}>
+    <Link className={buttonClass(variant, size, className, shape)} {...props}>
       {icon}
       {children}
       {trailing && <Trailing>{trailing}</Trailing>}

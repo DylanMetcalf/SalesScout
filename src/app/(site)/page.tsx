@@ -30,8 +30,8 @@ export default function Home() {
             <div>
               <p className="max-w-xl text-lg leading-8 text-muted sm:text-xl sm:leading-9">{SITE.hero.body}</p>
               <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
-                <ButtonLink href="/start" variant="primary" size="lg" className="h-12 rounded-full px-6 text-[16px]" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
-                <ButtonLink href="/book" variant="ghost" size="lg" className="h-12 rounded-full px-5">Book a conversation</ButtonLink>
+                <ButtonLink href="/start" variant="primary" size="xl" shape="pill" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
+                <ButtonLink href="/book" variant="ghost" size="xl" shape="pill" className="px-5">Book a conversation</ButtonLink>
               </div>
             </div>
             <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-border bg-border text-sm lg:justify-self-end">

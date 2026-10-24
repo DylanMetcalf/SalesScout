@@ -26,7 +26,7 @@ export default async function Received({ searchParams }: { searchParams: Promise
         label="Where things stand"
         steps={[
           { label: "The problem", state: "done" },
-          { label: "Context", state: "done" },
+          { label: "Context", state: "done", detail: s ? (Object.keys(s.context).length ? undefined : "Skipped") : "Optional" },
           { label: "Sent to us", state: "done" },
           { label: "A conversation", state: "current" },
         ]}
@@ -38,7 +38,7 @@ export default async function Received({ searchParams }: { searchParams: Promise
             {s ? <>Thank you, {s.firstName}. Your problem is in <span className="accent-serif text-signal">good hands.</span></> : <>Thank you. Your problem is in <span className="accent-serif text-signal">good hands.</span></>}
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-muted">You’ve given us a clearer picture of what’s happening. We’ll review it and work out the most useful next step for your business.</p>
-          <div className="mt-10 rounded-[22px] border border-border bg-surface p-6 shadow-sm sm:p-7">
+          <div className="mt-10 rounded-card border border-border bg-surface p-6 shadow-sm sm:p-7">
             <p className="mb-4 font-display text-[20px] font-[620] tracking-[-0.02em] text-heading">The quickest way forward is a short conversation.</p>
             <NextSteps refId={s ? ref! : null} hasBooking={Boolean(bookingUrl())} preference={s?.contactPreference ?? "email"} callRequested={Boolean(s?.callRequested)} />
           </div>
@@ -58,7 +58,7 @@ export default async function Received({ searchParams }: { searchParams: Promise
         </div>
 
         {s && (
-          <aside className="relative self-start rounded-[22px] border border-border bg-surface p-6 shadow-md animate-rise [animation-delay:240ms] lg:sticky lg:top-24" aria-labelledby="h-recap">
+          <aside className="relative self-start rounded-card border border-border bg-surface p-6 shadow-md animate-rise [animation-delay:240ms] lg:sticky lg:top-24" aria-labelledby="h-recap">
             <span aria-hidden className="absolute -top-3 left-6 rounded-full bg-text px-3 py-1 caption-mono text-bg">Your words</span>
             <h2 id="h-recap" className="mt-2 text-[22px] tracking-[-0.02em]">What you told us</h2>
             <p className="mt-0.5 text-xs text-subtle">Exactly as sent{s.companyName ? ` for ${s.companyName}` : ""}.</p>

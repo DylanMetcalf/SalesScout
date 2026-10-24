@@ -3,11 +3,8 @@ import { ArrowRight, ArrowUpRight, EyeOff, Lock, Trash2, UserRound } from "lucid
 import { SITE, type Hue } from "@/content/site";
 import { LogoMark } from "@/components/ui/logo";
 import { cn } from "@/components/ui/cn";
+import { HUE_VAR } from "./hues";
 
-export const HUE_VAR: Record<Hue, string> = {
-  cobalt: "var(--hue-cobalt)", vermilion: "var(--hue-vermilion)", jade: "var(--hue-jade)", saffron: "var(--hue-saffron)",
-  orchid: "var(--hue-orchid)", sky: "var(--hue-sky)", rose: "var(--hue-rose)", olive: "var(--hue-olive)",
-};
 const hue = (h: Hue) => ({ ["--hue" as string]: HUE_VAR[h] });
 
 /** Eight colour-coded problem cards, two of them wide, plus an ink card for "something else". */
@@ -20,10 +17,10 @@ export function CategoryGrid() {
           <Link
             href={`/start?area=${encodeURIComponent(c.area)}`}
             style={hue(c.hue)}
-            className="hue group/card relative flex h-full min-h-[168px] flex-col overflow-hidden rounded-[22px] border border-border bg-surface p-4 sm:min-h-[200px] sm:p-5 transition-[background,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-[var(--hue-line)] hover:bg-[var(--hue-soft)] hover:shadow-md focus-visible:border-[var(--hue-line)] focus-visible:bg-[var(--hue-soft)]"
+            className="hue group/card relative flex h-full min-h-[168px] flex-col overflow-hidden rounded-card border border-border bg-surface p-4 sm:min-h-[200px] sm:p-5 transition-[background,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-[var(--hue-line)] hover:bg-[var(--hue-soft)] hover:shadow-md focus-visible:border-[var(--hue-line)] focus-visible:bg-[var(--hue-soft)]"
           >
             <div className="flex items-start justify-between">
-              <span className="flex size-11 items-center justify-center rounded-xl bg-[var(--hue-soft)] text-[var(--hue-ink)] transition-[background,color,transform] duration-200 group-hover/card:-rotate-6 group-hover/card:bg-[var(--hue)] group-hover/card:text-white" aria-hidden>
+              <span className="flex size-11 items-center justify-center rounded-xl bg-[var(--hue-soft)] text-[var(--hue-ink)] transition-[background,color,transform] duration-200 group-hover/card:-rotate-6 group-hover/card:bg-[var(--hue)] group-hover/card:text-bg" aria-hidden>
                 <c.icon className="size-5" />
               </span>
               <span className="caption-mono text-subtle">{String(i + 1).padStart(2, "0")}</span>
@@ -38,7 +35,7 @@ export function CategoryGrid() {
         </li>
       ))}
       <li className="reveal col-span-2">
-        <Link href="/start" className="theme-ink group/card relative flex h-full min-h-[200px] flex-col justify-between overflow-hidden rounded-[22px] bg-[var(--bg)] p-6 transition-transform duration-200 hover:-translate-y-0.5">
+        <Link href="/start" className="theme-ink group/card relative flex h-full min-h-[200px] flex-col justify-between overflow-hidden rounded-card bg-[var(--bg)] p-6 transition-transform duration-200 hover:-translate-y-0.5">
           <span className="caption-mono text-subtle">09 · Something else</span>
           <div>
             <p className="font-display text-[26px] leading-tight font-[620] tracking-[-0.02em] text-heading sm:text-[30px]">Not on the list? <span className="accent-serif text-signal">Describe it</span> in your own words.</p>
@@ -70,7 +67,7 @@ export function ProcessRoute() {
                 {i === 0 && <span className="rounded-full bg-signal-soft px-2.5 py-1 text-xs font-semibold text-signal-text">You do this</span>}
                 {i > 0 && <span className="rounded-full bg-surface-3 px-2.5 py-1 text-xs font-semibold text-muted">We do this</span>}
               </div>
-              <div className="mt-6 rounded-[22px] border border-border bg-surface p-6">
+              <div className="mt-6 rounded-card border border-border bg-surface p-6">
                 <h3 className="font-display text-[22px] font-[620] tracking-[-0.02em] text-heading">{s.title}</h3>
                 <p className="mt-2 text-[15px] text-muted">{s.text}</p>
                 <p className="mt-5 flex items-center gap-2 border-t border-dashed border-border pt-4 text-sm text-text">
@@ -90,7 +87,7 @@ export function ExampleOutput() {
   const r = SITE.routes[2];
   return (
     <div className="mt-14 grid items-center gap-8 lg:grid-cols-[0.9fr_auto_1.3fr] lg:gap-6">
-      <figure className="reveal rounded-[22px] border border-border bg-surface p-6 shadow-sm">
+      <figure className="reveal rounded-card border border-border bg-surface p-6 shadow-sm">
         <figcaption className="caption-mono text-subtle">What you send</figcaption>
         <blockquote className="mt-4 border-l-2 border-signal pl-4 text-[17px] leading-7 text-heading">“{r.said}”</blockquote>
         <p className="mt-5 text-sm text-muted">A few sentences. No forms full of jargon, no technical terms.</p>
@@ -133,7 +130,7 @@ export function PrivacyStrip() {
     { icon: Trash2, text: "Deleted whenever you ask" },
   ];
   return (
-    <ul className="mt-12 grid gap-px overflow-hidden rounded-[22px] border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+    <ul className="mt-12 grid gap-px overflow-hidden rounded-card border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
       {items.map((x) => (
         <li key={x.text} className="flex items-center gap-3 bg-surface px-5 py-4 text-[15px]">
           <x.icon className="size-4 shrink-0 text-accent" aria-hidden /> {x.text}

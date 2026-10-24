@@ -12,6 +12,9 @@ const shot = async (p, name) => OUT && p.screenshot({ path: `${OUT}/${name}.png`
 const axe = fs.existsSync("node_modules/axe-core/axe.min.js") ? fs.readFileSync("node_modules/axe-core/axe.min.js", "utf8") : null;
 const a11y = async (p, label) => {
   if (!axe) return;
+  // Let entrance animations finish and streamed metadata (the <title>) arrive before measuring.
+  await p.waitForTimeout(900);
+  await p.waitForFunction(() => document.title.length > 0, null, { timeout: 5000 }).catch(() => {});
   await p.addScriptTag({ content: axe });
   const v = await p.evaluate(async () => (await window.axe.run(document, { runOnly: ["wcag2a", "wcag2aa"] })).violations.map((x) => `${x.id} (${x.nodes.length}): ${x.nodes[0]?.target}`));
   v.length ? errors.push(...v.map((x) => `${label} a11y: ${x}`)) : ok(`${label}: no WCAG A/AA violations`);
