@@ -9,7 +9,7 @@
  */
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
-import type { Analysis, ProblemContext, ProductSignal, Research, TextDoc, Visibility } from "@/lib/opportunities/types";
+import type { Analysis, Briefing, ProblemContext, ProductSignal, Research, TextDoc, Visibility } from "@/lib/opportunities/types";
 import { STAGES as OPP_STAGES } from "@/lib/opportunities/types";
 
 const id = () => text("id").primaryKey();
@@ -777,6 +777,39 @@ export const opportunityDocuments = sqliteTable(
     createdAt: createdAt(),
   },
   (t) => [uniqueIndex("opportunity_documents_version_idx").on(t.opportunityId, t.kind, t.version)],
+);
+
+/**
+ * The customer's Business Problem & Solution Briefing: one per opportunity.
+ * Only a SHA-256 hash of the private link's token is stored; the token itself
+ * exists only in the link we hand to the customer.
+ */
+export const briefings = sqliteTable(
+  "briefings",
+  {
+    id: id(),
+    opportunityId: text("opportunity_id").notNull().unique().references(() => opportunities.id, { onDelete: "cascade" }),
+    /** Human-readable, non-secret reference shown on the briefing and passed to booking (e.g. SSB-7K3Q-92XD). */
+    reference: text("reference").notNull().unique(),
+    status: text("status", { enum: ["queued", "generating", "ready", "failed", "manual"] }).notNull().default("queued"),
+    content: json<Briefing>("content"),
+    model: text("model"),
+    attempts: integer("attempts").notNull().default(0),
+    error: text("error"),
+    tokenHash: text("token_hash").unique(),
+    tokenIssuedAt: integer("token_issued_at", { mode: "timestamp_ms" }),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
+    revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+    firstViewedAt: integer("first_viewed_at", { mode: "timestamp_ms" }),
+    lastViewedAt: integer("last_viewed_at", { mode: "timestamp_ms" }),
+    viewCount: integer("view_count").notNull().default(0),
+    emailStatus: text("email_status", { enum: ["pending", "sent", "failed", "not_configured"] }).notNull().default("pending"),
+    emailError: text("email_error"),
+    emailSentAt: integer("email_sent_at", { mode: "timestamp_ms" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("briefings_status_idx").on(t.status)],
 );
 
 /** Invite codes created by an administrator. They open sign-up even when ALLOW_SIGNUPS=false. */

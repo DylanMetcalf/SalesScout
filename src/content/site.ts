@@ -36,7 +36,7 @@ export const SITE = {
   operator: "Sales Scout is a Mea Creo service.",
   // Shown in the footer, booking page and legal pages.
   contactEmail: "salesscout@meacreo.co.za",
-  cta: "Tell us your problem",
+  cta: "Explore my problem",
 
   nav: [
     { href: "/#how", label: "How it works" },
@@ -46,7 +46,7 @@ export const SITE = {
 
   hero: {
     eyebrow: "Sales Scout by Mea Creo",
-    body: "Tell us what’s slowing your business down. We’ll help you understand the problem, explore practical solutions, and work out what to do next. Software, AI or automation, only where it genuinely helps.",
+    body: "Tell us what’s not working. We’ll explore the problem, identify a potential solution, and send you a private briefing showing what the next step could look like.",
     note: "No technical knowledge needed. Explain it in your own words.",
   },
 
@@ -110,16 +110,16 @@ export const SITE = {
   ] as { key: string; label: string; hue: Hue; said: string; steps: { kind: string; text: string }[] }[],
 
   steps: [
-    { icon: MessageSquareText, title: "Tell us what’s happening", text: "Explain the problem in your own words. A few minutes is enough." },
-    { icon: ScanSearch, title: "We work out the right approach", text: "We review it, ask the right questions and look at what could improve it." },
-    { icon: Handshake, title: "We agree a practical way forward", text: "We talk it through and, where it makes sense, scope a solution that fits your business." },
+    { icon: MessageSquareText, title: "Tell us what’s not working", text: "Describe the problem in your own words. About five minutes, no technical knowledge needed." },
+    { icon: ScanSearch, title: "Get your briefing", text: "We analyse it and prepare a private Business Problem & Solution Briefing: our read of the problem and a direction worth exploring." },
+    { icon: Handshake, title: "Let’s discuss your solution", text: "A short conversation to check our understanding, clarify what you need and work out how to take it forward." },
   ] as Item[],
 
   approach: [
-    { icon: Compass, title: "Problem first", text: "We start with how your business works, not with a technology we want to sell." },
-    { icon: ShieldCheck, title: "Straight answers", text: "If software isn’t the answer, or it isn’t worth it yet, we’ll say so." },
-    { icon: Layers, title: "Sized to fit", text: "Small, useful steps you can see working, rather than big promises." },
-    { icon: Wrench, title: "Built to be used", text: "Tools your team will actually use, handed over with the know-how to run them." },
+    { icon: Compass, title: "Check our understanding", text: "A briefing is built only from what you wrote. Talking it through corrects anything we’ve misread." },
+    { icon: ShieldCheck, title: "Clarify what you really need", text: "The details that decide the right solution only come out in conversation: volumes, tools, people, exceptions." },
+    { icon: Layers, title: "Size it sensibly", text: "Start with the smallest useful step, see it working, then extend. No big-bang projects." },
+    { icon: Wrench, title: "Straight answers", text: "If software isn’t the answer, or it isn’t worth it yet, we’ll tell you." },
   ] as Item[],
 
   bookingSteps: [

@@ -129,3 +129,18 @@ export const DOC_KINDS = {
   handover: "Project handover",
 } as const;
 export type DocKind = keyof typeof DOC_KINDS;
+
+/** The customer-facing briefing: an initial assessment and one proposed direction, never an implementation plan. */
+export type BenefitArea = "time" | "consistency" | "visibility" | "responsiveness" | "workload" | "quality" | "customer_experience";
+export type Briefing = {
+  title: string;
+  summary: { challenge: string; affects: string; underlyingIssue: string };
+  assessment: { whyItMatters: string; consequences: string[]; assumptions: string[]; questions: string[] };
+  solution: { name: string; concept: string; howItWorks: string[]; approaches: string[] };
+  benefits: { area: BenefitArea; text: string }[];
+  direction: { approach: string; investigate: string[]; dependencies: string[] };
+  alternatives: { name: string; when: string }[];
+  nextSteps: { clarify: string[]; information: string[]; howWeHelp: string };
+  confidence: "low" | "medium" | "high";
+  confidenceNote: string;
+};

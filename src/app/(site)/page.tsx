@@ -7,8 +7,8 @@ import { CategoryGrid, ExampleOutput, PrivacyStrip, ProcessRoute } from "@/compo
 import { siteUrl } from "@/lib/site-url";
 
 export const metadata = {
-  title: { absolute: `${SITE.name}: your business has a better way forward` },
-  description: "Tell us what’s slowing your business down. We’ll help you understand the problem and find a practical way forward with software, AI or automation.",
+  title: { absolute: `${SITE.name}: what’s slowing your business down?` },
+  description: "Tell us what’s not working. We’ll explore the problem, identify a potential solution, and send you a private briefing on what the next step could look like.",
   alternates: { canonical: "/" },
 };
 
@@ -24,18 +24,18 @@ export default function Home() {
         <div className="relative mx-auto max-w-6xl px-4 pt-14 pb-10 sm:px-6 sm:pt-24">
           <Eyebrow index="00" className="animate-rise">{SITE.hero.eyebrow}</Eyebrow>
           <h1 id="h-hero" className="mt-6 max-w-5xl text-[46px] leading-[0.98] tracking-[-0.04em] animate-rise sm:text-[84px] lg:text-[104px]">
-            Your business has a better <span className="accent-serif text-signal">way forward.</span>
+            What’s slowing your business <span className="accent-serif text-signal">down?</span>
           </h1>
           <div className="mt-10 grid gap-10 animate-rise [animation-delay:120ms] lg:grid-cols-[1.2fr_1fr] lg:items-end">
             <div>
               <p className="max-w-xl text-lg leading-8 text-muted sm:text-xl sm:leading-9">{SITE.hero.body}</p>
               <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
                 <ButtonLink href="/start" variant="primary" size="xl" shape="pill" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
-                <ButtonLink href="/book" variant="ghost" size="xl" shape="pill" className="px-5">Book a conversation</ButtonLink>
+                <ButtonLink href="/book" variant="ghost" size="xl" shape="pill" className="px-5">Book a call</ButtonLink>
               </div>
             </div>
             <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-border bg-border text-sm lg:justify-self-end">
-              {[["Time", "About 5 minutes"], ["You need", "Your own words"], ["Commitment", "None"]].map(([k, v]) => (
+              {[["Time", "About 5 minutes"], ["You get", "A private briefing"], ["Commitment", "None"]].map(([k, v]) => (
                 <div key={k} className="bg-surface/80 px-4 py-3">
                   <dt className="caption-mono text-subtle">{k}</dt>
                   <dd className="mt-1 font-medium text-heading">{v}</dd>
@@ -58,23 +58,23 @@ export default function Home() {
       </Section>
 
       <Section id="how" band>
-        <SectionHead id="h-how" index="02" eyebrow="How it works" title={<>Three steps. You only do <span className="accent-serif text-signal">the first.</span></>} />
+        <SectionHead id="h-how" index="02" eyebrow="How it works" title={<>Describe it. Get a briefing. <span className="accent-serif text-signal">Talk it through.</span></>} />
         <ProcessRoute />
       </Section>
 
       <Section id="example">
-        <SectionHead id="h-example" index="03" eyebrow="What you get" title={<>From a few sentences to a <span className="accent-serif text-signal">clear picture.</span></>} lead="After we’ve read your problem, we write up what we understand, what we’d ask, and where a solution might lie, so the conversation starts in the right place." />
+        <SectionHead id="h-example" index="03" eyebrow="What you get" title={<>From a few sentences to a <span className="accent-serif text-signal">clear direction.</span></>} lead="Your Business Problem & Solution Briefing sets out how we understand the problem, why it matters, one solution worth exploring and what we’d want to clarify. It’s a starting point, not a finished plan: the detail comes from talking it through." />
         <ExampleOutput />
       </Section>
 
       <Section id="approach" band>
         <div className="grid gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
           <div>
-            <Eyebrow index="04">How we work</Eyebrow>
+            <Eyebrow index="04">Why a conversation</Eyebrow>
             <h2 id="h-approach" className="mt-4 text-[34px] leading-[1.05] tracking-[-0.03em] sm:text-[48px]">
-              We’ll tell you if software <span className="accent-serif text-signal">isn’t the answer.</span>
+              A briefing starts the thinking. A conversation <span className="accent-serif text-signal">moves it forward.</span>
             </h2>
-            <p className="mt-5 max-w-lg text-lg leading-8 text-muted">Most problems aren’t solved by more software. They’re solved by understanding the work properly, then building only what helps.</p>
+            <p className="mt-5 max-w-lg text-lg leading-8 text-muted">Your briefing shows we’ve understood the problem and can see a promising direction. Turning that into something that works for your business takes a proper conversation, and that’s where we come in.</p>
           </div>
           <ol className="flex flex-col">
             {SITE.approach.map((a, i) => (

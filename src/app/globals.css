@@ -2,8 +2,9 @@
 
 /*
  * Sales Scout tokens: "Field Notes".
- * Warm paper and deep ink, cobalt for action, vermilion for the route (the
- * brand's signature line and waypoints), and eight category hues that give
+ * Warm paper and deep ink, and the icon's vermilion as the one brand accent:
+ * a deeper shade for actions and links (AA with white text), the icon's exact
+ * shade for the route, waypoints and accent words. Eight category hues give
  * each kind of business problem its own recognisable colour. Status colours
  * are reserved for meaning. Every text pairing is checked for WCAG AA.
  */
@@ -22,16 +23,16 @@
   --brand-tile: #16161d;
   --brand-tile-fg: #fffdf8;
   /* Where Sales Scout shows its reasoning. */
-  --insight: #eef0ff;
-  --insight-border: #cfd5ff;
+  --insight: #fbf1ec;
+  --insight-border: #f0d3c6;
   --sidebar: #16161d;
 
   --brand-deep: #121218;
-  --accent: #2f45e0;
-  --accent-bright: #5b6cff;
-  --accent-hover: #2436c0;
-  --accent-soft: #e4e7ff;
-  --accent-text: #2638c8;
+  --accent: #c2381a;
+  --accent-bright: #e8492a;
+  --accent-hover: #a3361a;
+  --accent-soft: #fde3d9;
+  --accent-text: #a3361a;
   --accent-fg: #ffffff;
 
   /* The route: the brand's signature line, waypoints and "look here" moments. */
@@ -88,16 +89,16 @@
     --heading: #fbf9f4;
     --brand-tile: #fffdf8;
     --brand-tile-fg: #16161d;
-    --insight: #1d2040;
-    --insight-border: #313768;
+    --insight: #2a1a14;
+    --insight-border: #4a2a1e;
     --sidebar: #0c0c10;
     --brand-deep: #0c0c10;
-    --accent: #8f9bff;
-    --accent-bright: #b3bbff;
-    --accent-hover: #a7b1ff;
-    --accent-soft: #23284f;
-    --accent-text: #aab3ff;
-    --accent-fg: #0f1030;
+    --accent: #ff7a52;
+    --accent-bright: #ffa07f;
+    --accent-hover: #ff9370;
+    --accent-soft: #3f2219;
+    --accent-text: #ffa07f;
+    --accent-fg: #1a0b06;
     --signal: #ff7a52;
     --signal-soft: #3f2219;
     --signal-text: #ffb59c;
@@ -320,21 +321,21 @@
   --heading: #fffdf8;
   --brand-tile: #fffdf8;
   --brand-tile-fg: #16161d;
-  --accent: #8f9bff;
-  --accent-bright: #b3bbff;
-  --accent-hover: #a7b1ff;
-  --accent-soft: #262a52;
-  --accent-text: #b3bbff;
-  --accent-fg: #0f1030;
-  --insight: #1d2040;
-  --insight-border: #313768;
+  --accent: #ff7a52;
+  --accent-bright: #ffa07f;
+  --accent-hover: #ff9370;
+  --accent-soft: #3f2219;
+  --accent-text: #ffa07f;
+  --accent-fg: #1a0b06;
+  --insight: #2a1a14;
+  --insight-border: #4a2a1e;
   --signal: #ff7a52;
   --strong: #63d39a;
   --strong-soft: #173a29;
   --signal-soft: #3f2219;
   --signal-text: #ffb59c;
   --neutral-soft: #262630;
-  --ring: 0 0 0 3px rgb(179 187 255 / 0.4);
+  --ring: 0 0 0 3px rgb(255 160 127 / 0.45);
   color: var(--text);
   color-scheme: dark;
 }
@@ -349,11 +350,11 @@
   --text-muted: #4a4a55;
   --text-subtle: #5f5e68;
   --heading: #111118;
-  --accent: #2f45e0;
-  --accent-bright: #5b6cff;
-  --accent-hover: #2436c0;
-  --accent-soft: #e4e7ff;
-  --accent-text: #2638c8;
+  --accent: #c2381a;
+  --accent-bright: #e8492a;
+  --accent-hover: #a3361a;
+  --accent-soft: #fde3d9;
+  --accent-text: #a3361a;
   --accent-fg: #ffffff;
   --signal: #e8492a;
   --weak: #b0352a;
@@ -362,23 +363,23 @@
   --strong-soft: #e0efe5;
   --moderate: #8a5604;
   --moderate-soft: #f6ead2;
-  --insight: #eef0ff;
-  --insight-border: #cfd5ff;
+  --insight: #fbf1ec;
+  --insight-border: #f0d3c6;
   --signal-soft: #fde3d9;
   --signal-text: #a3361a;
   --neutral-soft: #ebe7de;
-  --ring: 0 0 0 3px rgb(91 108 255 / 0.4);
+  --ring: 0 0 0 3px rgb(232 73 42 / 0.4);
   color: var(--text);
   color-scheme: light;
 }
 .sidebar-brand {
   background: var(--sidebar);
 }
-/* Ink with two quiet glows: cobalt (the work) and vermilion (the route). Hero moments only. */
+/* Ink with one warm glow of the brand accent. Hero moments only. */
 .brand-hero {
   background:
-    radial-gradient(70% 90% at 100% 0%, rgb(47 69 224 / 0.32), transparent 60%),
-    radial-gradient(50% 70% at 0% 100%, rgb(232 73 42 / 0.16), transparent 60%),
+    radial-gradient(70% 90% at 100% 0%, rgb(232 73 42 / 0.22), transparent 60%),
+    radial-gradient(60% 80% at 0% 100%, rgb(232 73 42 / 0.08), transparent 60%),
     #121218;
 }
 /* Faint survey grid behind heroes: dots at the intersections, like graph paper. */
@@ -528,5 +529,30 @@
       animation-timeline: view();
       animation-range: entry 10% cover 45%;
     }
+  }
+}
+
+/*
+ * Briefings are for viewing online: no print/export actions are offered, and printing shows a
+ * note instead of the content. Text selection is discouraged. Neither is a security control;
+ * screenshots and retyping are always possible.
+ */
+.briefing-protect {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.briefing-print-note {
+  display: none;
+}
+@media print {
+  .briefing-protect,
+  header {
+    display: none !important;
+  }
+  .briefing-print-note {
+    display: block;
+    padding: 40mm 0;
+    text-align: center;
+    font-size: 14pt;
   }
 }

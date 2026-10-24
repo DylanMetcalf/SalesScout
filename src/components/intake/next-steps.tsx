@@ -36,7 +36,7 @@ export function NextSteps({ refId, hasBooking, preference, callRequested }: { re
   return (
     <div className="flex flex-col gap-4">
       {hasBooking ? (
-        <ButtonLink href={bookHref} variant="primary" size="xl" trailing={<ArrowRight className="size-4" />} shape="pill" className="self-start">Book a conversation</ButtonLink>
+        <ButtonLink href={bookHref} variant="primary" size="xl" trailing={<ArrowRight className="size-4" />} shape="pill" className="self-start">Let’s discuss your solution</ButtonLink>
       ) : asked ? (
         <p className="flex items-center gap-2 font-medium text-heading" role="status"><CircleCheck className="size-5 text-accent animate-check-pop" aria-hidden /> Thanks. We’ll contact you to arrange a time.</p>
       ) : (

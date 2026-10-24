@@ -163,8 +163,8 @@ export function IntakeForm({ idempotencyKey, initialArea }: { idempotencyKey: st
         <label className="flex items-start gap-3 rounded-lg border border-border bg-surface-2/60 p-4 text-sm">
           <input type="checkbox" name="consent" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[var(--accent)]" aria-invalid={state?.field === "consent" || undefined} />
           <span>
-            I’m happy for Sales Scout (Mea Creo) to use this information to understand my problem and contact me about it, as described in the{" "}
-            <a href="/privacy#problems" target="_blank" className="font-medium text-accent-text underline">Privacy Policy</a>. We may use AI to help us review it, and look at your company’s public website.
+            I’m happy for Sales Scout (Mea Creo) to use this information to prepare my briefing and contact me about it, as described in the{" "}
+            <a href="/privacy#problems" target="_blank" className="font-medium text-accent-text underline">Privacy Policy</a>. My problem will be analysed with the help of AI, and the briefing is shared only with me through a private link.
           </span>
         </label>
       </div>
@@ -184,7 +184,7 @@ export function IntakeForm({ idempotencyKey, initialArea }: { idempotencyKey: st
             <Button type="button" variant="primary" size="xl" shape="pill" onClick={next} trailing={<ArrowRight className="size-4" />}>Continue</Button>
           </div>
         ) : (
-          <Button type="submit" variant="primary" size="xl" shape="pill" loading={pending} trailing={<ArrowRight className="size-4" />}>{pending ? "Sending…" : "Send my problem"}</Button>
+          <Button type="submit" variant="primary" size="xl" shape="pill" loading={pending} trailing={<ArrowRight className="size-4" />}>{pending ? "Sending…" : "Get my briefing"}</Button>
         )}
       </div>
     </form>

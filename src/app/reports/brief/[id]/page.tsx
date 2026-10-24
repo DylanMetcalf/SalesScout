@@ -62,7 +62,7 @@ export default async function Brief({ params, searchParams }: { params: Promise<
     <div className="min-h-dvh bg-[#f4f1ea] py-8 print:bg-white print:py-0">
       {print === "1" && <AutoPrint />}
       <div className="mx-auto mb-4 flex max-w-[794px] items-center justify-between px-4 print:hidden">
-        <a href={`/prospects/${id}`} className="text-sm font-medium text-[#2638c8] hover:underline">← Back to prospect</a>
+        <a href={`/prospects/${id}`} className="text-sm font-medium text-[#a3361a] hover:underline">← Back to prospect</a>
         <PrintButton />
       </div>
 
@@ -90,7 +90,7 @@ export default async function Brief({ params, searchParams }: { params: Promise<
             <h1 className="font-display text-[28px] leading-tight font-[650] text-[#16161d]">{p.name}</h1>
             <p className="mt-0.5 text-[13px] text-[#4a4a55]">
               {[p.industry, p.location].filter(Boolean).join(" · ") || "Industry and location not confirmed"}
-              {p.website && <> · <a href={p.website} className="text-[#2638c8]">{p.domain ?? p.website}</a></>}
+              {p.website && <> · <a href={p.website} className="text-[#a3361a]">{p.domain ?? p.website}</a></>}
             </p>
           </div>
           <dl className="shrink-0 text-right text-[11px] leading-snug">
@@ -160,7 +160,7 @@ export default async function Brief({ params, searchParams }: { params: Promise<
                 {sources.slice(0, 6).map((e) => (
                   <li key={e.id}>
                     {e.title}
-                    {e.url && <span className="block truncate text-[11px] text-[#2638c8]">{e.url}</span>}
+                    {e.url && <span className="block truncate text-[11px] text-[#a3361a]">{e.url}</span>}
                   </li>
                 ))}
               </ol>
@@ -177,7 +177,7 @@ export default async function Brief({ params, searchParams }: { params: Promise<
           </Section>
         </div>
 
-        <section className="break-inside-avoid border-l-4 border-[#2f45e0] py-1 pl-4">
+        <section className="break-inside-avoid border-l-4 border-[#c2381a] py-1 pl-4">
           <p className="font-mono text-[11px] tracking-[0.1em] text-[#a3361a] uppercase">Recommended next step</p>
           <p className="mt-1 text-[14px] font-medium">{p.suggestedNextStep ?? "Review the research, then decide whether to reach out."}</p>
         </section>

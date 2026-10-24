@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { siteUrl } from "@/lib/site-url";
 
-const PUBLIC = ["/api/billing/paystack", "/reset-password", "/opengraph-image", "/privacy", "/terms", "/robots.txt", "/sitemap.xml", "/start", "/book", "/login", "/signup", "/_next", "/favicon", "/brand", "/api/health"];
+const PUBLIC = ["/api/billing/paystack", "/reset-password", "/opengraph-image", "/privacy", "/terms", "/robots.txt", "/sitemap.xml", "/start", "/book", "/b/", "/api/briefings/status", "/login", "/signup", "/_next", "/favicon", "/brand", "/api/health"];
 
 /** Cheap gate: bounce requests without a session cookie. Real validation happens server-side. */
 export function middleware(req: NextRequest) {

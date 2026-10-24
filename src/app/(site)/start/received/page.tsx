@@ -4,20 +4,30 @@ import { bookingUrl } from "@/lib/booking";
 import { Eyebrow } from "@/components/site/chrome";
 import { IconBadge } from "@/components/site/visuals";
 import { NextSteps } from "@/components/intake/next-steps";
+import { BriefingStatus } from "@/components/intake/briefing-status";
+import { cookies } from "next/headers";
+import { opportunityByRef } from "@/lib/opportunities/service";
+import { briefingFor, customerEmailConfigured, hashToken } from "@/lib/opportunities/briefings";
+import { BRIEFING_COOKIE } from "@/lib/opportunities/briefing-cookie";
 import { Waypoints } from "@/components/brand/waypoints";
 
 export const metadata = { title: "We’ve got it", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 const WHAT_NEXT = [
-  { icon: ScanSearch, title: "We review it", text: "A person reads what you sent and looks at your public website to understand your business." },
-  { icon: MessagesSquare, title: "We talk it through", text: "In a short conversation we ask the questions that matter: how the work happens today, what it costs you, what good looks like." },
-  { icon: RouteIcon, title: "You get a clear next step", text: "If we can help, we’ll suggest a practical way forward. If we can’t, we’ll say so." },
+  { icon: ScanSearch, title: "Your briefing", text: "Our initial read of the problem and one direction worth exploring, prepared with the help of AI. Private to you." },
+  { icon: MessagesSquare, title: "We read it too", text: "A person on our team reads what you sent, so the conversation starts in the right place." },
+  { icon: RouteIcon, title: "Let’s discuss your solution", text: "A short conversation to check our understanding and work out how to take it forward. If we can’t help, we’ll say so." },
 ];
 
 export default async function Received({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
   const { ref } = await searchParams;
   const s = ref ? publicSummary(ref) : null;
+  const o = s && ref ? opportunityByRef(ref) : null;
+  const briefing = o ? briefingFor(o.id) : null;
+  // This browser submitted it (cookie set at submission) and the link is still valid: show it here.
+  const cookieToken = (await cookies()).get(BRIEFING_COOKIE)?.value;
+  const viewHref = briefing && cookieToken && briefing.tokenHash === hashToken(cookieToken) && !briefing.revokedAt ? `/b/${cookieToken}` : null;
 
   return (
     <section className="mx-auto max-w-6xl px-4 pt-12 pb-20 sm:px-6 sm:pt-16" aria-labelledby="h-received">
@@ -28,7 +38,8 @@ export default async function Received({ searchParams }: { searchParams: Promise
           { label: "The problem", state: "done" },
           { label: "Context", state: "done", detail: s ? (Object.keys(s.context).length ? undefined : "Skipped") : "Optional" },
           { label: "Sent to us", state: "done" },
-          { label: "A conversation", state: "current" },
+          { label: "Your briefing", state: briefing?.status === "ready" ? "done" : "current" },
+          { label: "A conversation", state: briefing?.status === "ready" || !briefing ? "current" : "todo" },
         ]}
       />
       <div className="mt-14 grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
@@ -37,9 +48,14 @@ export default async function Received({ searchParams }: { searchParams: Promise
           <h1 id="h-received" className="mt-5 text-[40px] leading-[1.02] tracking-[-0.035em] sm:text-[60px]">
             {s ? <>Thank you, {s.firstName}. Your problem is in <span className="accent-serif text-signal">good hands.</span></> : <>Thank you. Your problem is in <span className="accent-serif text-signal">good hands.</span></>}
           </h1>
-          <p className="mt-5 max-w-xl text-lg leading-8 text-muted">You’ve given us a clearer picture of what’s happening. We’ll review it and work out the most useful next step for your business.</p>
-          <div className="mt-10 rounded-card border border-border bg-surface p-6 shadow-sm sm:p-7">
-            <p className="mb-4 font-display text-[20px] font-[620] tracking-[-0.02em] text-heading">The quickest way forward is a short conversation.</p>
+          <p className="mt-5 max-w-xl text-lg leading-8 text-muted">{briefing ? "We’re preparing your Business Problem & Solution Briefing: our initial read of the problem and a direction worth exploring." : "You’ve given us a clearer picture of what’s happening. We’ll review it and work out the most useful next step for your business."}</p>
+          {briefing && ref && (
+            <div className="mt-10">
+              <BriefingStatus refId={ref} initial={briefing.status} viewHref={viewHref} emailConfigured={customerEmailConfigured()} />
+            </div>
+          )}
+          <div className={briefing ? "mt-8 px-1" : "mt-10 rounded-card border border-border bg-surface p-6 shadow-sm sm:p-7"}>
+            <p className="mb-4 font-display text-[20px] font-[620] tracking-[-0.02em] text-heading">{briefing ? "Ready to talk it through?" : "The quickest way forward is a short conversation."}</p>
             <NextSteps refId={s ? ref! : null} hasBooking={Boolean(bookingUrl())} preference={s?.contactPreference ?? "email"} callRequested={Boolean(s?.callRequested)} />
           </div>
 

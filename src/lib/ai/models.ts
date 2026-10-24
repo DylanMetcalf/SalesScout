@@ -19,6 +19,7 @@ export const AGENTS = {
   company_research_deep: "Deep prospect research",
   qualification: "Qualification",
   outreach: "Outreach drafts",
+  customer_briefing: "Customer briefings",
   opportunity_analysis: "Problem analysis",
   opportunity_research: "Company intelligence",
   solution_design: "Solution briefs and proposals",

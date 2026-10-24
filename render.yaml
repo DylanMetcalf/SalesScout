@@ -89,6 +89,11 @@ services:
         sync: false
       - key: AI_MONTHLY_TOKEN_BUDGET
         sync: false
-      - key: AUTO_ANALYSE_SUBMISSIONS
+      # --- Customer briefings. RESEND_FROM must be on a domain verified in Resend to email customers. ---
+      - key: RESEND_FROM
         sync: false
+      - key: BRIEFING_LINK_DAYS
+        value: "30"
+      - key: BRIEFING_DAILY_LIMIT
+        value: "30"
 

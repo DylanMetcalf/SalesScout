@@ -51,7 +51,7 @@ function Sources({ items }: { items: { url: string; title: string }[] }) {
   return (
     <Sec title="Sources">
       <ol className="flex list-decimal flex-col gap-1 pl-5 text-[11.5px]">
-        {items.map((s) => <li key={s.url} className="[overflow-wrap:anywhere]"><span>{s.title}</span> <span className="text-[#2638c8]">{s.url}</span></li>)}
+        {items.map((s) => <li key={s.url} className="[overflow-wrap:anywhere]"><span>{s.title}</span> <span className="text-[#a3361a]">{s.url}</span></li>)}
       </ol>
     </Sec>
   );
@@ -89,7 +89,7 @@ function Body({ kind, c }: { kind: DocKind; c: Record<string, unknown> }) {
             <Sec title="Markets and customers" keep><Bullets items={r.markets} empty="Not found in public sources." /></Sec>
           </div>
           <Sec title="The problem they raised"><p className="border-l-2 border-[#e8492a] pl-3 whitespace-pre-wrap">{String(c.problem)}</p></Sec>
-          {observed.length > 0 && <Sec title="What public sources show"><ul className="flex list-disc flex-col gap-1 pl-5">{observed.map((f, i) => <li key={i}>{f.statement} {f.sourceUrl && <span className="text-[11px] text-[#2638c8] [overflow-wrap:anywhere]">({f.sourceUrl})</span>}</li>)}</ul></Sec>}
+          {observed.length > 0 && <Sec title="What public sources show"><ul className="flex list-disc flex-col gap-1 pl-5">{observed.map((f, i) => <li key={i}>{f.statement} {f.sourceUrl && <span className="text-[11px] text-[#a3361a] [overflow-wrap:anywhere]">({f.sourceUrl})</span>}</li>)}</ul></Sec>}
           {inferred.length > 0 && <Sec title="Our inferences (unconfirmed)"><Bullets items={inferred.map((f) => f.statement)} /></Sec>}
           <Sec title="Possible improvement areas (hypotheses)" keep><Bullets items={r.improvements} /></Sec>
           <Sec title="Questions for the conversation" keep><ol className="flex list-decimal flex-col gap-1 pl-5">{[...r.questions, ...((c.questions as string[]) ?? [])].slice(0, 12).map((q, i) => <li key={i}>{q}</li>)}</ol></Sec>
@@ -129,7 +129,7 @@ function Body({ kind, c }: { kind: DocKind; c: Record<string, unknown> }) {
             {areas.map((a) => (
               <div key={a} className="keep mb-3">
                 <h3 className="text-[12.5px] font-semibold">{a}</h3>
-                <ul className="flex list-disc flex-col gap-0.5 pl-5 text-[12.5px]">{v.observed.filter((x) => x.area === a).map((x, i) => <li key={i}>{x.finding}{x.url && <span className="text-[10.5px] text-[#2638c8] [overflow-wrap:anywhere]"> ({x.url})</span>}</li>)}</ul>
+                <ul className="flex list-disc flex-col gap-0.5 pl-5 text-[12.5px]">{v.observed.filter((x) => x.area === a).map((x, i) => <li key={i}>{x.finding}{x.url && <span className="text-[10.5px] text-[#a3361a] [overflow-wrap:anywhere]"> ({x.url})</span>}</li>)}</ul>
               </div>
             ))}
           </Sec>
@@ -184,7 +184,7 @@ export default async function OpportunityDocument({ params, searchParams }: { pa
     <div className="min-h-dvh bg-[#f4f1ea] py-8 print:bg-white print:py-0">
       {print === "1" && <AutoPrint />}
       <div className="mx-auto mb-4 flex max-w-[794px] items-center justify-between px-4 print:hidden">
-        <a href={`/opportunities/${d.opportunityId}?tab=documents`} className="text-sm font-medium text-[#2638c8] hover:underline">← Back to opportunity</a>
+        <a href={`/opportunities/${d.opportunityId}?tab=documents`} className="text-sm font-medium text-[#a3361a] hover:underline">← Back to opportunity</a>
         <PrintButton />
       </div>
       <article className={`doc mx-auto flex max-w-[794px] flex-col gap-6 bg-white px-12 py-10 shadow-md print:max-w-none print:gap-5 print:p-0 print:shadow-none ${INK}`}>

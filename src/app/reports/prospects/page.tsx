@@ -30,11 +30,11 @@ export default async function Report({ searchParams }: { searchParams: Promise<R
         <PrintButton />
       </div>
       <article className="mx-auto max-w-[820px] bg-white px-10 py-12 text-[#16161d] shadow-md sm:px-14 print:max-w-none print:px-0 print:py-0 print:shadow-none">
-        <header className="border-b-2 border-[#2f45e0] pb-8">
+        <header className="border-b-2 border-[#c2381a] pb-8">
           <div className="flex items-center gap-2 text-sm text-[#4a4a55]">
             <LogoMark size={22} /> Prepared with Sales Scout
           </div>
-          <p className="mt-10 text-xs font-semibold uppercase tracking-[0.14em] text-[#2f45e0]">Prospecting report</p>
+          <p className="mt-10 text-xs font-semibold uppercase tracking-[0.14em] text-[#c2381a]">Prospecting report</p>
           <h1 className="mt-2 text-4xl font-semibold tracking-[-0.02em]">{ct.company.name}</h1>
           <dl className="mt-6 grid grid-cols-3 gap-6 text-sm">
             <div><dt className="text-[#7b85a0]">Campaign</dt><dd className="font-medium">{campaign}</dd></div>
@@ -62,7 +62,7 @@ export default async function Report({ searchParams }: { searchParams: Promise<R
                 <span className="mr-3 text-[#7b85a0]">{String(i + 1).padStart(2, "0")}</span>
                 {p.name}
               </h2>
-              {p.fit && <span className="shrink-0 text-sm font-semibold uppercase tracking-wide text-[#2f45e0]">{p.fit.company.level} fit</span>}
+              {p.fit && <span className="shrink-0 text-sm font-semibold uppercase tracking-wide text-[#c2381a]">{p.fit.company.level} fit</span>}
             </div>
             <p className="mt-1 text-sm text-[#4a4a55]">{[p.industry, p.location, p.website && !p.isExample ? p.website : p.website ? `${p.domain} (example)` : null, STATUS_META[p.status].label].filter(Boolean).join(" · ")}</p>
 

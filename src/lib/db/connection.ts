@@ -28,6 +28,7 @@ export function getDb(): DB {
   const now = Date.now();
   sqlite.prepare(`UPDATE jobs SET status = 'failed', error = 'Interrupted because the server restarted. Please try again.', updated_at = ? WHERE status IN ('queued', 'running')`).run(now);
   sqlite.prepare(`UPDATE search_runs SET status = 'failed', error = 'Interrupted because the server restarted. Please try again.', completed_at = ? WHERE status = 'running'`).run(now);
+  sqlite.prepare(`UPDATE briefings SET status = 'failed', error = 'Interrupted because the server restarted.', updated_at = ? WHERE status IN ('queued', 'generating')`).run(now);
   sqlite.prepare(`UPDATE companies SET brain_status = CASE WHEN brain_analysed_at IS NULL THEN 'empty' ELSE 'review' END WHERE brain_status = 'analysing'`).run();
   sqlite.prepare(`DELETE FROM sessions WHERE expires_at < ?`).run(now);
   sqlite.prepare(`DELETE FROM password_resets WHERE expires_at < ?`).run(now);

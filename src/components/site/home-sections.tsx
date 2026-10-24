@@ -49,7 +49,7 @@ export function CategoryGrid() {
 
 /** How it works: three waypoints on one route. You only do the first. */
 export function ProcessRoute() {
-  const outcomes = ["Your problem, in your words", "A clearer picture and the right questions", "A practical next step, or an honest no"];
+  const outcomes = ["Your problem, in your words", "A private briefing, usually within minutes", "A practical next step, or an honest no"];
   return (
     <div className="relative mt-16">
       <svg aria-hidden className="pointer-events-none absolute top-[38px] left-0 hidden h-10 w-full md:block" viewBox="0 0 1000 40" preserveAspectRatio="none" fill="none">
@@ -100,21 +100,26 @@ export function ExampleOutput() {
       </div>
       <figure className="reveal relative">
         <span className="absolute -top-3 right-5 z-10 rounded-full bg-text px-3 py-1 text-xs font-semibold text-bg">Example</span>
-        <div className="rotate-[0.6deg] rounded-[14px] border border-border bg-white p-6 shadow-lg sm:p-8 text-[#16161d]">
-          <div className="flex items-center justify-between border-b-2 border-[#2f45e0] pb-3">
-            <span className="flex items-center gap-2"><LogoMark size={22} label={null} /><span className="font-display text-sm font-[650]">Sales Scout</span></span>
-            <span className="caption-mono text-[#5f5e68]">Problem assessment · v1</span>
+        <div className="overflow-hidden rounded-card border border-border bg-surface shadow-lg">
+          <div className="border-b border-border px-6 pt-6 pb-5 sm:px-7">
+            <p className="caption-mono flex flex-wrap items-center gap-2 text-subtle"><LogoMark size={16} label={null} /> Business Problem &amp; Solution Briefing · SSB-EXAM-PLE1</p>
+            <p className="mt-3 font-display text-[26px] leading-tight font-[650] tracking-[-0.03em] text-heading">Getting every order entered once</p>
           </div>
-          <p className="caption-mono mt-5 text-[#2638c8]">Our understanding so far</p>
-          <p className="mt-1.5 text-sm leading-6">Orders are entered three times, so the busiest days carry the most risk of a missed order. The friction appears to be the hand-off between systems, not the people.</p>
-          <p className="caption-mono mt-5 text-[#2638c8]">What we’d like to understand next</p>
-          <ol className="mt-1.5 list-decimal space-y-1 pl-5 text-sm leading-6">
-            {r.steps.slice(0, 1).map((s) => <li key={s.text}>{s.text}</li>)}
-            <li>Roughly how many orders arrive on a busy day?</li>
-          </ol>
-          <p className="caption-mono mt-5 text-[#2638c8]">Possible direction</p>
-          <p className="mt-1.5 text-sm leading-6">{r.steps[1].text}</p>
-          <figcaption className="mt-6 border-t border-[#ddd7cb] pt-3 text-xs text-[#5f5e68]">Illustrative. Your assessment is written by us after reading your problem, and is never sent automatically.</figcaption>
+          <div className="grid gap-4 px-6 py-5 sm:px-7">
+            <div>
+              <p className="caption-mono text-signal-text">01 · The problem</p>
+              <p className="mt-1.5 text-sm leading-6 text-text">Orders are typed into three systems, so the busiest days carry the most risk of a missed order. The friction appears to be the hand-off between systems, not the people.</p>
+            </div>
+            <div className="theme-ink rounded-2xl bg-[var(--bg)] p-4">
+              <p className="caption-mono text-subtle">03 · Proposed solution</p>
+              <p className="mt-1.5 font-display text-lg font-[620] text-heading">{r.steps[1].text.replace(/\.$/, "")}</p>
+            </div>
+            <div className="flex items-center justify-between gap-3 border-t border-dashed border-border pt-4">
+              <p className="text-sm text-muted">Then: let’s discuss your solution.</p>
+              <span aria-hidden className="rounded-full bg-accent-soft px-3 py-1.5 text-xs font-semibold text-accent-text">Book a conversation</span>
+            </div>
+          </div>
+          <figcaption className="border-t border-border bg-surface-2/60 px-6 py-3 text-xs text-muted sm:px-7">Illustrative. Your briefing is written for your problem, is private to you and is viewed online.</figcaption>
         </div>
       </figure>
     </div>

@@ -18,7 +18,7 @@ export default function OpengraphImage() {
           padding: 72,
           color: "#fff",
           backgroundColor: "#121218",
-          backgroundImage: "radial-gradient(70% 90% at 100% 0%, rgba(47,69,224,0.45), transparent 60%), radial-gradient(50% 70% at 0% 100%, rgba(232,73,42,0.22), transparent 60%)",
+          backgroundImage: "radial-gradient(70% 90% at 100% 0%, rgba(232,73,42,0.35), transparent 60%), radial-gradient(60% 80% at 0% 100%, rgba(232,73,42,0.12), transparent 60%)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -31,8 +31,8 @@ export default function OpengraphImage() {
           <span style={{ fontSize: 40, fontWeight: 700 }}>Sales Scout</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <span style={{ fontSize: 72, fontWeight: 800, lineHeight: 1.05, maxWidth: 950 }}>Your business has a better way forward.</span>
-          <span style={{ fontSize: 32, color: "#bab6ad" }}>Tell us what’s slowing you down. We’ll help you find a practical way forward.</span>
+          <span style={{ fontSize: 72, fontWeight: 800, lineHeight: 1.05, maxWidth: 950 }}>What’s slowing your business down?</span>
+          <span style={{ fontSize: 32, color: "#bab6ad" }}>Tell us what’s not working. We’ll explore it and show you what a solution could look like.</span>
         </div>
       </div>
     ),

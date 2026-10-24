@@ -6,7 +6,7 @@ import { SITE } from "./site";
  * are simply left out of the pages (never shown as placeholders).
  */
 export const LEGAL = {
-  lastUpdated: "23 October 2026",
+  lastUpdated: "24 October 2026",
   /** Registered legal name of the business, e.g. "Sales Scout (Pty) Ltd". */
   entity: "",
   /** Company registration number, if any. */
@@ -53,7 +53,8 @@ export const PRIVACY: LegalSection[] = [
     id: "problems",
     title: "Problems you share with us",
     body: [
-      "When you tell us about a business problem, we use it to understand your situation, prepare for a conversation with you and, if you want, propose a solution. Our team reviews it, and we may use AI (see below) to help summarise it and prepare questions.",
+      "When you tell us about a business problem, we use it to understand your situation, prepare your Business Problem & Solution Briefing, prepare for a conversation with you and, if you want, propose a solution. The briefing is written with the help of AI (see below) from what you sent us; our team also reads your submission.",
+      "Your briefing is shown at a private link that only you receive (on screen after you submit and, where email is set up, by email). The link works for a limited time (30 days unless we tell you otherwise), we can replace or switch it off at any time, and you can ask us to. We record when the briefing is opened (the time and how many times) so we know it reached you; we don't track anything else about your visit. Please don't share the link.",
       "We may also look at your company's public website and other public information about your business to understand it better. We only read public pages and never try to access anything private.",
       "We don't add you to a mailing list, and we don't contact you about anything other than your enquiry unless you ask us to.",
       "Please don't include passwords, banking details or other people's sensitive personal information in what you send us.",

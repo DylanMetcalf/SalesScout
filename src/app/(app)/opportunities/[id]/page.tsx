@@ -13,6 +13,8 @@ import { buttonClass } from "@/components/ui/button";
 import { formatDate, timeAgo } from "@/lib/format";
 import { ActivityPanel, AiTaskButton, CreateDocButton, DeleteOpportunity, DetailsEditor, ProductSignalForm, StageSelect, StatusSelect, TextDocEditor } from "@/components/opportunities/controls";
 import { OpportunityTabs } from "@/components/opportunities/tabs";
+import { BriefingPanel } from "@/components/opportunities/briefing-panel";
+import { briefingFor } from "@/lib/opportunities/briefings";
 import { Block, Label, List, Origin, SourceLink } from "@/components/opportunities/parts";
 import { cn } from "@/components/ui/cn";
 import { Waypoints } from "@/components/brand/waypoints";
@@ -26,7 +28,7 @@ function ai(task: keyof typeof AI_TASKS) {
   return { task, title: AI_TASKS[task].label + "…", doneTitle: AI_TASKS[task].done, steps: AI_TASKS[task].steps };
 }
 
-function OverviewTab({ o, related, canAi }: { o: Opportunity; related: ReturnType<typeof relatedOpportunities>; canAi: boolean }) {
+function OverviewTab({ o, related, canAi, briefing }: { o: Opportunity; related: ReturnType<typeof relatedOpportunities>; canAi: boolean; briefing: ReturnType<typeof briefingFor> }) {
   const c = o.context ?? {};
   const ctx = [["What their business does", c.business], ["Part of the business", c.area], ["How they handle it today", c.current], ["How often", c.frequency], ["What they’d like instead", c.ideal]].filter(([, v]) => v) as [string, string][];
   const a = o.analysis;
@@ -44,6 +46,18 @@ function OverviewTab({ o, related, canAi }: { o: Opportunity; related: ReturnTyp
           {o.consentAt ? ` Agreed to the privacy notice (version ${o.privacyVersion}).` : " Sent before consent was recorded; use it only to reply."}
           {` Prefers ${o.contactPreference === "whatsapp" ? "WhatsApp" : o.contactPreference}.`}
         </p>
+      </Block>
+
+      <Block title="Customer briefing" origin="ai" action={<span className="text-xs text-subtle">What the customer received</span>}>
+        {/* Only what the panel needs: never the content or the token hash. */}
+        <BriefingPanel
+          id={o.id}
+          b={briefing && {
+            reference: briefing.reference, status: briefing.status, error: briefing.error, attempts: briefing.attempts, model: briefing.model, updatedAt: briefing.updatedAt,
+            expiresAt: briefing.expiresAt, revokedAt: briefing.revokedAt, viewCount: briefing.viewCount, firstViewedAt: briefing.firstViewedAt, lastViewedAt: briefing.lastViewedAt,
+            emailStatus: briefing.emailStatus, emailError: briefing.emailError, emailSentAt: briefing.emailSentAt,
+          }}
+        />
       </Block>
 
       {!a ? (
@@ -215,7 +229,7 @@ export default async function OpportunityPage({ params, searchParams }: { params
   const projectOpen = ["accepted", "building", "delivered"].includes(o.stage);
 
   const tabs = [
-    { id: "overview", label: "Problem", content: <OverviewTab o={o} related={related} canAi={canAi} /> },
+    { id: "overview", label: "Problem", content: <OverviewTab o={o} related={related} canAi={canAi} briefing={briefingFor(o.id)} /> },
     { id: "company", label: "Company", content: <CompanyTab o={o} canAi={canAi} /> },
     {
       id: "solution",

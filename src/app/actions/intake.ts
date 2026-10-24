@@ -1,13 +1,16 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import * as z from "zod/v4";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { clientIp } from "@/lib/security/client-ip";
 import { notifyOpportunity } from "@/lib/notify";
 import { siteUrl } from "@/lib/site-url";
-import { createFromIntake, opportunityByRef, operatorContext, recordVisitorStep } from "@/lib/opportunities/service";
+import { createFromIntake, opportunityByRef, recordVisitorStep } from "@/lib/opportunities/service";
 import { AREAS, FREQUENCIES } from "@/lib/opportunities/types";
+import { createBriefing, linkDays, startBriefing } from "@/lib/opportunities/briefings";
+import { BRIEFING_COOKIE } from "@/lib/opportunities/briefing-cookie";
 
 export type IntakeState = { error?: string; field?: string; step?: number } | undefined;
 
@@ -65,20 +68,13 @@ export async function submitProblem(_: IntakeState, form: FormData): Promise<Int
   if (created) {
     const o = opportunityByRef(ref);
     if (o) {
-      await notifyOpportunity(o, `${siteUrl()}/opportunities/${o.id}`).catch((err) => console.error("[intake] operator email failed", err));
-      // Optional, off by default: a first AI read for the operator. Failure never affects the customer.
-      // Capped per day across all visitors, so a flood of submissions can't run up AI costs.
-      if (process.env.AUTO_ANALYSE_SUBMISSIONS === "true" && rateLimit("auto-analysis", Number(process.env.AUTO_ANALYSE_DAILY_LIMIT) || 20, 86_400_000)) {
-        const ctx = operatorContext();
-        if (ctx) {
-          const { startAiTask } = await import("@/lib/opportunities/jobs");
-          try {
-            startAiTask(ctx, o.id, "analysis", "system");
-          } catch (err) {
-            console.error("[intake] auto-analysis not started", err);
-          }
-        }
+      // The enquiry is saved. Now the briefing: create its record and private link, then write it in the background.
+      const { token } = createBriefing(o.id);
+      if (token) {
+        (await cookies()).set(BRIEFING_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: linkDays() * 86_400 });
       }
+      startBriefing(o.id, token);
+      await notifyOpportunity(o, `${siteUrl()}/opportunities/${o.id}`).catch((err) => console.error("[intake] operator email failed", err));
     }
   }
   redirect(`/start/received?ref=${encodeURIComponent(ref)}`);

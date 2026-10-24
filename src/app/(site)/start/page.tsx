@@ -3,7 +3,7 @@ import { IntakeForm } from "@/components/intake/intake-form";
 import { Eyebrow } from "@/components/site/chrome";
 
 export const metadata = {
-  title: "Tell us your problem",
+  title: "Explore my problem",
   description: "Explain what’s not working in your business, in your own words. We’ll review it and suggest a practical next step.",
   alternates: { canonical: "/start" },
 };
@@ -17,7 +17,7 @@ export default async function Start({ searchParams }: { searchParams: Promise<{ 
     <section className="relative" aria-labelledby="h-start">
       <div aria-hidden className="paper-grid pointer-events-none absolute inset-x-0 top-0 h-80 [mask-image:linear-gradient(#000,transparent)]" />
       <div className="relative mx-auto max-w-5xl px-4 pt-12 pb-20 sm:px-6 sm:pt-16">
-        <Eyebrow index="→">Tell us your problem</Eyebrow>
+        <Eyebrow index="→">Explore my problem</Eyebrow>
         <h1 id="h-start" className="mt-5 max-w-3xl text-[40px] leading-[1.02] tracking-[-0.035em] sm:text-[60px]">
           Let’s start with what’s <span className="accent-serif text-signal">not working.</span>
         </h1>

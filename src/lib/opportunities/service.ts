@@ -71,6 +71,14 @@ export function publicSummary(ref: string) {
   return { firstName: o.name.split(/\s+/)[0], name: o.name, email: o.email, companyName: o.companyName, problem: o.problem, context: o.context, contactPreference: o.contactPreference, callRequested: Boolean(o.callRequestedAt) };
 }
 
+/** "Ask us to arrange a call" from a briefing (the caller has already checked the private link). */
+export function requestCallFor(opportunityId: string) {
+  const o = db.select({ call: t.opportunities.callRequestedAt }).from(t.opportunities).where(eq(t.opportunities.id, opportunityId)).get();
+  if (!o || o.call) return;
+  db.update(t.opportunities).set({ callRequestedAt: new Date(), updatedAt: new Date() }).where(eq(t.opportunities.id, opportunityId)).run();
+  logActivity(opportunityId, "Asked us to arrange a conversation from their briefing", "customer");
+}
+
 export function recordVisitorStep(ref: string, step: "call_requested" | "booking_opened") {
   const row = byLiveRef(ref);
   if (!row) return false;

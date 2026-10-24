@@ -55,13 +55,13 @@ export async function notifyKept(tenant: CompanyTenant, prospectId: string) {
     "Nothing is sent to the prospect without you. You can turn these emails off in Settings.",
   ].join("\n");
   const button = (href: string, label: string, primary: boolean) =>
-    `<a href="${esc(href)}" style="display:inline-block;padding:11px 18px;border-radius:8px;font-weight:600;font-size:14px;text-decoration:none;${primary ? "background:#2f45e0;color:#ffffff" : "border:1px solid #c6bfb0;color:#16161d"}">${esc(label)}</a>`;
+    `<a href="${esc(href)}" style="display:inline-block;padding:11px 18px;border-radius:8px;font-weight:600;font-size:14px;text-decoration:none;${primary ? "background:#c2381a;color:#ffffff" : "border:1px solid #c6bfb0;color:#16161d"}">${esc(label)}</a>`;
   const html = `<!doctype html><html><body style="margin:0;background:#f4f1ea;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#16161d">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden">
-<tr><td style="background:#16161d;padding:18px 24px;color:#ffffff;font-weight:700;font-size:16px"><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#2f45e0;color:#fff;text-align:center;line-height:22px;margin-right:8px">S</span>Sales Scout</td></tr>
+<tr><td style="background:#16161d;padding:18px 24px;color:#ffffff;font-weight:700;font-size:16px"><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#c2381a;color:#fff;text-align:center;line-height:22px;margin-right:8px">S</span>Sales Scout</td></tr>
 <tr><td style="padding:24px">
-<p style="margin:0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#2638c8;font-weight:700">Prospect brief ready</p>
+<p style="margin:0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#a3361a;font-weight:700">Prospect brief ready</p>
 <h1 style="margin:6px 0 2px;font-size:22px;color:#16161d">${esc(p.name)}</h1>
 <p style="margin:0 0 16px;font-size:13px;color:#4a4a55">${esc([p.industry, p.location].filter(Boolean).join(" · "))}</p>
 <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#5f5e68;text-transform:uppercase;letter-spacing:.08em">Why it's worth pursuing</p>

@@ -29,8 +29,8 @@ page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
 
 // Home
 await page.goto(BASE + "/");
-await page.getByRole("heading", { level: 1, name: /better way forward/ }).waitFor();
-const ctas = await page.getByRole("link", { name: "Tell us your problem" }).count();
+await page.getByRole("heading", { level: 1, name: /slowing your business down/ }).waitFor();
+const ctas = await page.getByRole("link", { name: "Explore my problem" }).count();
 ctas >= 2 ? ok(`home: primary CTA present (${ctas}x)`) : errors.push("home: CTA missing");
 if (await page.getByText(/testimonial|\d+% (faster|cheaper)|trusted by/i).count()) errors.push("home: looks like unverified proof");
 await page.waitForTimeout(900); // let the entrance animation settle before measuring contrast
@@ -59,18 +59,24 @@ await page.getByLabel("Your name").fill("Thandi Mokoena");
 await page.getByLabel("Business email").fill("thandi@example-logistics.co.za");
 await page.getByLabel("Company name").fill("Example Logistics");
 await page.getByRole("textbox", { name: /^Website/ }).fill("example.com");
-await page.getByRole("button", { name: "Send my problem" }).click();
+await page.getByRole("button", { name: "Get my briefing" }).click();
 await page.getByText(/confirm you've read how we'll use/).waitFor();
 ok("intake: consent is required (server-side)");
 await a11y(page, "intake step 3");
 await page.getByRole("checkbox").check();
-await page.getByRole("button", { name: "Send my problem" }).click();
+await page.getByRole("button", { name: "Get my briefing" }).click();
 await page.waitForURL(/\/start\/received\?ref=/);
 const ref = new URL(page.url()).searchParams.get("ref");
 await page.getByRole("heading", { name: /Thank you, Thandi/ }).waitFor();
 (await page.getByText(problem).count()) ? ok("received: shows their own words back") : errors.push("received: recap missing");
 await a11y(page, "received");
 await shot(page, "received");
+
+// The briefing: with the fake AI key here it can't be written, so the page must say so honestly.
+await page.getByText(/We’re writing your briefing now|We’ll prepare your briefing personally/).first().waitFor();
+ok("received: briefing status shown");
+await page.getByText("We’ll prepare your briefing personally").waitFor({ timeout: 90_000 });
+ok("received: AI failure is reported honestly (no fake briefing)");
 
 // No BOOKING_URL: no broken calendar; the fallback works
 await page.getByRole("button", { name: "Ask us to arrange a conversation" }).click();

@@ -31,7 +31,13 @@ The SQLite database is created and migrated automatically in `data/` on first ru
 | `node scripts/dev/intake-check.mjs` | Website → problem intake → opportunity → documents → PDF, plus access checks (needs a running server) |
 
 ## Public website
-Visiting `/` shows the public site, built around one action: **Tell us your problem** (`/start`, three short steps). Submissions are saved before anything else happens (no AI needed), the operator is emailed (Resend), and the visitor gets a confirmation with a booking link (`BOOKING_URL`) or, without one, a "please call me" request. Edit the wording in `src/content/site.ts`.
+Visiting `/` shows the public site, built around one action: **Explore my problem** (`/start`, three short steps). The journey is problem → AI analysis → personalised briefing → book a call:
+- The submission is saved first (no AI needed to save it), and the operator is emailed.
+- A **Business Problem & Solution Briefing** is written on the server (structured, schema-validated, no HTML/links) and shown at a private, expiring, revocable link `/b/<token>` (only a hash of the token is stored). The confirmation page shows live status and the link; the customer is emailed it when `RESEND_FROM` is set.
+- The briefing ends with **Let's discuss your solution**, linking to `BOOKING_URL` (pre-filled, tagged with the non-secret briefing reference) or, without one, a real call request.
+- If AI is unavailable or fails, the enquiry is kept, the customer is told a person will follow up, and the operator is alerted.
+
+Edit the wording in `src/content/site.ts`.
 
 Administrators see every submission under **Opportunities** in the workspace: pipeline stages, notes, tasks, AI analysis, company research, visibility assessment, solution brief, proposal, project handover, and printable branded documents (frozen as numbered versions). Earlier contact-form enquiries were copied in automatically. Nothing is ever sent to a customer by the app.
 
