@@ -40,3 +40,11 @@ export async function notifyEnquiry(e: { name: string; email: string; company?: 
   ].filter((l) => l !== null);
   await sendEmail({ to, replyTo: e.email, subject: `New enquiry: ${e.name}${e.company ? ` (${e.company})` : ""}`, text: lines.join("\n") });
 }
+
+/** Tells the operator a new problem has arrived. Best effort: the submission is already saved. */
+export async function notifyOpportunity(o: { id: string; name: string; email: string; companyName: string | null; problem: string }, link: string) {
+  if (!process.env.RESEND_API_KEY) return;
+  const to = process.env.ENQUIRY_EMAIL || SITE.contactEmail;
+  const text = [`${o.name}${o.companyName ? ` from ${o.companyName}` : ""} told us what's not working:`, "", o.problem, "", `Open it: ${link}`, "", "Reply to this email to answer them directly."].join("\n");
+  await sendEmail({ to, replyTo: o.email, subject: `New problem: ${o.name}${o.companyName ? ` (${o.companyName})` : ""}`, text });
+}

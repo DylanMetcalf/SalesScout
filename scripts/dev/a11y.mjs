@@ -11,11 +11,11 @@ const scan = async (path) => {
   const res = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ["wcag2a", "wcag2aa", "best-practice"] })).violations.map((v) => `${v.impact} ${v.id} (${v.nodes.length}): ${v.nodes[0].target.join(" ")}`));
   console.log(path, res.length ? "\n  " + res.join("\n  ") : "OK");
 };
-for (const p of ["/", "/platform", "/why-us", "/how-it-works", "/services", "/contact", "/privacy", "/login", "/signup"]) await scan(p);
+for (const p of ["/", "/start", "/book", "/privacy", "/terms", "/login", "/signup"]) await scan(p);
 await page.goto(BASE + "/login");
 await page.getByLabel("Work email").fill("demo@salesscout.app");
 await page.getByLabel("Password").fill("salesscout-demo");
 await page.getByRole("button", { name: "Sign in" }).click();
 await page.waitForURL(/\/home/);
-for (const p of ["/home", "/discover", "/prospects", "/pipeline", "/follow-ups", "/company", "/settings", "/settings/billing", "/verify", "/admin"]) await scan(p);
+for (const p of ["/home", "/discover", "/prospects", "/pipeline", "/follow-ups", "/company", "/settings", "/settings/billing", "/verify", "/admin", "/admin/operations", "/opportunities"]) await scan(p);
 await b.close();

@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import * as z from "zod/v4";
 import { db, t } from "@/lib/db";
@@ -14,13 +13,11 @@ import { accessBlock, accessBlockMessage } from "@/lib/access";
 import { SITE } from "@/content/site";
 import { consumeResetToken } from "@/lib/services/password-reset";
 import { adminEmails } from "@/lib/admin";
+import { clientIp } from "@/lib/security/client-ip";
 
 export type AuthState = { error?: string; fields?: Record<string, string> } | undefined;
 
-async function clientKey() {
-  const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "local";
-}
+const clientKey = clientIp;
 
 const SignupSchema = z.object({
   name: z.string().trim().min(1, "Tell us your name").max(80),

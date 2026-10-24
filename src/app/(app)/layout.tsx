@@ -24,6 +24,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? db.select({ id: t.prospects.id, name: t.prospects.name, industry: t.prospects.industry }).from(t.prospects).where(and(eq(t.prospects.companyId, c.id), ne(t.prospects.status, "rejected"))).orderBy(desc(t.prospects.updatedAt)).limit(300).all()
     : [];
 
+  const admin = isAdminAccount(tenant.account.id);
+  const newOpportunities = admin ? db.select({ n: count() }).from(t.opportunities).where(eq(t.opportunities.stage, "new")).get()!.n : 0;
+
   const switcher = {
     workspace: { id: tenant.workspace.id, name: tenant.workspace.name },
     workspaces: tenant.workspaces.map((w) => ({ id: w.id, name: w.name })),
@@ -32,14 +35,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   };
   const user = { name: tenant.user.name, email: tenant.user.email };
   const policy = verificationPolicy();
-  const needsVerify = (policy.email || policy.phone) && !isAdminAccount(tenant.account.id) && !freeEligible(tenant.account.id);
+  const needsVerify = (policy.email || policy.phone) && !admin && !freeEligible(tenant.account.id);
 
   return (
     <div className="flex min-h-dvh">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2 focus:shadow-md">
         Skip to content
       </a>
-      <Sidebar switcher={switcher} user={user} counts={{ followUpsDue, toReview }} aiConnected={aiConfigured(tenant.account.id)} admin={isAdminAccount(tenant.account.id)} />
+      <Sidebar switcher={switcher} user={user} counts={{ followUpsDue, toReview, newOpportunities: Number(newOpportunities) }} aiConnected={aiConfigured(tenant.account.id)} admin={admin} />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileTopBar switcher={switcher} user={user} />
         {needsVerify && (
@@ -56,7 +59,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         )}
         <main id="main" className="flex-1 pb-24 md:pb-0">{children}</main>
       </div>
-      <MobileTabBar />
+      <MobileTabBar admin={admin} />
       <CommandPalette prospects={prospects} companies={switcher.companies} />
     </div>
   );

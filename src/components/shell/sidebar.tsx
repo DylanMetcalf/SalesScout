@@ -6,14 +6,14 @@ import { Search, Settings, ShieldCheck } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { Kbd } from "@/components/ui/kbd";
 import { LogoMark } from "@/components/ui/logo";
-import { NAV } from "./nav";
+import { navFor } from "./nav";
 import { ContextSwitcher, type SwitcherProps } from "./context-switcher";
 import { UserMenu } from "./user-menu";
 
-export function Sidebar({ switcher, user, counts, aiConnected, admin }: { switcher: SwitcherProps; user: { name: string; email: string }; counts: { followUpsDue: number; toReview: number }; aiConnected: boolean; admin?: boolean }) {
+export function Sidebar({ switcher, user, counts, aiConnected, admin }: { switcher: SwitcherProps; user: { name: string; email: string }; counts: { followUpsDue: number; toReview: number; newOpportunities?: number }; aiConnected: boolean; admin?: boolean }) {
   const pathname = usePathname();
   return (
-    <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col theme-ink sidebar-brand border-r border-border md:flex">
+    <aside aria-label="Sidebar" className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col theme-ink sidebar-brand border-r border-border md:flex">
       <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
         <LogoMark size={26} />
         <span className="font-display text-[17px] font-[650] tracking-[-0.02em]">Sales Scout</span>
@@ -22,9 +22,9 @@ export function Sidebar({ switcher, user, counts, aiConnected, admin }: { switch
         <ContextSwitcher {...switcher} />
       </div>
       <nav aria-label="Main" className="mt-4 flex flex-col gap-0.5 px-3">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {navFor(Boolean(admin)).map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
-          const badge = href === "/follow-ups" ? counts.followUpsDue : href === "/prospects" ? counts.toReview : 0;
+          const badge = href === "/follow-ups" ? counts.followUpsDue : href === "/prospects" ? counts.toReview : href === "/opportunities" ? counts.newOpportunities ?? 0 : 0;
           return (
             <Link
               key={href}
@@ -40,7 +40,7 @@ export function Sidebar({ switcher, user, counts, aiConnected, admin }: { switch
               {badge > 0 && (
                 <span className="rounded-full bg-signal-soft px-1.5 text-xs font-medium tabular-nums text-signal-text">
                   {badge}
-                  <span className="sr-only">{href === "/follow-ups" ? " follow-ups due" : " prospects to review"}</span>
+                  <span className="sr-only">{href === "/follow-ups" ? " follow-ups due" : href === "/opportunities" ? " new opportunities" : " prospects to review"}</span>
                 </span>
               )}
             </Link>

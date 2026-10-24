@@ -54,15 +54,15 @@ export function parseHtml(html: string, baseUrl: string): Omit<Page, "url"> {
   return { title, description, headings: [...new Set(headings)].slice(0, 40), text, links };
 }
 
-/** Fetches one public page, re-checking every redirect hop against the SSRF guard. */
-export async function fetchPage(input: string): Promise<Page> {
+/** Fetches one public URL's body, re-checking every redirect hop against the SSRF guard. */
+export async function fetchPublic(input: string, kind: "html" | "text" = "html"): Promise<{ url: string; body: string; headers: Headers }> {
   let url = normaliseUrl(input);
   if (!url) throw new Error("That doesn't look like a web address.");
   for (let hop = 0; hop < 5; hop++) {
     await assertPublicUrl(url);
     const res: Response = await fetch(url, {
       redirect: "manual",
-      headers: { "user-agent": UA, accept: "text/html,application/xhtml+xml" },
+      headers: { "user-agent": UA, accept: kind === "html" ? "text/html,application/xhtml+xml" : "text/plain,application/xml,text/xml,*/*;q=0.5" },
       signal: AbortSignal.timeout(12_000),
     });
     if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
@@ -71,7 +71,7 @@ export async function fetchPage(input: string): Promise<Page> {
     }
     if (!res.ok) throw new Error(`The site responded with ${res.status}.`);
     const type = res.headers.get("content-type") ?? "";
-    if (!type.includes("html")) throw new Error("That address isn't a web page.");
+    if (kind === "html" && !type.includes("html")) throw new Error("That address isn't a web page.");
     const reader = res.body?.getReader();
     let received = 0;
     const chunks: Uint8Array[] = [];
@@ -85,10 +85,15 @@ export async function fetchPage(input: string): Promise<Page> {
         break;
       }
     }
-    const html = Buffer.concat(chunks).toString("utf8");
-    return { url, ...parseHtml(html, url) };
+    return { url, body: Buffer.concat(chunks).toString("utf8"), headers: res.headers };
   }
   throw new Error("Too many redirects.");
+}
+
+/** Fetches and parses one public web page. */
+export async function fetchPage(input: string): Promise<Page> {
+  const { url, body } = await fetchPublic(input);
+  return { url, ...parseHtml(body, url) };
 }
 
 const INTERESTING = /(about|who-we-are|company|service|solution|product|what-we-do|industr|sector|case|portfolio|project|client|customer|pricing|capabilit|expertise)/i;

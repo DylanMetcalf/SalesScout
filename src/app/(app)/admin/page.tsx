@@ -1,5 +1,5 @@
 import { and, count, desc, eq, gte, isNotNull, sum } from "drizzle-orm";
-import { Activity, AlertTriangle, Building2, CheckCircle2, Coins, Globe, KeyRound, Mail, Search, ShieldCheck, Ticket, Users, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, Building2, CheckCircle2, Coins, KeyRound, Mail, Search, ShieldCheck, Ticket, Users, XCircle } from "lucide-react";
 import Link from "next/link";
 import { db, t } from "@/lib/db";
 import { adminEmails, isAdminAccount, monthStart, requireAdmin } from "@/lib/admin";
@@ -7,7 +7,7 @@ import { MODEL } from "@/lib/ai/core";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AccessControl, AccountAccess, EnquiryStatus, InviteCreator, PlanControl, ResetLink, RevokeInvite } from "@/components/admin/admin-controls";
+import { AccessControl, AccountAccess, InviteCreator, PlanControl, ResetLink, RevokeInvite } from "@/components/admin/admin-controls";
 import { balance } from "@/lib/billing/credits";
 import { paystackConfigured } from "@/lib/billing/paystack";
 import { PAID_PLANS, planPrice } from "@/lib/billing/plans";
@@ -67,7 +67,6 @@ export default async function Admin() {
     .all();
   const failedJobs = db.select({ n: count() }).from(t.jobs).where(and(eq(t.jobs.status, "failed"), gte(t.jobs.createdAt, since))).get()!.n;
   const invites = db.select().from(t.invites).orderBy(desc(t.invites.createdAt)).limit(30).all();
-  const enquiries = db.select().from(t.enquiries).orderBy(desc(t.enquiries.createdAt)).limit(50).all();
   const ownKeys = db.select({ n: count() }).from(t.accounts).where(isNotNull(t.accounts.anthropicKeyEnc)).get()!.n;
   const econ = unitEconomics(accounts.filter((a) => !a.admin).map((a) => ({ plan: a.plan, paid: a.plan !== "free" && (a.planSource === "manual" || ["active", "past_due"].includes(a.subscriptionStatus)), price: a.plan !== "free" ? planPrice(a.plan as (typeof PAID_PLANS)[number]) : null })));
   const accountName = (id: string) => accounts.find((a) => a.id === id)?.name ?? "Deleted account";
@@ -86,7 +85,7 @@ export default async function Admin() {
     { ok: adminEmails().length > 0, label: "ADMIN_EMAILS", detail: adminEmails().length ? adminEmails().join(", ") : "Not set: the first account is treated as admin" },
     { ok: process.env.ALLOW_SIGNUPS === "false", label: "Sign-ups", detail: process.env.ALLOW_SIGNUPS === "false" ? "Invite only" : "Open to anyone (new accounts must bring their own key)" },
     { ok: Boolean(bookingUrl()), label: "Discovery-call booking", detail: bookingUrl() ? `Calendar shown on Contact: ${bookingUrl()}` : "Not set: add BOOKING_URL (Calendly, Cal.com or Google appointment page) to show a calendar" },
-    { ok: enquiryEmailsEnabled(), label: "Enquiry emails", detail: enquiryEmailsEnabled() ? `New enquiries are emailed to ${process.env.ENQUIRY_EMAIL || "the site contact email"}` : "Not set: add RESEND_API_KEY to get an email for each enquiry" },
+    { ok: enquiryEmailsEnabled(), label: "Enquiry emails", detail: enquiryEmailsEnabled() ? `New problems from the website are emailed to ${process.env.ENQUIRY_EMAIL || "the site contact email"}` : "Not set: add RESEND_API_KEY to get an email for each enquiry" },
     { ok: paystackConfigured() && PAID_PLANS.some((p) => process.env[`PAYSTACK_PLAN_${p.toUpperCase()}`]), label: "Online payments (Paystack)", detail: paystackConfigured() ? `Plans on sale: ${PAID_PLANS.filter((p) => process.env[`PAYSTACK_PLAN_${p.toUpperCase()}`]).join(", ") || "none (add PAYSTACK_PLAN_SCOUT/GROWTH/SCALE)"}` : "Not set: add PAYSTACK_SECRET_KEY and plan codes. Until then, use manual plans below." },
     { ok: true, label: "Sign-up verification", detail: [verificationPolicy().email ? "Email required" : "Email optional", verificationPolicy().phone ? (phoneVerificationAvailable() ? "Phone required" : "Phone required but Twilio isn't set up") : "Phone optional"].join(" · ") },
     { ok: Boolean(process.env.APP_ENCRYPTION_KEY), label: "Encryption key", detail: process.env.APP_ENCRYPTION_KEY ? "Set from environment" : "Generated on disk" },
@@ -210,32 +209,8 @@ export default async function Admin() {
         </Card>
 
         <Card>
-          <CardHeader title="Website enquiries" description="Messages from the contact form." action={<Mail className="size-5 text-accent" aria-hidden />} />
-          {enquiries.length === 0 ? (
-            <p className="px-5 pb-5 text-sm text-muted">No enquiries yet. When someone books a call on the website, it appears here.</p>
-          ) : (
-            <ul className="divide-y divide-border border-t border-border">
-              {enquiries.map((e) => (
-                <li key={e.id} className="flex flex-col gap-1.5 px-5 py-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-medium">
-                      {e.name}
-                      {e.company && <span className="font-normal text-muted"> · {e.company}</span>}
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <span className="whitespace-nowrap text-xs text-subtle">{formatDate(e.createdAt, true)}</span>
-                      <EnquiryStatus id={e.id} status={e.status} />
-                    </div>
-                  </div>
-                  <p className="text-sm">
-                    <a href={`mailto:${e.email}`} className="text-accent-text hover:underline">{e.email}</a>
-                    {e.website && <span className="text-muted"> · <Globe className="inline size-3.5" aria-hidden /> {e.website}</span>}
-                  </p>
-                  <p className="whitespace-pre-line text-sm text-muted">{e.message}</p>
-                </li>
-              ))}
-            </ul>
-          )}
+          <CardHeader title="Website enquiries" description="Problems sent through the website, and earlier contact-form messages, now live in Opportunities." action={<Mail className="size-5 text-accent" aria-hidden />} />
+          <div className="px-5 pb-5"><Link href="/opportunities" className="text-sm font-medium text-accent-text hover:underline">Open Opportunities →</Link></div>
         </Card>
 
         <Card>

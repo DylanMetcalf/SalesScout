@@ -31,7 +31,13 @@
 - Prospect cards carry a fit-coloured left edge, and pipeline columns carry their stage colour on top.
 
 ## Public website
-The marketing site for the done-for-you service lives in `src/app/(site)/` (`/`, `/why-us`, `/how-it-works`, `/services`, `/contact`) with shared chrome in `src/components/site/chrome.tsx`; new public pages must also be added to `PUBLIC` in `src/middleware.ts`. All its copy lives in `src/content/site.ts`. Enquiries from its form are stored in `enquiries` and listed under Settings → Website enquiries for the installation owner (the first account). Never add invented stats, testimonials or prices there.
+One job: help a business explain what isn't working. `src/app/(site)/`: `/` (home), `/start` (problem intake), `/start/received` (confirmation), `/book` (booking or call-request fallback), plus privacy and terms. Shared chrome in `src/components/site/chrome.tsx`; copy in `src/content/site.ts`; new public pages must also be added to `PUBLIC` in `src/middleware.ts`.
+- One primary CTA everywhere: "Tell us your problem". "Book a call" is the only secondary.
+- No invented proof: no testimonials, logos, stats or results. The hero's example card is labelled "Example".
+- Visitor-facing copy never promises savings, timelines or a free solution.
+
+## Operator documents
+Generated documents (`/reports/opportunity/[id]`) share one print shell: white A4, brand colour only in type and rules, page numbers from `@page`, `.keep` for blocks that shouldn't split. Each version is frozen when created. Literal hex colours are allowed here, as in the prospect brief.
 
 ## Patterns
 - **Answer the question the screen exists for first.** Home: "what should I do today?" Prospect: who, what, why, who to speak to, what to say, what next.

@@ -79,15 +79,6 @@ export async function revokeInviteAction(id: string) {
   });
 }
 
-export async function setEnquiryStatusAction(id: string, status: string) {
-  return attempt(async () => {
-    await assertAdmin();
-    const s = check(z.enum(["new", "contacted", "closed"]), status);
-    db.update(t.enquiries).set({ status: s }).where(eq(t.enquiries.id, id)).run();
-    revalidatePath("/admin");
-  });
-}
-
 /** A one-time link the admin sends to someone who's locked out. Valid 24 hours. */
 export async function createResetLinkAction(userId: string) {
   return attempt(async () => {

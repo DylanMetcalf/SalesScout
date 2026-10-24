@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { useAction } from "@/components/prospects/shared";
-import { adjustCreditsAction, createInviteAction, createResetLinkAction, revokeInviteAction, setAccessUntilAction, setAccountAccessAction, setAccountPausedAction, setEnquiryStatusAction, setPlanAction, setSwitchAction, resolveReportAction } from "@/app/actions/admin";
+import { adjustCreditsAction, createInviteAction, createResetLinkAction, revokeInviteAction, setAccessUntilAction, setAccountAccessAction, setAccountPausedAction, setPlanAction, setSwitchAction, resolveReportAction } from "@/app/actions/admin";
 import { RESOLUTIONS } from "@/lib/feedback-reasons";
 
 const toMillions = (tokens: number | null) => (tokens == null ? "" : String(tokens / 1_000_000));
@@ -131,18 +131,6 @@ export function RevokeInvite({ id }: { id: string }) {
   );
 }
 
-export function EnquiryStatus({ id, status }: { id: string; status: string }) {
-  const set = useAction();
-  return (
-    <Select aria-label="Enquiry status" value={status} disabled={set.pending} onChange={(e) => set.run(() => setEnquiryStatusAction(id, e.target.value))} className="h-8 w-auto text-sm">
-      <option value="new">New</option>
-      <option value="contacted">Contacted</option>
-      <option value="closed">Closed</option>
-    </Select>
-  );
-}
-
-/** Issues a one-time password reset link for a locked-out user and copies it. */
 export function ResetLink({ userId, email }: { userId: string; email: string }) {
   const toast = useToast();
   const make = useAction();

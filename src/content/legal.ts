@@ -6,7 +6,7 @@ import { SITE } from "./site";
  * are simply left out of the pages (never shown as placeholders).
  */
 export const LEGAL = {
-  lastUpdated: "21 October 2026",
+  lastUpdated: "23 October 2026",
   /** Registered legal name of the business, e.g. "Sales Scout (Pty) Ltd". */
   entity: "",
   /** Company registration number, if any. */
@@ -31,7 +31,7 @@ export const PRIVACY: LegalSection[] = [
     id: "who",
     title: "Who we are",
     body: [
-      `This policy explains how ${who} handles personal information when you visit our website, use the Sales Scout platform, or receive our done-for-you research service.`,
+      `This policy explains how ${who} handles personal information when you visit our website, tell us about a business problem, use the Sales Scout platform, or receive our services.`,
       "We aim to follow the Protection of Personal Information Act (POPIA) in South Africa and, where it applies, the EU and UK General Data Protection Regulation (GDPR).",
     ],
   },
@@ -40,12 +40,23 @@ export const PRIVACY: LegalSection[] = [
     title: "What we collect",
     body: [
       [
+        "Problems you tell us about: what you describe, any context you add, and your name, business email, company, website and (optionally) role, phone number and region. We also record when you agreed to this policy.",
         "Enquiries: your name, email, company, website and message when you contact us.",
         "Accounts: your name, email and a password (stored only as a one-way scrypt hash).",
         "Workspace content: information you add about your business, uploaded documents, notes, pipeline activity, outreach drafts and feedback.",
         "Security and usage data: a session cookie, IP address (for rate limiting and abuse prevention), server logs, and records of AI requests (task type, size and timing, not their content).",
         "Business research data: publicly available information about companies and the professionals who work at them (see below).",
       ],
+    ],
+  },
+  {
+    id: "problems",
+    title: "Problems you share with us",
+    body: [
+      "When you tell us about a business problem, we use it to understand your situation, prepare for a conversation with you and, if you want, propose a solution. Our team reviews it, and we may use AI (see below) to help summarise it and prepare questions.",
+      "We may also look at your company's public website and other public information about your business to understand it better. We only read public pages and never try to access anything private.",
+      "We don't add you to a mailing list, and we don't contact you about anything other than your enquiry unless you ask us to.",
+      "Please don't include passwords, banking details or other people's sensitive personal information in what you send us.",
     ],
   },
   {
@@ -91,7 +102,13 @@ export const PRIVACY: LegalSection[] = [
     title: "Who we share it with",
     body: [
       "We don't sell personal information. We share it only with service providers who help us run Sales Scout, under contracts that require them to protect it:",
-      [`Render: application hosting and storage, in ${LEGAL.hostingRegion}.`, "Anthropic: AI processing and web research."],
+      [
+        `Render: application hosting and storage, in ${LEGAL.hostingRegion}.`,
+        "Anthropic: AI processing and web research.",
+        "Resend: sending email notifications.",
+        "Calendly: scheduling, if you choose to book a call (their own privacy policy applies to the booking).",
+        "Twilio: phone-number verification, where it's switched on.",
+      ],
       "We may also disclose information where the law requires it, or to protect our rights, our clients or the public.",
     ],
   },
@@ -115,7 +132,7 @@ export const PRIVACY: LegalSection[] = [
     body: [
       [
         "Account and workspace data: while your account is active, then deleted within 90 days of closure unless the law requires us to keep it longer.",
-        "Enquiries: up to 24 months after our last contact.",
+        "Problems you share and enquiries: up to 24 months after our last contact, unless you become a client or ask us to delete them sooner.",
         "Security logs: as long as needed to protect the service, normally no more than 12 months.",
       ],
     ],

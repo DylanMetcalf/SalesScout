@@ -17,6 +17,16 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "20mb" },
   },
+  // The prospecting-service pages were retired when the site moved to problem intake.
+  async redirects() {
+    return [
+      { source: "/contact", destination: "/book", permanent: true },
+      { source: "/how-it-works", destination: "/#how", permanent: true },
+      { source: "/services", destination: "/#how", permanent: true },
+      { source: "/platform", destination: "/", permanent: true },
+      { source: "/why-us", destination: "/#approach", permanent: true },
+    ];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

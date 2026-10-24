@@ -89,7 +89,7 @@ export default async function Operations() {
 
         <Card>
           <CardHeader title="Spend by step (last 30 days)" description={`${k(total.tokens)} tokens · ${total.searches} web searches · ${total.fetches} pages read · estimated ${usd(total.usd)}${total.failedUsd ? ` (of which ${usd(total.failedUsd)} on failed calls)` : ""}`} />
-          <div className="overflow-x-auto border-t border-border">
+          <div className="overflow-x-auto border-t border-border" tabIndex={0} role="region" aria-label={"Spend by step table"}>
             <table className="w-full min-w-[860px] text-left text-sm">
               <thead className="bg-surface-2 text-xs text-muted">
                 <tr>{["Step", "Model", "Calls", "Failed", "Input tokens (cached)", "Output", "Searches", "Pages read", "Avg time", "Est. cost"].map((h) => <th key={h} scope="col" className="px-4 py-2.5 font-medium">{h}</th>)}</tr>
@@ -117,7 +117,7 @@ export default async function Operations() {
 
         <Card>
           <CardHeader title="Spend by account (last 30 days)" description="For unit economics: estimated AI cost against prospects kept. Excludes hosting, email and your time." />
-          <div className="overflow-x-auto border-t border-border">
+          <div className="overflow-x-auto border-t border-border" tabIndex={0} role="region" aria-label={"Spend by account table"}>
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="bg-surface-2 text-xs text-muted">
                 <tr>{["Account", "Plan", "Paid by", "Calls", "Tokens", "Est. cost", "Kept", "Per kept"].map((h) => <th key={h} scope="col" className="px-4 py-2.5 font-medium">{h}</th>)}</tr>
@@ -144,7 +144,7 @@ export default async function Operations() {
 
         <Card>
           <CardHeader title="Recent searches" description="Cost per search and per kept prospect. A search's cost covers discovery plus every batch researched." />
-          <div className="overflow-x-auto border-t border-border">
+          <div className="overflow-x-auto border-t border-border" tabIndex={0} role="region" aria-label={"Recent searches table"}>
             <table className="w-full min-w-[980px] text-left text-sm">
               <thead className="bg-surface-2 text-xs text-muted">
                 <tr>{["When", "Account", "Mode", "Status", "Batches", "Found / dup.", "Previews", "Kept", "Tokens", "Searches", "Est. cost", "Per kept", "Time"].map((h) => <th key={h} scope="col" className="px-4 py-2.5 font-medium">{h}</th>)}</tr>

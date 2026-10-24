@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Sales Scout — AI sales intelligence, done for you";
+export const alt = "Sales Scout: tell us what’s slowing your business down";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -28,8 +28,8 @@ export default function OpengraphImage() {
           <span style={{ fontSize: 40, fontWeight: 700 }}>Sales Scout</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <span style={{ fontSize: 72, fontWeight: 800, lineHeight: 1.05, maxWidth: 950 }}>Find the companies that need what you sell.</span>
-          <span style={{ fontSize: 32, color: "#b6bfd5" }}>Researched, vetted and explained. AI sales intelligence, done for you.</span>
+          <span style={{ fontSize: 72, fontWeight: 800, lineHeight: 1.05, maxWidth: 950 }}>Tell us what’s slowing your business down.</span>
+          <span style={{ fontSize: 32, color: "#b6bfd5" }}>Practical software, AI and automation for real business problems.</span>
         </div>
       </div>
     ),

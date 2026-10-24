@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db, t } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
@@ -9,11 +8,12 @@ import { ensureGrants } from "@/lib/billing/credits";
 import { freeEligible } from "@/lib/billing/eligibility";
 import { checkEmailCode, checkPhoneCode, sendEmailCode, sendPhoneCode } from "@/lib/services/verify";
 import { attempt } from "./result";
+import { clientIp } from "@/lib/security/client-ip";
 
 async function me(kind: string) {
   const user = await getSessionUser();
   if (!user) throw new Error("Please sign in again.");
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = await clientIp();
   if (!rateLimit(`verify-${kind}:${user.id}`, 6, 3_600_000) || !rateLimit(`verify-ip:${ip}`, 20, 3_600_000)) {
     throw new Error("Too many attempts. Please wait a while and try again.");
   }

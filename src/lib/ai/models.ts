@@ -14,8 +14,14 @@ export function modelFor(agent: string): string {
 export const AGENTS = {
   company_understanding: "Company Brain analysis",
   market_discovery: "Market suggestions",
-  prospect_discovery: "Discovery and research",
+  prospect_discovery: "Prospect discovery",
+  company_research: "Prospect research",
+  company_research_deep: "Deep prospect research",
   qualification: "Qualification",
   outreach: "Outreach drafts",
+  opportunity_analysis: "Problem analysis",
+  opportunity_research: "Company intelligence",
+  solution_design: "Solution briefs and proposals",
+  visibility: "Visibility assessments",
 } as const;
 export type Agent = keyof typeof AGENTS;

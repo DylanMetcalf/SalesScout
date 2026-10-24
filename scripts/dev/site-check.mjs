@@ -1,8 +1,8 @@
-// Screenshots every public website page (desktop + mobile), checks for errors, and submits the enquiry form.
+// Screenshots every public website page (desktop + mobile) and checks for errors. The intake form is tested by intake-check.mjs.
 import { chromium } from "playwright";
 const OUT = process.env.OUT ?? ".";
 const BASE = process.env.BASE ?? "http://localhost:3000";
-const PAGES = [["home", "/"], ["platform", "/platform"], ["why", "/why-us"], ["how", "/how-it-works"], ["services", "/services"], ["contact", "/contact"], ["privacy", "/privacy"], ["terms", "/terms"]];
+const PAGES = [["home", "/"], ["start", "/start"], ["book", "/book"], ["privacy", "/privacy"], ["terms", "/terms"]];
 const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
 const errors = [];
 for (const [suffix, vp] of [["", { width: 1440, height: 900 }], ["_m", { width: 390, height: 844 }]]) {
@@ -16,16 +16,6 @@ for (const [suffix, vp] of [["", { width: 1440, height: 900 }], ["_m", { width: 
     if (overflow) errors.push(`${path}${suffix}: horizontal overflow`);
     await page.waitForTimeout(300);
     await page.screenshot({ path: `${OUT}/site_${name}${suffix}.png`, fullPage: true });
-  }
-  if (!suffix) {
-    await page.goto(BASE + "/contact", { waitUntil: "networkidle" });
-    const form = page.locator("form");
-    await form.getByLabel("Your name", { exact: true }).fill("Test Buyer");
-    await form.getByLabel("Work email", { exact: true }).fill("buyer@example.com");
-    await form.getByLabel(/What do you sell/).fill("We sell industrial maintenance services to mines.");
-    await form.getByRole("button", { name: "Book a discovery call" }).click();
-    await page.getByText("Thanks — we've got it.").waitFor({ timeout: 15000 });
-    console.log("enquiry submitted");
   }
 }
 console.log("ERRORS:", JSON.stringify(errors));

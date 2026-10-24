@@ -9,6 +9,8 @@
  */
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import type { Analysis, ProblemContext, ProductSignal, Research, TextDoc, Visibility } from "@/lib/opportunities/types";
+import { STAGES as OPP_STAGES } from "@/lib/opportunities/types";
 
 const id = () => text("id").primaryKey();
 const createdAt = () =>
@@ -700,6 +702,82 @@ export const enquiries = sqliteTable("enquiries", {
   status: text("status", { enum: ["new", "contacted", "closed"] }).notNull().default("new"),
   createdAt: createdAt(),
 });
+
+// Opportunities: inbound business problems, owned by the installation's operators (administrators).
+// Not tenant data: only administrators can read or change them.
+
+export const opportunities = sqliteTable(
+  "opportunities",
+  {
+    id: id(),
+    /** Opaque reference shown to the customer (e.g. on the confirmation page). Never the id. */
+    ref: text("ref").notNull().unique(),
+    stage: text("stage", { enum: OPP_STAGES }).notNull().default("new"),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    phone: text("phone"),
+    role: text("role"),
+    companyName: text("company_name"),
+    website: text("website"),
+    region: text("region"),
+    contactPreference: text("contact_preference", { enum: ["email", "phone", "whatsapp"] }).notNull().default("email"),
+    /** The customer's original words. Never edited. */
+    problem: text("problem").notNull(),
+    context: json<ProblemContext>("context").notNull().default({}),
+    source: text("source").notNull().default("website"),
+    consentAt: integer("consent_at", { mode: "timestamp_ms" }),
+    privacyVersion: text("privacy_version"),
+    idempotencyKey: text("idempotency_key").notNull().unique(),
+    callRequestedAt: integer("call_requested_at", { mode: "timestamp_ms" }),
+    bookingOpenedAt: integer("booking_opened_at", { mode: "timestamp_ms" }),
+    analysis: json<Analysis>("analysis"),
+    research: json<Research>("research"),
+    visibility: json<Visibility>("visibility"),
+    brief: json<TextDoc>("brief"),
+    proposal: json<TextDoc>("proposal"),
+    proposalStatus: text("proposal_status", { enum: ["draft", "ready", "sent", "accepted", "declined"] }),
+    project: json<TextDoc>("project"),
+    projectStatus: text("project_status", { enum: ["not_started", "in_progress", "on_hold", "delivered"] }),
+    product: json<ProductSignal>("product"),
+    closedReason: text("closed_reason"),
+    legacyEnquiryId: text("legacy_enquiry_id"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("opportunities_stage_idx").on(t.stage), index("opportunities_email_idx").on(t.email)],
+);
+
+/** Notes, meeting notes, tasks and the activity trail of an opportunity. */
+export const opportunityItems = sqliteTable(
+  "opportunity_items",
+  {
+    id: id(),
+    opportunityId: text("opportunity_id").notNull().references(() => opportunities.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["note", "meeting", "task", "activity"] }).notNull(),
+    body: text("body").notNull(),
+    dueAt: integer("due_at", { mode: "timestamp_ms" }),
+    doneAt: integer("done_at", { mode: "timestamp_ms" }),
+    by: text("by"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("opportunity_items_opp_idx").on(t.opportunityId), index("opportunity_items_due_idx").on(t.kind, t.doneAt, t.dueAt)],
+);
+
+/** Frozen versions of generated documents: what was printed or shared stays as it was. */
+export const opportunityDocuments = sqliteTable(
+  "opportunity_documents",
+  {
+    id: id(),
+    opportunityId: text("opportunity_id").notNull().references(() => opportunities.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["assessment", "briefing", "visibility", "solution_brief", "proposal", "handover"] }).notNull(),
+    version: integer("version").notNull(),
+    title: text("title").notNull(),
+    content: json<Record<string, unknown>>("content").notNull(),
+    createdBy: text("created_by"),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("opportunity_documents_version_idx").on(t.opportunityId, t.kind, t.version)],
+);
 
 /** Invite codes created by an administrator. They open sign-up even when ALLOW_SIGNUPS=false. */
 export const invites = sqliteTable("invites", {

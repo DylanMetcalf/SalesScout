@@ -1,8 +1,8 @@
 # Sales Scout
 
-**Tell us what you sell. We'll help you figure out who needs it — who to talk to, why, and what to do next.**
+**Tell us what's slowing your business down. We'll help you understand it and find a practical way forward.**
 
-Sales Scout is an AI sales-intelligence and prospect-discovery app with a lightweight CRM. It learns what your business does (the *Company Brain*), suggests markets worth exploring, finds and vets real companies with live web research, identifies the people worth speaking to, explains *why* each prospect appeared, and helps you manage the relationship through to a decision.
+Sales Scout (by Mea Creo) has two sides. The public site invites businesses to explain a real problem; operators then work each one in **Opportunities**: AI-assisted analysis, company research, solution briefs, proposals, project handover, website visibility assessments and branded documents. Underneath is an AI sales-intelligence and prospect-discovery app with a lightweight CRM. It learns what your business does (the *Company Brain*), suggests markets worth exploring, finds and vets real companies with live web research, identifies the people worth speaking to, explains *why* each prospect appeared, and helps you manage the relationship through to a decision.
 
 > **New here? Read [`docs/SETUP.md`](docs/SETUP.md)** for a step-by-step guide: local use, connecting AI, putting it online with Render, and the improvement agent.
 
@@ -28,9 +28,12 @@ The SQLite database is created and migrated automatically in `data/` on first ru
 | `npm run db:seed` / `db:reset` | Create the demo login / wipe and recreate the database |
 | `/evolve` (Claude Code) | Runs the `platform-steward` agent to audit, fix, enhance and evolve the app |
 | `node scripts/dev/e2e.mjs` | Browser walkthrough of first run → CRM → exports → cross-tenant checks (needs a running server) |
+| `node scripts/dev/intake-check.mjs` | Website → problem intake → opportunity → documents → PDF, plus access checks (needs a running server) |
 
 ## Public website
-Visiting `/` shows the marketing site (Home, Why Sales Scout, How it works, Services, Contact) for the done-for-you service (edit the wording, packages and contact email in `src/content/site.ts`). "Client login" leads to the workspace. Contact-form enquiries appear under Settings → Website enquiries.
+Visiting `/` shows the public site, built around one action: **Tell us your problem** (`/start`, three short steps). Submissions are saved before anything else happens (no AI needed), the operator is emailed (Resend), and the visitor gets a confirmation with a booking link (`BOOKING_URL`) or, without one, a "please call me" request. Edit the wording in `src/content/site.ts`.
+
+Administrators see every submission under **Opportunities** in the workspace: pipeline stages, notes, tasks, AI analysis, company research, visibility assessment, solution brief, proposal, project handover, and printable branded documents (frozen as numbered versions). Earlier contact-form enquiries were copied in automatically. Nothing is ever sent to a customer by the app.
 
 ## What works with and without AI
 
