@@ -17,10 +17,10 @@ const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: 
 function Shell({ children, reference }: { children: React.ReactNode; reference?: string }) {
   return (
     <div className="min-h-dvh bg-bg">
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-bg/85 backdrop-blur-md">
+      <header className="theme-ink sticky top-0 z-30 border-b border-border bg-[var(--bg)]/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
           <Link href="/" aria-label={`${SITE.name} home`}><Logo /></Link>
-          {reference && <span className="caption-mono ml-auto hidden text-subtle sm:inline">Briefing {reference}</span>}
+          {reference && <span className="caption-mono ml-auto hidden text-muted sm:inline">{reference}</span>}
         </div>
       </header>
       {children}
@@ -31,7 +31,7 @@ function Shell({ children, reference }: { children: React.ReactNode; reference?:
 function Message({ icon: Icon, title, children }: { icon: typeof Clock; title: React.ReactNode; children: React.ReactNode }) {
   return (
     <main className="mx-auto max-w-2xl px-4 py-20 sm:px-6 sm:py-28">
-      <span className="flex size-12 items-center justify-center rounded-2xl bg-accent-soft text-accent-text" aria-hidden><Icon className="size-6" /></span>
+      <span className="flex size-12 items-center justify-center rounded-xl bg-accent-soft text-accent-text" aria-hidden><Icon className="size-6" /></span>
       <h1 className="mt-6 text-[36px] leading-[1.05] tracking-[-0.03em] sm:text-[48px]">{title}</h1>
       <div className="mt-5 flex flex-col gap-4 text-lg leading-8 text-muted">{children}</div>
     </main>
@@ -47,7 +47,7 @@ export default async function BriefingPage({ params }: { params: Promise<{ token
   if (a.state === "unavailable") {
     return (
       <Shell>
-        <Message icon={Mail} title={<>This link is <span className="accent-serif text-signal">no longer available.</span></>}>
+        <Message icon={Mail} title={<>This link is <span className="accent-word">no longer available.</span></>}>
           <p>Private briefing links work for a limited time, and can be replaced if needed. If you’d like to see your briefing again, email us at <Email /> and we’ll send you a fresh link.</p>
           <p><Link href="/" className="font-medium text-accent-text underline-offset-4 hover:underline">Go to the Sales Scout website</Link></p>
         </Message>
@@ -62,7 +62,7 @@ export default async function BriefingPage({ params }: { params: Promise<{ token
     return (
       <Shell reference={a.briefing.reference}>
         <RefreshWhilePreparing />
-        <Message icon={Clock} title={<>We’re writing your <span className="accent-serif text-signal">briefing.</span></>}>
+        <Message icon={Clock} title={<>We’re writing your <span className="accent-word">briefing.</span></>}>
           <p role="status">This usually takes a minute or two. This page updates by itself, so you can leave it open.</p>
         </Message>
       </Shell>
@@ -72,7 +72,7 @@ export default async function BriefingPage({ params }: { params: Promise<{ token
   if (a.state === "personal") {
     return (
       <Shell reference={a.briefing.reference}>
-        <Message icon={RouteIcon} title={<>We’re preparing your briefing <span className="accent-serif text-signal">personally.</span></>}>
+        <Message icon={RouteIcon} title={<>We’re preparing your briefing <span className="accent-word">personally.</span></>}>
           <p>We couldn’t produce it automatically this time, so a member of our team will look at your problem and get back to you. Your details are safe with us and nothing has been lost.</p>
           <p>If you’d rather talk it through now:</p>
           <div>{booking ? <DiscussCta bookingHref={booking} token={token} requested={Boolean(o.callRequestedAt)} /> : <CallRequestButton token={token} requested={Boolean(o.callRequestedAt)} />}</div>
@@ -88,19 +88,17 @@ export default async function BriefingPage({ params }: { params: Promise<{ token
     <Shell reference={a.briefing.reference}>
       <CountView token={token} />
       <div className="briefing-protect">
-        <section className="relative overflow-hidden border-b border-border" aria-labelledby="h-title">
-          <div aria-hidden className="paper-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_80%_at_70%_0%,#000_15%,transparent_70%)]" />
+        <section className="theme-ink brand-hero hero-grid relative overflow-hidden" aria-labelledby="h-title">
           <div className="relative mx-auto max-w-6xl px-4 pt-12 pb-12 sm:px-6 sm:pt-20 sm:pb-16">
-            <p className="caption-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-subtle">
-              <span className="flex items-center gap-2"><LogoMark size={18} label={null} /> Business Problem &amp; Solution Briefing</span>
-              <span aria-hidden>·</span>
-              <span>{a.briefing.reference}</span>
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted">
+              <span className="flex items-center gap-2 font-medium text-heading"><LogoMark size={20} label={null} /> Business Problem &amp; Solution Briefing</span>
+              <span className="caption-mono rounded-md border border-border px-2 py-0.5 text-subtle">{a.briefing.reference}</span>
             </p>
-            <h1 id="h-title" className="mt-6 max-w-4xl text-[40px] leading-[1.02] tracking-[-0.035em] sm:text-[64px]">{b.title}</h1>
-            <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-3 text-sm">
-              <div><dt className="caption-mono text-subtle">Prepared for</dt><dd className="mt-1 font-medium text-heading">{preparedFor}</dd></div>
-              <div><dt className="caption-mono text-subtle">Date</dt><dd className="mt-1 font-medium text-heading">{fmt(a.briefing.updatedAt)}</dd></div>
-              <div><dt className="caption-mono text-subtle">Status</dt><dd className="mt-1 font-medium text-heading">Initial assessment</dd></div>
+            <h1 id="h-title" className="mt-6 max-w-4xl text-[38px] leading-[1.04] tracking-[-0.04em] sm:text-[60px]">{b.title}</h1>
+            <dl className="mt-8 grid max-w-2xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border text-sm sm:grid-cols-3">
+              <div className="col-span-2 bg-surface/70 px-4 py-3 sm:col-span-1"><dt className="caption-mono text-subtle">Prepared for</dt><dd className="mt-1 font-medium text-heading">{preparedFor}</dd></div>
+              <div className="bg-surface/70 px-4 py-3"><dt className="caption-mono text-subtle">Date</dt><dd className="mt-1 font-medium text-heading">{fmt(a.briefing.updatedAt)}</dd></div>
+              <div className="bg-surface/70 px-4 py-3"><dt className="caption-mono text-subtle">Status</dt><dd className="mt-1 font-medium text-heading">Initial assessment</dd></div>
             </dl>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <DiscussCta bookingHref={booking} token={token} requested={Boolean(o.callRequestedAt)} compact />
@@ -113,13 +111,13 @@ export default async function BriefingPage({ params }: { params: Promise<{ token
           <nav aria-label="Sections" className="hidden lg:block">
             <ol className="sticky top-24 flex flex-col gap-1 pt-10 text-sm">
               {SECTIONS.map(([id, label], i) => (
-                <li key={id}><a href={`#${id}`} className="flex items-center gap-3 rounded-md px-2 py-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-text"><span className="font-mono text-xs text-subtle">{String(i + 1).padStart(2, "0")}</span>{label}</a></li>
+                <li key={id}><a href={`#${id}`} className="flex items-center gap-3 rounded-md px-2 py-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-text"><span className="w-4 text-xs font-semibold tabular-nums text-subtle">{i + 1}</span>{label}</a></li>
               ))}
             </ol>
           </nav>
           <main id="main">
             <BriefingDocument b={b} bookingHref={booking} token={token} requested={Boolean(o.callRequestedAt)} />
-            <p className="caption-mono mt-10 text-subtle">
+            <p className="mt-10 border-t border-border pt-5 text-sm text-subtle">
               Prepared for {preparedFor}. Private: please don’t share this link.{a.briefing.expiresAt ? ` Available until ${fmt(a.briefing.expiresAt)}.` : ""}
             </p>
           </main>

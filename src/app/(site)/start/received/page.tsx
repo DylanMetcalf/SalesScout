@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 const WHAT_NEXT = [
   { icon: ScanSearch, title: "Your briefing", text: "Our initial read of the problem and one direction worth exploring, prepared with the help of AI. Private to you." },
   { icon: MessagesSquare, title: "We read it too", text: "A person on our team reads what you sent, so the conversation starts in the right place." },
-  { icon: RouteIcon, title: "Let’s discuss your solution", text: "A short conversation to check our understanding and work out how to take it forward. If we can’t help, we’ll say so." },
+  { icon: RouteIcon, title: "Let’s Discuss Your Solution", text: "A short conversation to check our understanding and work out how to take it forward. If we can’t help, we’ll say so." },
 ];
 
 export default async function Received({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
@@ -44,9 +44,9 @@ export default async function Received({ searchParams }: { searchParams: Promise
       />
       <div className="mt-14 grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
         <div className="animate-rise [animation-delay:120ms]">
-          <Eyebrow index="✓">Received</Eyebrow>
+          <Eyebrow>Received</Eyebrow>
           <h1 id="h-received" className="mt-5 text-[40px] leading-[1.02] tracking-[-0.035em] sm:text-[60px]">
-            {s ? <>Thank you, {s.firstName}. Your problem is in <span className="accent-serif text-signal">good hands.</span></> : <>Thank you. Your problem is in <span className="accent-serif text-signal">good hands.</span></>}
+            {s ? <>Thank you, {s.firstName}. Your problem is in <span className="accent-word">good hands.</span></> : <>Thank you. Your problem is in <span className="accent-word">good hands.</span></>}
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-muted">{briefing ? "We’re preparing your Business Problem & Solution Briefing: our initial read of the problem and a direction worth exploring." : "You’ve given us a clearer picture of what’s happening. We’ll review it and work out the most useful next step for your business."}</p>
           {briefing && ref && (
@@ -55,7 +55,7 @@ export default async function Received({ searchParams }: { searchParams: Promise
             </div>
           )}
           <div className={briefing ? "mt-8 px-1" : "mt-10 rounded-card border border-border bg-surface p-6 shadow-sm sm:p-7"}>
-            <p className="mb-4 font-display text-[20px] font-[620] tracking-[-0.02em] text-heading">{briefing ? "Ready to talk it through?" : "The quickest way forward is a short conversation."}</p>
+            <p className="mb-4 text-[20px] font-semibold tracking-[-0.02em] text-heading">{briefing ? "Ready to talk it through?" : "The quickest way forward is a short conversation."}</p>
             <NextSteps refId={s ? ref! : null} hasBooking={Boolean(bookingUrl())} preference={s?.contactPreference ?? "email"} callRequested={Boolean(s?.callRequested)} />
           </div>
 
@@ -75,10 +75,10 @@ export default async function Received({ searchParams }: { searchParams: Promise
 
         {s && (
           <aside className="relative self-start rounded-card border border-border bg-surface p-6 shadow-md animate-rise [animation-delay:240ms] lg:sticky lg:top-24" aria-labelledby="h-recap">
-            <span aria-hidden className="absolute -top-3 left-6 rounded-full bg-text px-3 py-1 caption-mono text-bg">Your words</span>
+            <span aria-hidden className="theme-ink caption-mono absolute -top-3 left-6 rounded-md border border-border bg-[var(--bg)] px-2.5 py-1 text-heading">Your words</span>
             <h2 id="h-recap" className="mt-2 text-[22px] tracking-[-0.02em]">What you told us</h2>
             <p className="mt-0.5 text-xs text-subtle">Exactly as sent{s.companyName ? ` for ${s.companyName}` : ""}.</p>
-            <blockquote className="mt-4 max-h-72 overflow-auto border-l-2 border-signal pl-4 text-[15px] leading-7 whitespace-pre-wrap text-text">{s.problem}</blockquote>
+            <blockquote className="mt-4 max-h-72 overflow-auto border-l-2 border-accent pl-4 text-[15px] leading-7 whitespace-pre-wrap text-text">{s.problem}</blockquote>
             {Object.keys(s.context).length > 0 && (
               <dl className="mt-5 grid gap-3 border-t border-border pt-4 text-sm">
                 {[["Affects", s.context.area], ["How often", s.context.frequency], ["Today", s.context.current], ["Ideally", s.context.ideal]].filter(([, v]) => v).map(([k, v]) => (

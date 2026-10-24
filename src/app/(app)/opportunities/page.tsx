@@ -63,7 +63,7 @@ export default async function Opportunities({ searchParams }: { searchParams: Pr
                 <Link href={t.href} className="group relative block px-4 pt-4 pb-3.5 transition-colors hover:bg-surface-2">
                   <span aria-hidden className={cn("absolute inset-x-4 top-0 h-[3px] origin-left scale-x-[0.25] rounded-b transition-transform duration-300 group-hover:scale-x-100", t.rule)} />
                   <span className="caption-mono block text-subtle">{t.label}</span>
-                  <span className="mt-2 block font-display text-[34px] leading-none font-[650] tracking-[-0.03em] tabular-nums text-heading">{t.value}</span>
+                  <span className="mt-2 block font-display text-[34px] leading-none font-semibold tracking-[-0.03em] tabular-nums text-heading">{t.value}</span>
                   <span className="mt-1.5 block text-xs text-subtle">{t.hint}</span>
                 </Link>
               </li>

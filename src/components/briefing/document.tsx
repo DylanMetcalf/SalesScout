@@ -3,6 +3,8 @@ import { ArrowUpRight, CheckCheck, Clock, Eye, Layers, ShieldCheck, Smile, Spark
 import type { BenefitArea, Briefing } from "@/lib/opportunities/types";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
+import { FrameGlyph } from "@/components/brand/focus";
+import { LogoMark } from "@/components/ui/logo";
 import { CallRequestButton } from "./client";
 
 const BENEFIT: Record<BenefitArea, { label: string; icon: typeof Clock }> = {
@@ -27,7 +29,8 @@ export const SECTIONS = [
 function Section({ id, index, title, children }: { id: string; index: number; title: string; children: ReactNode }) {
   return (
     <section id={id} aria-labelledby={`h-${id}`} className="scroll-mt-24 border-t border-border pt-10 sm:pt-12">
-      <h2 id={`h-${id}`} className="caption-mono flex items-center gap-2 font-normal text-subtle"><span className="text-signal-text">{String(index).padStart(2, "0")}</span><span aria-hidden className="h-px w-6 bg-border-strong" />{title}</h2>
+      <p className="text-xs font-semibold text-accent-text">Part {index} of {SECTIONS.length}</p>
+      <h2 id={`h-${id}`} className="mt-1.5 flex items-center gap-2.5 text-[24px] leading-tight sm:text-[28px]"><FrameGlyph className="size-4 text-accent" />{title}</h2>
       <div className="mt-5">{children}</div>
     </section>
   );
@@ -38,7 +41,7 @@ function Bullets({ items, empty }: { items: string[]; empty?: string }) {
   return (
     <ul className="flex flex-col gap-2.5">
       {items.map((x, i) => (
-        <li key={i} className="flex gap-3 text-[15.5px] leading-7"><span aria-hidden className="mt-[11px] size-1.5 shrink-0 rounded-full bg-signal" />{x}</li>
+        <li key={i} className="flex gap-3 text-[15.5px] leading-7"><span aria-hidden className="mt-[11px] size-1.5 shrink-0 rounded-[2px] bg-accent" />{x}</li>
       ))}
     </ul>
   );
@@ -48,15 +51,15 @@ function Bullets({ items, empty }: { items: string[]; empty?: string }) {
 export function DiscussCta({ bookingHref, token, requested, compact }: { bookingHref: string | null; token: string; requested: boolean; compact?: boolean }) {
   if (bookingHref) {
     return (
-      <a href={bookingHref} target="_blank" rel="noopener noreferrer" className={buttonClass("primary", compact ? "md" : "xl", compact ? "px-4" : undefined, "pill")}>
-        Let’s discuss your solution
+      <a href={bookingHref} target="_blank" rel="noopener noreferrer" className={buttonClass("primary", compact ? "md" : "xl", compact ? "px-4" : undefined)}>
+        Let’s Discuss Your Solution
         <span aria-hidden className="inline-flex transition-transform duration-150 group-hover:translate-x-0.5"><ArrowUpRight className="size-4" /></span>
         <span className="sr-only"> (opens the booking calendar in a new tab)</span>
       </a>
     );
   }
   // Without a calendar, the top-of-page CTA takes them to the real call request at the end.
-  if (compact) return <a href="#next" className={buttonClass("primary", "md", "px-4", "pill")}>Let’s discuss your solution</a>;
+  if (compact) return <a href="#next" className={buttonClass("primary", "md", "px-4")}>Let’s Discuss Your Solution</a>;
   return <CallRequestButton token={token} requested={requested} />;
 }
 
@@ -70,8 +73,8 @@ export function BriefingDocument({ b, bookingHref, token, requested }: { b: Brie
             ["What it affects", b.summary.affects],
             ["The underlying issue", b.summary.underlyingIssue],
           ].map(([k, v], i) => (
-            <div key={k} className={cn("rounded-card border p-5", i === 2 ? "border-signal/40 bg-signal-soft/40" : "border-border bg-surface")}>
-              <h3 className="font-display text-[17px] font-[620] tracking-[-0.01em] text-heading">{k}</h3>
+            <div key={k} className={cn("rounded-card border p-5", i === 2 ? "frame border-accent/40 bg-accent-soft/50" : "border-border bg-surface")}>
+              <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-heading">{k}</h3>
               <p className="mt-2 text-[15.5px] leading-7 text-text">{v}</p>
             </div>
           ))}
@@ -79,7 +82,7 @@ export function BriefingDocument({ b, bookingHref, token, requested }: { b: Brie
       </Section>
 
       <Section id="assessment" index={2} title="Our assessment">
-        <h3 className="font-display text-[26px] leading-tight font-[650] tracking-[-0.025em] text-heading sm:text-[32px]">Why it <span className="accent-serif text-signal">matters</span></h3>
+        <h3 className="text-[26px] leading-tight font-semibold tracking-[-0.025em] text-heading sm:text-[32px]">Why it <span className="accent-word">matters</span></h3>
         <p className="mt-4 max-w-3xl text-[17px] leading-8 text-text">{b.assessment.whyItMatters}</p>
         <div className="mt-8 grid gap-8 md:grid-cols-2">
           <div>
@@ -94,7 +97,7 @@ export function BriefingDocument({ b, bookingHref, token, requested }: { b: Brie
         {b.assessment.questions.length > 0 && (
           <div className="mt-8 rounded-card bg-surface-2 p-6">
             <h3 className="font-semibold text-heading">Questions that would sharpen this</h3>
-            <ol className="mt-3 flex list-decimal flex-col gap-2 pl-5 text-[15.5px] leading-7 marker:font-mono marker:text-subtle">
+            <ol className="mt-3 flex list-decimal flex-col gap-2 pl-5 text-[15.5px] leading-7 marker:font-semibold marker:text-accent-text">
               {b.assessment.questions.map((q, i) => <li key={i}>{q}</li>)}
             </ol>
           </div>
@@ -102,18 +105,18 @@ export function BriefingDocument({ b, bookingHref, token, requested }: { b: Brie
       </Section>
 
       <Section id="solution" index={3} title="Proposed solution">
-        <div className="theme-ink brand-hero hero-grid relative overflow-hidden rounded-panel border border-border p-6 sm:p-10">
-          <p className="caption-mono text-subtle">The direction we’d explore</p>
-          <h3 className="mt-3 font-display text-[30px] leading-[1.05] font-[650] tracking-[-0.03em] text-heading sm:text-[40px]">{b.solution.name}</h3>
+        <div className="theme-ink brand-hero hero-grid frame frame-inset relative overflow-hidden rounded-panel p-6 sm:p-10">
+          <p className="text-sm font-semibold text-signal">The direction we’d explore</p>
+          <h3 className="mt-3 text-[30px] leading-[1.05] font-semibold tracking-[-0.03em] text-heading sm:text-[40px]">{b.solution.name}</h3>
           <p className="mt-4 max-w-3xl text-[17px] leading-8 text-muted">{b.solution.concept}</p>
           {b.solution.howItWorks.length > 0 && (
             <ol className="relative mt-8 flex flex-col gap-5" aria-label="How it could work">
-              <span aria-hidden className="absolute top-2 bottom-2 left-[11px] w-0.5 bg-signal/70" />
+              <span aria-hidden className="absolute top-2 bottom-2 left-[11px] w-px bg-gradient-to-b from-border-strong to-signal" />
               {b.solution.howItWorks.map((s, i) => {
                 const last = i === b.solution.howItWorks.length - 1;
                 return (
                   <li key={i} className="relative flex gap-4">
-                    <span aria-hidden className={cn("relative z-10 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-2 font-mono text-[11px]", last ? "border-signal bg-signal text-[#121218]" : "border-heading bg-[var(--bg)] text-heading")}>{i + 1}</span>
+                    <span aria-hidden className={cn("relative z-10 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border text-[12px] font-semibold", last ? "border-signal bg-signal text-[var(--bg)]" : "border-border-strong bg-[var(--bg)] text-heading")}>{i + 1}</span>
                     <p className="text-[15.5px] leading-7 text-text">{s}</p>
                   </li>
                 );
@@ -122,7 +125,7 @@ export function BriefingDocument({ b, bookingHref, token, requested }: { b: Brie
           )}
           {b.solution.approaches.length > 0 && (
             <ul className="mt-8 flex flex-wrap gap-2" aria-label="Approaches involved">
-              {b.solution.approaches.map((a, i) => <li key={i} className="rounded-full border border-border px-3 py-1 text-sm text-muted">{a}</li>)}
+              {b.solution.approaches.map((a, i) => <li key={i} className="rounded-md border border-border bg-surface/50 px-3 py-1 text-sm text-muted">{a}</li>)}
             </ul>
           )}
         </div>
@@ -134,7 +137,7 @@ export function BriefingDocument({ b, bookingHref, token, requested }: { b: Brie
             const m = BENEFIT[x.area];
             return (
               <li key={i} className="flex gap-4 rounded-card border border-border bg-surface p-5">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-text" aria-hidden><m.icon className="size-5" /></span>
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-text" aria-hidden><m.icon className="size-5" /></span>
                 <div>
                   <h3 className="font-semibold text-heading">{m.label}</h3>
                   <p className="mt-1 text-[15px] leading-7 text-text">{x.text}</p>
@@ -167,9 +170,10 @@ export function BriefingDocument({ b, bookingHref, token, requested }: { b: Brie
           <div><h3 className="mb-3 font-semibold text-heading">What we’d clarify together</h3><Bullets items={b.nextSteps.clarify} /></div>
           <div><h3 className="mb-3 font-semibold text-heading">What would help us prepare</h3><Bullets items={b.nextSteps.information} /></div>
         </div>
-        <div className="theme-ink brand-hero hero-grid relative mt-10 overflow-hidden rounded-panel border border-border px-6 py-10 sm:px-10 sm:py-12">
-          <p className="caption-mono text-subtle">The next step</p>
-          <h3 className="mt-3 max-w-2xl font-display text-[30px] leading-[1.05] font-[650] tracking-[-0.03em] text-heading sm:text-[42px]">Let’s discuss <span className="accent-serif text-signal">your solution.</span></h3>
+        <div className="theme-ink brand-hero hero-grid relative mt-10 overflow-hidden rounded-panel px-6 py-10 sm:px-10 sm:py-12">
+          <LogoMark size={36} label={null} />
+          <p className="mt-6 text-sm font-semibold text-signal">The next step</p>
+          <h3 className="mt-3 max-w-2xl text-[30px] leading-[1.05] font-semibold tracking-[-0.03em] text-heading sm:text-[42px]">Let’s discuss <span className="accent-word">your solution.</span></h3>
           <p className="mt-4 max-w-2xl text-[16.5px] leading-8 text-muted">{b.nextSteps.howWeHelp} This briefing is an initial assessment: a conversation lets us check our understanding, clarify what you need, and work out the best way forward.</p>
           <div className="mt-8"><DiscussCta bookingHref={bookingHref} token={token} requested={requested} /></div>
         </div>

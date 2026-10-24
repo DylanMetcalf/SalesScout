@@ -16,7 +16,7 @@ export function Sidebar({ switcher, user, counts, aiConnected, admin }: { switch
     <aside aria-label="Sidebar" className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col theme-ink sidebar-brand border-r border-border md:flex">
       <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
         <LogoMark size={26} />
-        <span className="font-display text-[17px] font-[650] tracking-[-0.02em]">Sales Scout</span>
+        <span className="font-display text-[17px] font-semibold tracking-[-0.02em]">Sales Scout</span>
       </div>
       <div className="px-3">
         <ContextSwitcher {...switcher} />

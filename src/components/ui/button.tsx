@@ -5,7 +5,6 @@ import { cn } from "./cn";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "subtle";
 type Size = "sm" | "md" | "lg" | "xl";
-type Shape = "default" | "pill";
 
 const base =
   "group inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-[background,border-color,color,box-shadow,transform] duration-150 select-none disabled:opacity-55 active:translate-y-px focus-visible:shadow-[var(--ring)] outline-none";
@@ -22,11 +21,11 @@ const sizes: Record<Size, string> = {
   lg: "h-11 px-5 text-base",
   xl: "h-12 px-6 text-[16px]",
 };
-const radius: Record<Size, string> = { sm: "rounded-md", md: "rounded-md", lg: "rounded-lg", xl: "rounded-lg" };
+const radius: Record<Size, string> = { sm: "rounded-md", md: "rounded-md", lg: "rounded-lg", xl: "rounded-[10px]" };
 
-/** `cn` doesn't merge Tailwind classes, so shape and size are options rather than className overrides. */
-export function buttonClass(variant: Variant = "secondary", size: Size = "md", className?: string, shape: Shape = "default") {
-  return cn(base, variants[variant], sizes[size], shape === "pill" ? "rounded-full" : radius[size], className);
+/** `cn` doesn't merge Tailwind classes, so size is an option rather than a className override. */
+export function buttonClass(variant: Variant = "secondary", size: Size = "md", className?: string) {
+  return cn(base, variants[variant], sizes[size], radius[size], className);
 }
 
 type ButtonProps = ComponentProps<"button"> & {
@@ -36,8 +35,6 @@ type ButtonProps = ComponentProps<"button"> & {
   icon?: ReactNode;
   /** Shown after the label and nudged forward on hover: use for "go somewhere" actions. */
   trailing?: ReactNode;
-  /** "pill" for the public site's calls to action. */
-  shape?: Shape;
 };
 
 const Trailing = ({ children }: { children: ReactNode }) => (
@@ -45,14 +42,14 @@ const Trailing = ({ children }: { children: ReactNode }) => (
 );
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "secondary", size = "md", loading, icon, trailing, shape, className, children, disabled, type = "button", ...props },
+  { variant = "secondary", size = "md", loading, icon, trailing, className, children, disabled, type = "button", ...props },
   ref,
 ) {
   return (
     <button
       ref={ref}
       type={type}
-      className={buttonClass(variant, size, className, shape)}
+      className={buttonClass(variant, size, className)}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       {...props}
@@ -64,11 +61,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   );
 });
 
-type LinkProps = ComponentProps<typeof Link> & { variant?: Variant; size?: Size; icon?: ReactNode; trailing?: ReactNode; shape?: Shape };
+type LinkProps = ComponentProps<typeof Link> & { variant?: Variant; size?: Size; icon?: ReactNode; trailing?: ReactNode };
 
-export function ButtonLink({ variant = "secondary", size = "md", icon, trailing, shape, className, children, ...props }: LinkProps) {
+export function ButtonLink({ variant = "secondary", size = "md", icon, trailing, className, children, ...props }: LinkProps) {
   return (
-    <Link className={buttonClass(variant, size, className, shape)} {...props}>
+    <Link className={buttonClass(variant, size, className)} {...props}>
       {icon}
       {children}
       {trailing && <Trailing>{trailing}</Trailing>}

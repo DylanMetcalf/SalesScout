@@ -113,7 +113,7 @@ export default async function Admin() {
           {stats.map(({ icon: Icon, label, value }) => (
             <div key={label} className="rounded-xl border border-border bg-surface p-4">
               <Icon className="size-4 text-accent" aria-hidden />
-              <dd className="mt-3 font-display text-2xl font-[650] tabular-nums text-heading">{value}</dd>
+              <dd className="mt-3 font-display text-2xl font-semibold tabular-nums text-heading">{value}</dd>
               <dt className="text-xs text-muted">{label}</dt>
             </div>
           ))}

@@ -3,21 +3,22 @@
 import { useRef, useState } from "react";
 import { SITE } from "@/content/site";
 import { cn } from "@/components/ui/cn";
-import { HUE_VAR } from "./hues";
 
-
-/** A tangled line: how a problem feels before anyone has looked at it properly. */
-function Tangle({ className }: { className?: string }) {
+/** A field of scattered nodes: how a problem looks before anyone has examined it. */
+function NodeField({ className }: { className?: string }) {
+  const nodes = [[14, 18], [42, 8], [70, 22], [96, 10], [24, 40], [58, 44], [88, 38], [108, 30]];
   return (
-    <svg viewBox="0 0 120 48" className={className} aria-hidden fill="none">
-      <path d="M4 30c10-22 24 16 34-4s-6-22 10-14 4 26 18 18 2-22 16-20 8 24 18 14 6-16 16-12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <svg viewBox="0 0 120 52" className={className} aria-hidden fill="none">
+      <path d="M14 18 42 8 70 22 96 10M24 40 58 44 88 38 108 30M42 8 58 44M70 22 88 38" stroke="currentColor" strokeOpacity=".35" strokeWidth="1" />
+      {nodes.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="2.4" fill="currentColor" fillOpacity={i === 2 ? 1 : 0.55} />)}
     </svg>
   );
 }
 
 /**
- * FIG. 01: pick a familiar problem and watch it become a route forward.
- * Purely illustrative (labelled "Example"); nothing here is a real client.
+ * The problem scan: pick a familiar problem and watch Sales Scout bring it
+ * into focus, then trace a signal path to a way forward. Illustrative only
+ * (labelled "Example"); nothing here is a real client.
  */
 export function HeroRoute() {
   const routes = SITE.routes;
@@ -31,13 +32,15 @@ export function HeroRoute() {
   };
 
   return (
-    <figure className="theme-ink brand-hero hero-grid relative overflow-hidden rounded-panel border border-border p-5 shadow-lg sm:p-8" aria-labelledby="fig-route">
+    <figure className="relative rounded-[20px] border border-border bg-surface/70 p-4 shadow-lg backdrop-blur sm:p-6" aria-labelledby="fig-route">
       <figcaption id="fig-route" className="flex flex-wrap items-center justify-between gap-3">
-        <span className="caption-mono text-subtle">Fig. 01 · A problem, routed</span>
-        <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted">Example</span>
+        <span className="flex items-center gap-2 text-sm font-medium text-heading">
+          <span aria-hidden className="size-2 rounded-full bg-signal" /> Problem scan
+        </span>
+        <span className="caption-mono rounded-md border border-border px-2 py-0.5 text-subtle">Example</span>
       </figcaption>
 
-      <div role="radiogroup" aria-label="Choose an example problem" className="-mx-1 mt-5 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin [mask-image:linear-gradient(90deg,#000_85%,transparent)] sm:[mask-image:none]">
+      <div role="radiogroup" aria-label="Choose an example problem" className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin">
         {routes.map((x, i) => (
           <button
             key={x.key}
@@ -57,13 +60,11 @@ export function HeroRoute() {
               else return;
               e.preventDefault();
             }}
-            style={{ ["--hue" as string]: HUE_VAR[x.hue] }}
             className={cn(
-              "hue flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-[background,border-color,color] duration-200",
-              i === active ? "border-[var(--hue-line)] bg-[var(--hue-soft)] text-heading" : "border-border text-muted hover:border-border-strong hover:text-text",
+              "shrink-0 rounded-lg border px-3 py-1.5 text-sm font-medium transition-[background,border-color,color] duration-200",
+              i === active ? "border-signal/60 bg-signal-soft text-heading" : "border-border text-muted hover:border-border-strong hover:text-text",
             )}
           >
-            <span className="size-2 rounded-full bg-[var(--hue)]" aria-hidden />
             {x.label}
           </button>
         ))}
@@ -71,35 +72,33 @@ export function HeroRoute() {
 
       {/* Stable live region; only its keyed child is replaced, so screen readers announce the change. */}
       <div aria-live="polite">
-      <div key={r.key} className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,2fr)] lg:gap-6">
-        <div style={{ ["--hue" as string]: HUE_VAR[r.hue] }} className="hue relative rounded-2xl border border-[var(--hue-line)] bg-[var(--hue-soft)] p-5 animate-rise">
-          <Tangle className="absolute top-4 right-4 w-20 text-[var(--hue)] opacity-80" />
-          <p className="caption-mono text-[var(--hue-ink)]">In their words</p>
-          <blockquote className="mt-3 font-display text-[19px] leading-snug font-[550] text-heading">“{r.said}”</blockquote>
-        </div>
+        <div key={r.key} className="mt-5 grid gap-4">
+          <div className="relative rounded-xl border border-border bg-[var(--bg)] p-4 animate-rise">
+            <NodeField className="absolute top-3 right-3 w-24 text-signal max-sm:hidden" />
+            <p className="caption-mono text-subtle">In their words</p>
+            <blockquote className="mt-2 text-[16px] leading-snug font-medium text-heading sm:max-w-[75%]">“{r.said}”</blockquote>
+          </div>
 
-        <ol className="relative grid gap-4 lg:grid-cols-3 lg:gap-5 lg:pt-7">
-          {/* The route: drawn from the problem through each waypoint to a way forward. */}
-          <svg aria-hidden className="pointer-events-none absolute top-0 left-0 hidden h-6 w-full lg:block" viewBox="0 0 1000 24" preserveAspectRatio="none" fill="none">
-            <path d="M0 12 H1000" stroke="var(--signal)" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" className="route-draw" style={{ ["--route-len" as string]: "1000" }} />
-          </svg>
-          <span aria-hidden className="absolute top-2 bottom-2 left-[11px] w-0.5 bg-signal lg:hidden" />
-          {r.steps.map((s, i) => {
-            const last = i === r.steps.length - 1;
-            return (
-              <li key={s.kind} className="relative pl-9 animate-rise lg:pl-0" style={{ animationDelay: `${150 + i * 140}ms` }}>
-                <span aria-hidden className={cn("absolute top-1 left-0 flex size-6 items-center justify-center rounded-full border-2 lg:-top-7", last ? "border-signal bg-signal" : "border-heading bg-bg")}>
-                  {last && <span className="absolute inset-0 rounded-full bg-signal waypoint-pulse" />}
-                </span>
-                <div className={cn("rounded-2xl border p-4", last ? "border-signal/50 bg-surface-2" : "border-border bg-surface")}>
-                  <p className={cn("caption-mono", last ? "text-signal-text" : "text-subtle")}>{s.kind}</p>
-                  <p className="mt-2 text-[15px] leading-6 text-text">{s.text}</p>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
+          <ol className="relative grid gap-3 pl-7">
+            {/* The signal path: from the problem through each step to a way forward. */}
+            <span aria-hidden className="absolute top-1 bottom-6 left-[9px] w-px bg-gradient-to-b from-border-strong to-signal" />
+            {r.steps.map((s, i) => {
+              const last = i === r.steps.length - 1;
+              return (
+                <li key={s.kind} className="relative animate-rise" style={{ animationDelay: `${120 + i * 120}ms` }}>
+                  <span aria-hidden className={cn("absolute top-4 -left-7 flex size-[19px] items-center justify-center rounded-full border", last ? "border-signal bg-signal-soft" : "border-border-strong bg-[var(--bg)]")}>
+                    <span className={cn("size-[7px] rounded-full", last ? "bg-signal" : "bg-border-strong")} />
+                    {last && <span className="absolute inset-0 rounded-full border border-signal waypoint-pulse" />}
+                  </span>
+                  <div className={cn("rounded-xl border p-3.5", last ? "frame border-signal/40 bg-signal-soft/60" : "border-border bg-surface")}>
+                    <p className={cn("text-xs font-semibold", last ? "text-signal-text" : "text-subtle")}>{s.kind}</p>
+                    <p className="mt-1 text-[15px] leading-6 text-text">{s.text}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       </div>
     </figure>
   );

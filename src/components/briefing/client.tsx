@@ -15,7 +15,7 @@ export function CallRequestButton({ token, requested, tone = "primary" }: { toke
     <Button
       variant={tone}
       size="xl"
-      shape="pill"
+     
       loading={pending}
       icon={<PhoneCall className="size-4" />}
       onClick={async () => {
@@ -25,7 +25,7 @@ export function CallRequestButton({ token, requested, tone = "primary" }: { toke
         if (r.ok) setDone(true);
       }}
     >
-      Let’s discuss your solution
+      Let’s Discuss Your Solution
     </Button>
   );
 }

@@ -24,7 +24,7 @@ ok("all six sections render");
 await page.emulateMedia({ media: "print" });
 (await page.locator(".briefing-protect").isVisible()) ? errors.push("content visible when printing") : ok("printing shows a note instead of the content");
 await page.emulateMedia({ media: "screen" });
-const cta = page.getByRole("button", { name: "Let’s discuss your solution" });
+const cta = page.getByRole("button", { name: "Let’s Discuss Your Solution" });
 (await cta.count()) ? ok("CTA present (no BOOKING_URL here, so it's a real call request)") : errors.push("CTA missing");
 await cta.last().click();
 await page.getByText("We’ll contact you to arrange a time").waitFor();

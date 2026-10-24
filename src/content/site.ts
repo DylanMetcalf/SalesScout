@@ -26,9 +26,8 @@ import {
  */
 
 type Item = { icon: LucideIcon; title: string; text: string };
-export type Hue = "cobalt" | "vermilion" | "jade" | "saffron" | "orchid" | "sky" | "rose" | "olive";
-/** A problem category: its colour, the intake area it pre-selects, and a labelled example. */
-export type Category = Item & { hue: Hue; area: string; example: string };
+/** A problem category: the intake area it pre-selects, and a labelled example. */
+export type Category = Item & { area: string; example: string };
 
 export const SITE = {
   name: "Sales Scout",
@@ -36,7 +35,7 @@ export const SITE = {
   operator: "Sales Scout is a Mea Creo service.",
   // Shown in the footer, booking page and legal pages.
   contactEmail: "salesscout@meacreo.co.za",
-  cta: "Explore my problem",
+  cta: "Explore My Problem",
 
   nav: [
     { href: "/#how", label: "How it works" },
@@ -51,14 +50,14 @@ export const SITE = {
   },
 
   solve: [
-    { icon: Timer, hue: "cobalt", area: "Admin and finance", title: "Repetitive admin", text: "The same data typed again and again.", example: "Invoices retyped from email into the accounts system." },
-    { icon: Inbox, hue: "vermilion", area: "Sales and enquiries", title: "Missed enquiries", text: "Leads and follow-ups that slip through.", example: "WhatsApp, email and web enquiries with no single owner." },
-    { icon: ReceiptText, hue: "saffron", area: "Quoting and documents", title: "Quotes and documents", text: "Slow, error-prone paperwork.", example: "Quotes built by hand from old copies in Word." },
-    { icon: Plug, hue: "sky", area: "Operations", title: "Disconnected systems", text: "Tools that don’t talk to each other.", example: "Orders in one system, stock in a spreadsheet." },
-    { icon: ClipboardList, hue: "jade", area: "Reporting", title: "Manual reporting", text: "Hours spent pulling numbers together.", example: "A weekly report rebuilt from five exports." },
-    { icon: LibraryBig, hue: "orchid", area: "Team knowledge", title: "Hard-to-find knowledge", text: "Answers buried in files and inboxes.", example: "New staff asking the same questions every week." },
-    { icon: Users, hue: "rose", area: "Customer service", title: "Onboarding and service", text: "Customer journeys that depend on memory.", example: "Each new client set up from a checklist in someone’s head." },
-    { icon: Lightbulb, hue: "olive", area: "A new product idea", title: "A product idea", text: "Software you’d like to exist.", example: "A tool your industry keeps asking for." },
+    { icon: Timer, area: "Admin and finance", title: "Repetitive admin", text: "The same data typed again and again.", example: "Invoices retyped from email into the accounts system." },
+    { icon: Inbox, area: "Sales and enquiries", title: "Missed enquiries", text: "Leads and follow-ups that slip through.", example: "WhatsApp, email and web enquiries with no single owner." },
+    { icon: ReceiptText, area: "Quoting and documents", title: "Quotes and documents", text: "Slow, error-prone paperwork.", example: "Quotes built by hand from old copies in Word." },
+    { icon: Plug, area: "Operations", title: "Disconnected systems", text: "Tools that don’t talk to each other.", example: "Orders in one system, stock in a spreadsheet." },
+    { icon: ClipboardList, area: "Reporting", title: "Manual reporting", text: "Hours spent pulling numbers together.", example: "A weekly report rebuilt from five exports." },
+    { icon: LibraryBig, area: "Team knowledge", title: "Hard-to-find knowledge", text: "Answers buried in files and inboxes.", example: "New staff asking the same questions every week." },
+    { icon: Users, area: "Customer service", title: "Onboarding and service", text: "Customer journeys that depend on memory.", example: "Each new client set up from a checklist in someone’s head." },
+    { icon: Lightbulb, area: "A new product idea", title: "A product idea", text: "Software you’d like to exist.", example: "A tool your industry keeps asking for." },
   ] as Category[],
 
   // Illustrative only (labelled "Example" on the page): how one problem becomes a route forward.
@@ -66,7 +65,7 @@ export const SITE = {
     {
       key: "enquiries",
       label: "Missed enquiries",
-      hue: "vermilion",
+     
       said: "Enquiries come in on WhatsApp, email and the website, and some never get a reply.",
       steps: [
         { kind: "We’d ask", text: "Where does each enquiry land, and who is meant to answer it?" },
@@ -77,7 +76,7 @@ export const SITE = {
     {
       key: "quotes",
       label: "Slow quotes",
-      hue: "saffron",
+     
       said: "Every quote is rebuilt by hand from an old one, so they’re slow and full of small mistakes.",
       steps: [
         { kind: "We’d ask", text: "What changes from one quote to the next, and what never does?" },
@@ -88,7 +87,7 @@ export const SITE = {
     {
       key: "admin",
       label: "Retyping data",
-      hue: "cobalt",
+     
       said: "We type the same order details into three systems, and things get missed when we’re busy.",
       steps: [
         { kind: "We’d ask", text: "Which system should be the source of truth, and who touches each one?" },
@@ -99,7 +98,7 @@ export const SITE = {
     {
       key: "reporting",
       label: "Manual reports",
-      hue: "jade",
+     
       said: "Every Monday someone spends the morning pulling numbers into a report nobody fully trusts.",
       steps: [
         { kind: "We’d ask", text: "Which decisions does the report actually inform?" },
@@ -107,12 +106,12 @@ export const SITE = {
         { kind: "You’d get", text: "A clear picture of the effort, risks and what’s worth doing first." },
       ],
     },
-  ] as { key: string; label: string; hue: Hue; said: string; steps: { kind: string; text: string }[] }[],
+  ] as { key: string; label: string; said: string; steps: { kind: string; text: string }[] }[],
 
   steps: [
     { icon: MessageSquareText, title: "Tell us what’s not working", text: "Describe the problem in your own words. About five minutes, no technical knowledge needed." },
     { icon: ScanSearch, title: "Get your briefing", text: "We analyse it and prepare a private Business Problem & Solution Briefing: our read of the problem and a direction worth exploring." },
-    { icon: Handshake, title: "Let’s discuss your solution", text: "A short conversation to check our understanding, clarify what you need and work out how to take it forward." },
+    { icon: Handshake, title: "Let’s Discuss Your Solution", text: "A short conversation to check our understanding, clarify what you need and work out how to take it forward." },
   ] as Item[],
 
   approach: [

@@ -52,17 +52,17 @@ export function BriefingStatus({ refId, initial, viewHref, emailConfigured }: { 
       <Waypoints label="Your briefing" steps={steps} className="max-w-md" />
       {working && (
         <div className="mt-6">
-          <p className="font-display text-[22px] font-[620] tracking-[-0.02em] text-heading">We’re writing your briefing now.</p>
+          <p className="text-[22px] font-semibold tracking-[-0.02em] text-heading">We’re writing your briefing now.</p>
           <p className="mt-2 text-muted">It usually takes a minute or two. You can wait here{emailConfigured ? ", or close this page: we’ll email you a private link when it’s ready" : ""}.</p>
         </div>
       )}
       {status === "ready" && (
         <div className="mt-6">
-          <p className="font-display text-[22px] font-[620] tracking-[-0.02em] text-heading">Your briefing is ready.</p>
+          <p className="text-[22px] font-semibold tracking-[-0.02em] text-heading">Your briefing is ready.</p>
           {viewHref ? (
             <>
               <p className="mt-2 text-muted">Our initial read of your problem, and one direction we think is worth exploring. The link is private to you.</p>
-              <ButtonLink href={viewHref} variant="primary" size="xl" shape="pill" className="mt-5" trailing={<ArrowRight className="size-4" />}>View my briefing</ButtonLink>
+              <ButtonLink href={viewHref} variant="primary" size="xl" className="mt-5" trailing={<ArrowRight className="size-4" />}>View my briefing</ButtonLink>
             </>
           ) : (
             <p className="mt-2 flex items-start gap-2 text-muted"><Mail className="mt-1 size-4 shrink-0" aria-hidden />{email === "sent" ? "We’ve emailed you a private link to it." : "We’ll send you a private link to it shortly."}</p>
@@ -71,7 +71,7 @@ export function BriefingStatus({ refId, initial, viewHref, emailConfigured }: { 
       )}
       {(status === "failed" || status === "manual") && (
         <div className="mt-6">
-          <p className="font-display text-[22px] font-[620] tracking-[-0.02em] text-heading">We’ll prepare your briefing personally.</p>
+          <p className="text-[22px] font-semibold tracking-[-0.02em] text-heading">We’ll prepare your briefing personally.</p>
           <p className="mt-2 text-muted">We couldn’t produce it automatically this time. Your problem is saved and a member of our team will follow up with you.</p>
         </div>
       )}

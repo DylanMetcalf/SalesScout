@@ -30,7 +30,7 @@ export function MobileMenu({ nav, cta, signedIn }: { nav: { href: string; label:
   const close = () => setOpen(false);
   return (
     <div ref={ref} className="md:hidden">
-      <button type="button" aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? "Close menu" : "Menu"} onClick={() => setOpen((o) => !o)} className="flex size-10 items-center justify-center rounded-full border border-border bg-surface text-text">
+      <button type="button" aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? "Close menu" : "Menu"} onClick={() => setOpen((o) => !o)} className="flex size-10 items-center justify-center rounded-lg border border-border bg-surface text-text">
         {open ? <X className="size-5" aria-hidden /> : <MenuIcon className="size-5" aria-hidden />}
       </button>
       {open && (
@@ -39,7 +39,7 @@ export function MobileMenu({ nav, cta, signedIn }: { nav: { href: string; label:
             <Link key={n.href} href={n.href} onClick={close} className="rounded-lg px-3 py-3 text-base font-medium hover:bg-surface-2">{n.label}</Link>
           ))}
           {signedIn && <Link href="/home" onClick={close} className="rounded-lg px-3 py-3 text-base font-medium hover:bg-surface-2">Open workspace</Link>}
-          <ButtonLink href="/start" onClick={close} variant="primary" size="lg" shape="pill" className="mt-2" trailing={<ArrowRight className="size-4" />}>{cta}</ButtonLink>
+          <ButtonLink href="/start" onClick={close} variant="primary" size="lg" className="mt-2" trailing={<ArrowRight className="size-4" />}>{cta}</ButtonLink>
         </nav>
       )}
     </div>

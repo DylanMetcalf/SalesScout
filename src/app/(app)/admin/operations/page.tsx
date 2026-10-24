@@ -66,7 +66,7 @@ export default async function Operations() {
             ].map(([label, value, hint]) => (
               <div key={label} className="bg-surface px-5 py-4">
                 <dt className="text-sm text-muted">{label}</dt>
-                <dd className="font-display text-xl font-[650] tabular-nums text-heading">{value}</dd>
+                <dd className="font-display text-xl font-semibold tabular-nums text-heading">{value}</dd>
                 <dd className="text-xs text-muted">{hint}</dd>
               </div>
             ))}
@@ -197,7 +197,7 @@ export default async function Operations() {
               {quality.rows.map((q) => (
                 <div key={q.label} className="flex items-center justify-between gap-4 px-5 py-3">
                   <dt><span className="font-medium">{q.label}</span><span className="block text-xs text-muted">{q.hint}</span></dt>
-                  <dd className="font-display text-xl font-[650] tabular-nums text-heading">{q.value}</dd>
+                  <dd className="font-display text-xl font-semibold tabular-nums text-heading">{q.value}</dd>
                 </div>
               ))}
             </dl>

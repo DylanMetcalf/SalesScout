@@ -232,21 +232,21 @@ export function briefingEmail(b: Pick<BriefingRow, "reference" | "expiresAt">, l
     "Sales Scout, a Mea Creo service",
     SITE.contactEmail,
   ].join("\n");
-  const html = `<!doctype html><html><body style="margin:0;background:#f4f1ea;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#16161d">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f1ea;padding:32px 12px"><tr><td align="center">
-<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fffdf8;border:1px solid #ddd7cb;border-radius:18px">
-<tr><td style="padding:28px 32px 8px"><table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="width:28px;height:28px;background:#16161d;border-radius:7px;text-align:center;color:#fffdf8;font-weight:700;font-size:15px;line-height:28px">S</td>
-<td style="padding-left:10px;font-weight:700;font-size:15px">Sales Scout</td></tr></table></td></tr>
-<tr><td style="padding:16px 32px 0;font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;color:#a3361a;text-transform:uppercase">Business Problem &amp; Solution Briefing · ${esc(b.reference)}</td></tr>
-<tr><td style="padding:10px 32px 0;font-size:26px;line-height:1.15;font-weight:700;letter-spacing:-.02em">Your briefing is ready.</td></tr>
-<tr><td style="padding:14px 32px 0;font-size:15px;line-height:1.6;color:#4a4a55">Our initial read of the problem you described on our website, and one direction we think is worth exploring.</td></tr>
-<tr><td style="padding:24px 32px 4px"><a href="${esc(link)}" style="display:inline-block;background:#c2381a;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 22px;border-radius:999px">View my briefing</a></td></tr>
-<tr><td style="padding:8px 32px 0;font-size:12px;color:#5f5e68">A private link for you${until ? `, working until ${esc(until)}` : ""}. Please don’t forward it.</td></tr>
-<tr><td style="padding:22px 32px 0;font-size:14px;line-height:1.6;color:#4a4a55;border-top:1px solid #eeeae1">If it rings true, the next step is a short conversation to check our understanding and talk through how to take it forward. You’ll find the booking link inside the briefing.</td></tr>
-<tr><td style="padding:14px 32px 28px;font-size:12px;line-height:1.6;color:#5f5e68">Didn’t ask for this? Someone may have typed your address by mistake. You can ignore this email, or reply and we’ll delete the request.</td></tr>
+  const html = `<!doctype html><html><body style="margin:0;background:#f4f7fb;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#0b1220">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;padding:32px 12px"><tr><td align="center">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid #d7dfea;border-radius:18px">
+<tr><td style="padding:22px 32px;background:#0b1220;border-radius:17px 17px 0 0"><table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="width:28px;height:28px"><img src="${esc(siteUrl())}/brand/mark-64.png" width="28" height="28" alt="" style="display:block;border:0;border-radius:7px"></td>
+<td style="padding-left:10px;font-weight:600;font-size:15px;letter-spacing:-.01em;color:#f4f7fb">Sales Scout</td></tr></table></td></tr>
+<tr><td style="padding:26px 32px 0;font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;color:#2447d6;text-transform:uppercase">Business Problem &amp; Solution Briefing · ${esc(b.reference)}</td></tr>
+<tr><td style="padding:10px 32px 0;font-size:26px;line-height:1.15;font-weight:600;letter-spacing:-.03em">Your briefing is ready.</td></tr>
+<tr><td style="padding:14px 32px 0;font-size:15px;line-height:1.6;color:#3b4a63">Our initial read of the problem you described on our website, and one direction we think is worth exploring.</td></tr>
+<tr><td style="padding:24px 32px 4px"><a href="${esc(link)}" style="display:inline-block;background:#315efb;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 22px;border-radius:10px">View my briefing</a></td></tr>
+<tr><td style="padding:8px 32px 0;font-size:12px;color:#56657d">A private link for you${until ? `, working until ${esc(until)}` : ""}. Please don’t forward it.</td></tr>
+<tr><td style="padding:22px 32px 0;font-size:14px;line-height:1.6;color:#3b4a63;border-top:1px solid #eaf0f7">If it rings true, the next step is a short conversation to check our understanding and talk through how to take it forward. You’ll find the booking link inside the briefing.</td></tr>
+<tr><td style="padding:14px 32px 28px;font-size:12px;line-height:1.6;color:#56657d">Didn’t ask for this? Someone may have typed your address by mistake. You can ignore this email, or reply and we’ll delete the request.</td></tr>
 </table>
-<p style="font-size:12px;color:#5f5e68;margin:16px 0 0">Sales Scout, a Mea Creo service · ${esc(SITE.contactEmail)}</p>
+<p style="font-size:12px;color:#56657d;margin:16px 0 0">Sales Scout, a Mea Creo service · ${esc(SITE.contactEmail)}</p>
 </td></tr></table></body></html>`;
   return { subject: "Your Sales Scout briefing is ready", text, html };
 }

@@ -11,11 +11,11 @@ export const metadata = { title: "Document", robots: { index: false } };
 
 type Company = { name: string | null; website: string | null; region: string | null; contact: string; role: string | null };
 
-const INK = "text-[#16161d]";
-const MUTED = "text-[#5f5e68]";
+const INK = "text-[#0b1220]";
+const MUTED = "text-[#56657d]";
 
 function H({ children }: { children: React.ReactNode }) {
-  return <h2 className="mb-2 border-b border-[#ddd7cb] pb-1.5 font-mono text-[11px] tracking-[0.1em] text-[#a3361a] uppercase">{children}</h2>;
+  return <h2 className="mb-2 border-b border-[#d7dfea] pb-1.5 font-mono text-[11px] tracking-[0.1em] text-[#2447d6] uppercase">{children}</h2>;
 }
 
 function Sec({ title, children, keep }: { title: string; children: React.ReactNode; keep?: boolean }) {
@@ -51,7 +51,7 @@ function Sources({ items }: { items: { url: string; title: string }[] }) {
   return (
     <Sec title="Sources">
       <ol className="flex list-decimal flex-col gap-1 pl-5 text-[11.5px]">
-        {items.map((s) => <li key={s.url} className="[overflow-wrap:anywhere]"><span>{s.title}</span> <span className="text-[#a3361a]">{s.url}</span></li>)}
+        {items.map((s) => <li key={s.url} className="[overflow-wrap:anywhere]"><span>{s.title}</span> <span className="text-[#2447d6]">{s.url}</span></li>)}
       </ol>
     </Sec>
   );
@@ -68,7 +68,7 @@ function Body({ kind, c }: { kind: DocKind; c: Record<string, unknown> }) {
       const ctx = (c.context ?? {}) as ProblemContext;
       return (
         <>
-          <Sec title="What you told us"><p className="border-l-2 border-[#e8492a] pl-3 whitespace-pre-wrap">{String(c.problem)}</p>{ctx.ideal && <p className="mt-2"><span className="font-semibold">What you’d like instead: </span>{ctx.ideal}</p>}</Sec>
+          <Sec title="What you told us"><p className="border-l-2 border-[#315efb] pl-3 whitespace-pre-wrap">{String(c.problem)}</p>{ctx.ideal && <p className="mt-2"><span className="font-semibold">What you’d like instead: </span>{ctx.ideal}</p>}</Sec>
           <Sec title="Our understanding so far" keep><p>{a.customerSays}</p><p className="mt-2"><span className="font-semibold">Where the friction appears to be: </span>{a.friction}</p></Sec>
           <Sec title="Possible directions" keep><ul className="flex flex-col gap-2">{a.directions.map((d, i) => <li key={i}><span className="font-semibold">{d.title}.</span> {d.why}</li>)}</ul></Sec>
           <Sec title="What we’d like to understand next" keep><ol className="flex list-decimal flex-col gap-1 pl-5">{a.questions.map((q, i) => <li key={i}>{q}</li>)}</ol></Sec>
@@ -88,8 +88,8 @@ function Body({ kind, c }: { kind: DocKind; c: Record<string, unknown> }) {
             <Sec title="Offerings" keep><Bullets items={r.offerings} empty="Not found in public sources." /></Sec>
             <Sec title="Markets and customers" keep><Bullets items={r.markets} empty="Not found in public sources." /></Sec>
           </div>
-          <Sec title="The problem they raised"><p className="border-l-2 border-[#e8492a] pl-3 whitespace-pre-wrap">{String(c.problem)}</p></Sec>
-          {observed.length > 0 && <Sec title="What public sources show"><ul className="flex list-disc flex-col gap-1 pl-5">{observed.map((f, i) => <li key={i}>{f.statement} {f.sourceUrl && <span className="text-[11px] text-[#a3361a] [overflow-wrap:anywhere]">({f.sourceUrl})</span>}</li>)}</ul></Sec>}
+          <Sec title="The problem they raised"><p className="border-l-2 border-[#315efb] pl-3 whitespace-pre-wrap">{String(c.problem)}</p></Sec>
+          {observed.length > 0 && <Sec title="What public sources show"><ul className="flex list-disc flex-col gap-1 pl-5">{observed.map((f, i) => <li key={i}>{f.statement} {f.sourceUrl && <span className="text-[11px] text-[#2447d6] [overflow-wrap:anywhere]">({f.sourceUrl})</span>}</li>)}</ul></Sec>}
           {inferred.length > 0 && <Sec title="Our inferences (unconfirmed)"><Bullets items={inferred.map((f) => f.statement)} /></Sec>}
           <Sec title="Possible improvement areas (hypotheses)" keep><Bullets items={r.improvements} /></Sec>
           <Sec title="Questions for the conversation" keep><ol className="flex list-decimal flex-col gap-1 pl-5">{[...r.questions, ...((c.questions as string[]) ?? [])].slice(0, 12).map((q, i) => <li key={i}>{q}</li>)}</ol></Sec>
@@ -116,7 +116,7 @@ function Body({ kind, c }: { kind: DocKind; c: Record<string, unknown> }) {
           <Sec title="Recommendations">
             <ol className="flex flex-col gap-4">
               {recs.map((x, i) => (
-                <li key={i} className="keep rounded border border-[#ddd7cb] p-3">
+                <li key={i} className="keep rounded border border-[#d7dfea] p-3">
                   <p className="font-semibold">{i + 1}. {x.title} <span className={`ml-1 text-[11px] font-normal ${MUTED}`}>{x.priority} priority · {x.effort} effort · {x.confidence} confidence</span></p>
                   <p className="mt-1">{x.why}</p>
                   <div className="mt-1.5 text-[12.5px]"><span className="font-semibold">How: </span><span className="whitespace-pre-wrap [overflow-wrap:anywhere]">{x.how}</span></div>
@@ -129,7 +129,7 @@ function Body({ kind, c }: { kind: DocKind; c: Record<string, unknown> }) {
             {areas.map((a) => (
               <div key={a} className="keep mb-3">
                 <h3 className="text-[12.5px] font-semibold">{a}</h3>
-                <ul className="flex list-disc flex-col gap-0.5 pl-5 text-[12.5px]">{v.observed.filter((x) => x.area === a).map((x, i) => <li key={i}>{x.finding}{x.url && <span className="text-[10.5px] text-[#a3361a] [overflow-wrap:anywhere]"> ({x.url})</span>}</li>)}</ul>
+                <ul className="flex list-disc flex-col gap-0.5 pl-5 text-[12.5px]">{v.observed.filter((x) => x.area === a).map((x, i) => <li key={i}>{x.finding}{x.url && <span className="text-[10.5px] text-[#2447d6] [overflow-wrap:anywhere]"> ({x.url})</span>}</li>)}</ul>
               </div>
             ))}
           </Sec>
@@ -146,7 +146,7 @@ function Body({ kind, c }: { kind: DocKind; c: Record<string, unknown> }) {
     case "handover":
       return (
         <>
-          <Sec title="The original problem"><p className="border-l-2 border-[#e8492a] pl-3 whitespace-pre-wrap">{String(c.problem)}</p></Sec>
+          <Sec title="The original problem"><p className="border-l-2 border-[#315efb] pl-3 whitespace-pre-wrap">{String(c.problem)}</p></Sec>
           <Fields fields={PROJECT_FIELDS} values={c.fields as Record<string, string>} />
         </>
       );
@@ -181,32 +181,32 @@ export default async function OpportunityDocument({ params, searchParams }: { pa
   const date = d.createdAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
   return (
-    <div className="min-h-dvh bg-[#f4f1ea] py-8 print:bg-white print:py-0">
+    <div className="min-h-dvh bg-[#f4f7fb] py-8 print:bg-white print:py-0">
       {print === "1" && <AutoPrint />}
       <div className="mx-auto mb-4 flex max-w-[794px] items-center justify-between px-4 print:hidden">
-        <a href={`/opportunities/${d.opportunityId}?tab=documents`} className="text-sm font-medium text-[#a3361a] hover:underline">← Back to opportunity</a>
+        <a href={`/opportunities/${d.opportunityId}?tab=documents`} className="text-sm font-medium text-[#2447d6] hover:underline">← Back to opportunity</a>
         <PrintButton />
       </div>
       <article className={`doc mx-auto flex max-w-[794px] flex-col gap-6 bg-white px-12 py-10 shadow-md print:max-w-none print:gap-5 print:p-0 print:shadow-none ${INK}`}>
-        <header className="relative flex items-center justify-between border-b-2 border-[#16161d] pb-4">
-          <span aria-hidden className="absolute -bottom-[5px] right-0 size-2 rounded-full bg-[#e8492a]" />
+        <header className="relative flex items-center justify-between border-b-2 border-[#0b1220] pb-4">
+          <span aria-hidden className="absolute -bottom-[5px] right-0 size-2 rounded-full bg-[#315efb]" />
           <div className="flex items-center gap-2.5">
             <LogoMark size={26} label={null} />
             <div className="leading-tight">
-              <p className="font-display text-[15px] font-[650] text-[#16161d]">{SITE.name}</p>
-              <p className="text-[11px] text-[#5f5e68]">by Mea Creo</p>
+              <p className="font-display text-[15px] font-semibold text-[#0b1220]">{SITE.name}</p>
+              <p className="text-[11px] text-[#56657d]">by Mea Creo</p>
             </div>
           </div>
-          <div className="text-right text-[11px] leading-tight text-[#5f5e68]">
+          <div className="text-right text-[11px] leading-tight text-[#56657d]">
             <p>{date}</p>
             <p>Version {d.version}</p>
           </div>
         </header>
 
         <section className="keep">
-          <p className="font-mono text-[11px] tracking-[0.1em] text-[#a3361a] uppercase">{DOC_KINDS[d.kind]}</p>
-          <h1 className="mt-1 font-display text-[32px] leading-[1.05] font-[650] tracking-[-0.03em] text-[#16161d]">{c.company.name || c.company.contact}</h1>
-          <p className="mt-1 text-[13px] text-[#4a4a55] [overflow-wrap:anywhere]">
+          <p className="font-mono text-[11px] tracking-[0.1em] text-[#2447d6] uppercase">{DOC_KINDS[d.kind]}</p>
+          <h1 className="mt-1 font-display text-[32px] leading-[1.05] font-semibold tracking-[-0.03em] text-[#0b1220]">{c.company.name || c.company.contact}</h1>
+          <p className="mt-1 text-[13px] text-[#3b4a63] [overflow-wrap:anywhere]">
             {AUDIENCE[d.kind]} {c.company.name ? `${c.company.contact}${c.company.role ? `, ${c.company.role}` : ""}, ${c.company.name}` : c.company.contact}
             {c.company.website && <> · {c.company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}</>}
           </p>
@@ -214,7 +214,7 @@ export default async function OpportunityDocument({ params, searchParams }: { pa
 
         <Body kind={d.kind} c={c} />
 
-        <footer className="keep mt-auto flex justify-between gap-6 border-t border-[#ddd7cb] pt-3 text-[10.5px] text-[#5f5e68]">
+        <footer className="keep mt-auto flex justify-between gap-6 border-t border-[#d7dfea] pt-3 text-[10.5px] text-[#56657d]">
           <span>{SITE.name} · {SITE.operator.replace(/\.$/, "")} · {SITE.contactEmail}</span>
           <span className="text-right">{internal ? "Internal and confidential." : `Confidential: prepared for ${c.company.name || c.company.contact}.`}</span>
         </footer>

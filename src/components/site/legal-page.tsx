@@ -6,14 +6,14 @@ export function LegalPage({ title, intro, sections, summary }: { title: string; 
   const details = [LEGAL.entity, LEGAL.registration && `Registration ${LEGAL.registration}`, LEGAL.address].filter(Boolean);
   return (
     <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-      <Eyebrow index="§">Legal</Eyebrow>
+      <Eyebrow>Legal</Eyebrow>
       <h1 className="mt-5 text-[40px] leading-[1.02] tracking-[-0.035em] sm:text-[60px]">{title}</h1>
       <p className="caption-mono mt-4 text-subtle">Last updated {LEGAL.lastUpdated}</p>
       <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">{intro}</p>
 
       <ul className="mt-8 grid max-w-3xl gap-3 sm:grid-cols-2">
         {summary.map((s) => (
-          <li key={s} className="flex items-start gap-2.5 rounded-2xl border border-border bg-surface px-4 py-3.5 text-[15px] font-medium before:mt-2 before:size-1.5 before:shrink-0 before:rounded-full before:bg-signal">{s}</li>
+          <li key={s} className="flex items-start gap-2.5 rounded-xl border border-border bg-surface px-4 py-3.5 text-[15px] font-medium before:mt-2 before:size-1.5 before:shrink-0 before:rounded-[2px] before:bg-accent">{s}</li>
         ))}
       </ul>
 

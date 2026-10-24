@@ -73,11 +73,11 @@ export function IntakeForm({ idempotencyKey, initialArea }: { idempotencyKey: st
           </ul>
         </div>
       </aside>
-    <form action={action} className="flex flex-col gap-6 rounded-card border border-border bg-surface p-5 shadow-md sm:p-9" noValidate>
+    <form action={action} className="frame flex flex-col gap-6 rounded-card border border-border bg-surface p-5 shadow-md sm:p-9" noValidate>
       <div className="lg:hidden">
         <Waypoints label="Your progress" steps={STEPS.map((l, i) => ({ label: l, state: stepStates(i) }))} />
       </div>
-      <p className="caption-mono -mb-3 text-subtle">Step {step} of 3</p>
+      <p className="-mb-3 text-xs font-semibold text-accent-text">Step {step} of 3</p>
       <h2 ref={headingRef} tabIndex={-1} className="text-[28px] leading-[1.08] tracking-[-0.03em] outline-none sm:text-[38px]">
         {step === 1 ? "What would you like to improve in your business?" : step === 2 ? "Help us picture it." : "Where should we reply?"}
       </h2>
@@ -181,10 +181,10 @@ export function IntakeForm({ idempotencyKey, initialArea }: { idempotencyKey: st
         {step < 3 ? (
           <div className="flex items-center gap-2">
             {step === 2 && <Button type="button" variant="ghost" onClick={() => setStep(3)}>Skip</Button>}
-            <Button type="button" variant="primary" size="xl" shape="pill" onClick={next} trailing={<ArrowRight className="size-4" />}>Continue</Button>
+            <Button type="button" variant="primary" size="xl" onClick={next} trailing={<ArrowRight className="size-4" />}>Continue</Button>
           </div>
         ) : (
-          <Button type="submit" variant="primary" size="xl" shape="pill" loading={pending} trailing={<ArrowRight className="size-4" />}>{pending ? "Sending…" : "Get my briefing"}</Button>
+          <Button type="submit" variant="primary" size="xl" loading={pending} trailing={<ArrowRight className="size-4" />}>{pending ? "Sending…" : "Get my briefing"}</Button>
         )}
       </div>
     </form>

@@ -30,7 +30,7 @@ page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
 // Home
 await page.goto(BASE + "/");
 await page.getByRole("heading", { level: 1, name: /slowing your business down/ }).waitFor();
-const ctas = await page.getByRole("link", { name: "Explore my problem" }).count();
+const ctas = await page.getByRole("link", { name: "Explore My Problem" }).count();
 ctas >= 2 ? ok(`home: primary CTA present (${ctas}x)`) : errors.push("home: CTA missing");
 if (await page.getByText(/testimonial|\d+% (faster|cheaper)|trusted by/i).count()) errors.push("home: looks like unverified proof");
 await page.waitForTimeout(900); // let the entrance animation settle before measuring contrast

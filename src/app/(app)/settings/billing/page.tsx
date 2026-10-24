@@ -80,7 +80,7 @@ export default async function Billing({ searchParams }: { searchParams: Promise<
           />
           <div className="grid gap-4 border-t border-border p-5 sm:grid-cols-3">
             <div className="sm:col-span-1">
-              <p className="font-display text-4xl font-[650] text-heading tabular-nums">{ent.unlimited ? "∞" : bal.total}</p>
+              <p className="font-display text-4xl font-semibold text-heading tabular-nums">{ent.unlimited ? "∞" : bal.total}</p>
               <p className="text-sm text-muted">prospect unlocks left</p>
               {!ent.unlimited && (
                 <p className="mt-1 text-xs text-subtle">
@@ -132,7 +132,7 @@ export default async function Billing({ searchParams }: { searchParams: Promise<
                   <article key={id} className={cn("flex flex-col rounded-xl border bg-surface p-5", id === "growth" ? "border-accent ring-1 ring-accent" : "border-border")}>
                     <h3 className="font-semibold text-heading">{p.name}</h3>
                     <p className="text-sm text-muted">{p.summary}</p>
-                    <p className="mt-3 font-display text-3xl font-[650] text-heading">{price ? `R${price.toLocaleString("en-ZA")}` : "—"}<span className="text-sm font-normal text-muted">{price ? " / month" : ""}</span></p>
+                    <p className="mt-3 font-display text-3xl font-semibold text-heading">{price ? `R${price.toLocaleString("en-ZA")}` : "—"}<span className="text-sm font-normal text-muted">{price ? " / month" : ""}</span></p>
                     <ul className="mt-3 flex flex-1 flex-col gap-1.5 text-sm">
                       {p.features.map((f) => <li key={f} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />{f}</li>)}
                     </ul>

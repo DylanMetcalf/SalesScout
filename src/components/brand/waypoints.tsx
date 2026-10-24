@@ -6,8 +6,8 @@ export type WaypointState = "done" | "current" | "todo";
 export type WaypointStep = { label: ReactNode; detail?: ReactNode; state: WaypointState };
 
 /**
- * The brand's route as a progress indicator: done waypoints are ink, the
- * current one is vermilion, the rest are hollow. Used for the intake steps,
+ * Progress along a signal path: done nodes are filled cobalt, the current one
+ * carries the signal (cobalt on light, cyan on dark), the rest are hollow. Used for the intake steps,
  * the confirmation page and an opportunity's stage. State is in the text too,
  * never colour alone.
  */
@@ -24,9 +24,9 @@ export function Waypoints({ steps, orientation = "horizontal", className, label 
                 aria-hidden
                 className={cn(
                   "absolute",
-                  vertical ? "top-6 bottom-1 left-[11px] w-0.5" : "top-[11px] right-1 left-7 h-0.5",
+                  vertical ? "top-6 bottom-1 left-[11px] w-px" : "top-[11px] right-1 left-7 h-px",
                   s.state === "done"
-                    ? "bg-text"
+                    ? "bg-accent"
                     : vertical
                       ? "bg-[repeating-linear-gradient(180deg,var(--border-strong)_0_4px,transparent_4px_8px)]"
                       : "bg-[repeating-linear-gradient(90deg,var(--border-strong)_0_4px,transparent_4px_8px)]",
@@ -36,14 +36,14 @@ export function Waypoints({ steps, orientation = "horizontal", className, label 
             <span
               aria-hidden
               className={cn(
-                "relative z-10 flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-300",
-                s.state === "done" && "border-text bg-text text-bg",
-                s.state === "current" && "border-signal bg-signal",
+                "relative z-10 flex size-6 shrink-0 items-center justify-center rounded-full border transition-colors duration-300",
+                s.state === "done" && "border-accent bg-accent text-accent-fg",
+                s.state === "current" && "border-signal bg-signal-soft",
                 s.state === "todo" && "border-border-strong bg-bg",
               )}
             >
               {s.state === "done" && <Check className="size-3.5" strokeWidth={3} />}
-              {s.state === "current" && <span className="absolute inset-0 rounded-full bg-signal waypoint-pulse" />}
+              {s.state === "current" && <><span className="size-2 rounded-full bg-signal" /><span className="absolute inset-0 rounded-full border border-signal waypoint-pulse" /></>}
             </span>
             <span className="min-w-0">
               <span className={cn("block text-sm leading-tight", s.state === "current" ? "font-semibold text-text" : s.state === "done" ? "text-text" : "text-subtle")}>
