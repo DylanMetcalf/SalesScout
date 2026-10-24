@@ -7,9 +7,9 @@ type Variant = "primary" | "secondary" | "ghost" | "danger" | "subtle";
 type Size = "sm" | "md" | "lg";
 
 const base =
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-[background,border-color,color,box-shadow,transform] duration-150 select-none disabled:opacity-55 active:translate-y-px focus-visible:shadow-[var(--ring)] outline-none";
+  "group inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-[background,border-color,color,box-shadow,transform] duration-150 select-none disabled:opacity-55 active:translate-y-px focus-visible:shadow-[var(--ring)] outline-none";
 const variants: Record<Variant, string> = {
-  primary: "bg-[linear-gradient(135deg,var(--accent),var(--accent-bright))] text-accent-fg shadow-[0_8px_20px_-10px_var(--accent)] hover:brightness-110 hover:shadow-[0_10px_24px_-10px_var(--accent)] hover:-translate-y-px font-semibold",
+  primary: "bg-accent text-accent-fg font-semibold shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_8px_20px_-10px_var(--accent)] hover:bg-accent-hover hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_12px_26px_-10px_var(--accent)] hover:-translate-y-px",
   secondary: "bg-surface text-text border border-border hover:border-accent/40 hover:text-accent-text shadow-sm",
   ghost: "text-muted hover:text-accent-text hover:bg-accent-soft/60",
   subtle: "bg-accent-soft text-accent-text hover:bg-[color-mix(in_srgb,var(--accent-soft)_80%,var(--accent)_12%)]",
@@ -30,10 +30,16 @@ type ButtonProps = ComponentProps<"button"> & {
   size?: Size;
   loading?: boolean;
   icon?: ReactNode;
+  /** Shown after the label and nudged forward on hover: use for "go somewhere" actions. */
+  trailing?: ReactNode;
 };
 
+const Trailing = ({ children }: { children: ReactNode }) => (
+  <span aria-hidden className="inline-flex transition-transform duration-150 group-hover:translate-x-0.5">{children}</span>
+);
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "secondary", size = "md", loading, icon, className, children, disabled, type = "button", ...props },
+  { variant = "secondary", size = "md", loading, icon, trailing, className, children, disabled, type = "button", ...props },
   ref,
 ) {
   return (
@@ -47,17 +53,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     >
       {loading ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : icon}
       {children}
+      {trailing && !loading && <Trailing>{trailing}</Trailing>}
     </button>
   );
 });
 
-type LinkProps = ComponentProps<typeof Link> & { variant?: Variant; size?: Size; icon?: ReactNode };
+type LinkProps = ComponentProps<typeof Link> & { variant?: Variant; size?: Size; icon?: ReactNode; trailing?: ReactNode };
 
-export function ButtonLink({ variant = "secondary", size = "md", icon, className, children, ...props }: LinkProps) {
+export function ButtonLink({ variant = "secondary", size = "md", icon, trailing, className, children, ...props }: LinkProps) {
   return (
     <Link className={buttonClass(variant, size, className)} {...props}>
       {icon}
       {children}
+      {trailing && <Trailing>{trailing}</Trailing>}
     </Link>
   );
 }

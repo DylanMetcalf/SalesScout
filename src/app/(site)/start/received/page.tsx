@@ -1,9 +1,10 @@
-import { MessagesSquare, ScanSearch, Waypoints } from "lucide-react";
+import { MessagesSquare, ScanSearch, Waypoints as RouteIcon } from "lucide-react";
 import { publicSummary } from "@/lib/opportunities/service";
 import { bookingUrl } from "@/lib/booking";
 import { Eyebrow } from "@/components/site/chrome";
 import { IconBadge } from "@/components/site/visuals";
 import { NextSteps } from "@/components/intake/next-steps";
+import { Waypoints } from "@/components/brand/waypoints";
 
 export const metadata = { title: "We’ve got it", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 const WHAT_NEXT = [
   { icon: ScanSearch, title: "We review it", text: "A person reads what you sent and looks at your public website to understand your business." },
   { icon: MessagesSquare, title: "We talk it through", text: "In a short conversation we ask the questions that matter: how the work happens today, what it costs you, what good looks like." },
-  { icon: Waypoints, title: "You get a clear next step", text: "If we can help, we’ll suggest a practical way forward. If we can’t, we’ll say so." },
+  { icon: RouteIcon, title: "You get a clear next step", text: "If we can help, we’ll suggest a practical way forward. If we can’t, we’ll say so." },
 ];
 
 export default async function Received({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
@@ -19,18 +20,30 @@ export default async function Received({ searchParams }: { searchParams: Promise
   const s = ref ? publicSummary(ref) : null;
 
   return (
-    <section className="mx-auto max-w-5xl px-4 pt-12 pb-20 sm:px-6 sm:pt-16" aria-labelledby="h-received">
-      <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <Eyebrow>Received</Eyebrow>
-          <h1 id="h-received" className="mt-3 text-[36px] leading-tight text-balance sm:text-[48px]">{s ? `Thank you, ${s.firstName}. Your problem is in good hands.` : "Thank you. Your problem is in good hands."}</h1>
-          <p className="mt-4 max-w-xl text-lg leading-8 text-muted">You’ve given us a clearer picture of what’s happening. We’ll review it and work out the most useful next step for your business.</p>
-          <div className="mt-9">
-            <p className="mb-3 font-semibold text-heading">The quickest way forward is a short conversation.</p>
+    <section className="mx-auto max-w-6xl px-4 pt-12 pb-20 sm:px-6 sm:pt-16" aria-labelledby="h-received">
+      <Waypoints
+        className="max-w-2xl animate-rise"
+        label="Where things stand"
+        steps={[
+          { label: "The problem", state: "done" },
+          { label: "Context", state: "done" },
+          { label: "Sent to us", state: "done" },
+          { label: "A conversation", state: "current" },
+        ]}
+      />
+      <div className="mt-14 grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+        <div className="animate-rise [animation-delay:120ms]">
+          <Eyebrow index="✓">Received</Eyebrow>
+          <h1 id="h-received" className="mt-5 text-[40px] leading-[1.02] tracking-[-0.035em] sm:text-[60px]">
+            {s ? <>Thank you, {s.firstName}. Your problem is in <span className="accent-serif text-signal">good hands.</span></> : <>Thank you. Your problem is in <span className="accent-serif text-signal">good hands.</span></>}
+          </h1>
+          <p className="mt-5 max-w-xl text-lg leading-8 text-muted">You’ve given us a clearer picture of what’s happening. We’ll review it and work out the most useful next step for your business.</p>
+          <div className="mt-10 rounded-[22px] border border-border bg-surface p-6 shadow-sm sm:p-7">
+            <p className="mb-4 font-display text-[20px] font-[620] tracking-[-0.02em] text-heading">The quickest way forward is a short conversation.</p>
             <NextSteps refId={s ? ref! : null} hasBooking={Boolean(bookingUrl())} preference={s?.contactPreference ?? "email"} callRequested={Boolean(s?.callRequested)} />
           </div>
 
-          <h2 className="mt-14 text-[22px]">What happens next</h2>
+          <h2 className="mt-14 text-[26px] tracking-[-0.025em]">What happens next</h2>
           <ol className="mt-5 flex flex-col gap-5">
             {WHAT_NEXT.map((w) => (
               <li key={w.title} className="flex items-start gap-4">
@@ -45,9 +58,10 @@ export default async function Received({ searchParams }: { searchParams: Promise
         </div>
 
         {s && (
-          <aside className="self-start rounded-2xl border border-border bg-surface p-6 shadow-sm" aria-labelledby="h-recap">
-            <h2 id="h-recap" className="text-lg font-semibold">What you told us</h2>
-            <p className="mt-0.5 text-xs text-subtle">Your words, exactly as sent{s.companyName ? ` for ${s.companyName}` : ""}.</p>
+          <aside className="relative self-start rounded-[22px] border border-border bg-surface p-6 shadow-md animate-rise [animation-delay:240ms] lg:sticky lg:top-24" aria-labelledby="h-recap">
+            <span aria-hidden className="absolute -top-3 left-6 rounded-full bg-text px-3 py-1 caption-mono text-bg">Your words</span>
+            <h2 id="h-recap" className="mt-2 text-[22px] tracking-[-0.02em]">What you told us</h2>
+            <p className="mt-0.5 text-xs text-subtle">Exactly as sent{s.companyName ? ` for ${s.companyName}` : ""}.</p>
             <blockquote className="mt-4 max-h-72 overflow-auto border-l-2 border-signal pl-4 text-[15px] leading-7 whitespace-pre-wrap text-text">{s.problem}</blockquote>
             {Object.keys(s.context).length > 0 && (
               <dl className="mt-5 grid gap-3 border-t border-border pt-4 text-sm">

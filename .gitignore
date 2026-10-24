@@ -11,3 +11,4 @@ next-env.d.ts
 test-results
 data/.secret-key
 /*.png
+scripts/dev/.*.mjs

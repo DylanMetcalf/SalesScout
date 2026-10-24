@@ -11,14 +11,20 @@ export const metadata = {
 // A fresh idempotency key per visit: refreshing or double-submitting never creates two records.
 export const dynamic = "force-dynamic";
 
-export default function Start() {
+export default async function Start({ searchParams }: { searchParams: Promise<{ area?: string }> }) {
+  const { area } = await searchParams;
   return (
-    <section className="mx-auto max-w-2xl px-4 pt-12 pb-20 sm:px-6 sm:pt-16" aria-labelledby="h-start">
-      <Eyebrow>Tell us your problem</Eyebrow>
-      <h1 id="h-start" className="mt-3 text-[34px] leading-tight sm:text-[44px]">Let’s start with what’s not working.</h1>
-      <p className="mt-3 text-lg text-muted">Three short steps, about five minutes. No technical knowledge needed.</p>
-      <div className="mt-10 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-8">
-        <IntakeForm idempotencyKey={randomUUID()} />
+    <section className="relative" aria-labelledby="h-start">
+      <div aria-hidden className="paper-grid pointer-events-none absolute inset-x-0 top-0 h-80 [mask-image:linear-gradient(#000,transparent)]" />
+      <div className="relative mx-auto max-w-5xl px-4 pt-12 pb-20 sm:px-6 sm:pt-16">
+        <Eyebrow index="→">Tell us your problem</Eyebrow>
+        <h1 id="h-start" className="mt-5 max-w-3xl text-[40px] leading-[1.02] tracking-[-0.035em] sm:text-[60px]">
+          Let’s start with what’s <span className="accent-serif text-signal">not working.</span>
+        </h1>
+        <p className="mt-4 max-w-xl text-lg text-muted">Three short steps, about five minutes. No technical knowledge needed, and nothing is committed until we’ve talked.</p>
+        <div className="mt-12">
+          <IntakeForm idempotencyKey={randomUUID()} initialArea={area ?? null} />
+        </div>
       </div>
     </section>
   );

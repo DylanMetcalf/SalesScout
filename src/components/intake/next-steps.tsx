@@ -22,11 +22,11 @@ export function NextSteps({ refId, hasBooking, preference, callRequested }: { re
 
   if (mode === "later") {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-6 animate-rise" role="status">
+      <div className="animate-rise" role="status">
         <p className="font-semibold text-heading">No problem. We’ll be in touch {preference === "email" ? "by email" : preference === "whatsapp" ? "on WhatsApp" : "by phone"} once we’ve reviewed it.</p>
         <p className="mt-1.5 text-[15px] text-muted">If something changes or you think of more detail, just reply to our message. You can still book a time whenever suits you.</p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <ButtonLink href={bookHref} variant="secondary" icon={<CalendarCheck className="size-4" />}>Book after all</ButtonLink>
+          <ButtonLink href={bookHref} variant="secondary" className="rounded-full" icon={<CalendarCheck className="size-4" />}>Book after all</ButtonLink>
           <ButtonLink href="/" variant="ghost">Back to the website</ButtonLink>
         </div>
       </div>
@@ -36,11 +36,11 @@ export function NextSteps({ refId, hasBooking, preference, callRequested }: { re
   return (
     <div className="flex flex-col gap-4">
       {hasBooking ? (
-        <ButtonLink href={bookHref} variant="primary" size="lg" icon={<ArrowRight className="size-4" />} className="self-start">Book a conversation</ButtonLink>
+        <ButtonLink href={bookHref} variant="primary" size="lg" trailing={<ArrowRight className="size-4" />} className="h-12 self-start rounded-full px-6">Book a conversation</ButtonLink>
       ) : asked ? (
         <p className="flex items-center gap-2 font-medium text-heading" role="status"><CircleCheck className="size-5 text-accent animate-check-pop" aria-hidden /> Thanks. We’ll contact you to arrange a time.</p>
       ) : (
-        <Button variant="primary" size="lg" loading={pending} onClick={requestCall} icon={<PhoneCall className="size-4" />} className="self-start">Ask us to arrange a conversation</Button>
+        <Button variant="primary" size="lg" loading={pending} onClick={requestCall} icon={<PhoneCall className="size-4" />} className="h-12 self-start rounded-full px-6">Ask us to arrange a conversation</Button>
       )}
       <button type="button" onClick={() => setMode("later")} className="self-start text-sm text-muted underline-offset-4 hover:text-text hover:underline">Continue without booking</button>
     </div>

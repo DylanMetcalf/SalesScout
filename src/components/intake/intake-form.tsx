@@ -1,27 +1,37 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, CircleCheck, Lightbulb, Lock, Trash2, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
 import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/components/ui/cn";
 import { submitProblem, type IntakeState } from "@/app/actions/intake";
 import { AREAS, FREQUENCIES } from "@/lib/opportunities/types";
+import { Waypoints, type WaypointState } from "@/components/brand/waypoints";
 
 const STEPS = ["The problem", "A little context", "How to reach you"] as const;
+
+// Shown on request to help people start. Never inserted into their answer.
+const NUDGES = [
+  "Orders come in by phone and email, and we retype them into our accounting system. On busy days some get missed.",
+  "Quotes take us two days because each one is rebuilt by hand from an old one.",
+  "Our team keeps asking the same questions because the answers are spread across emails and folders.",
+];
 
 /**
  * Three short steps in one form, so nothing typed is lost moving between them.
  * Only the problem, name, email and company are required.
  */
-export function IntakeForm({ idempotencyKey }: { idempotencyKey: string }) {
+export function IntakeForm({ idempotencyKey, initialArea }: { idempotencyKey: string; initialArea?: string | null }) {
   const [state, action, pending] = useActionState<IntakeState, FormData>(submitProblem, undefined);
   const [step, setStep] = useState(1);
   const [problem, setProblem] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
   // Controlled fields: React resets uncontrolled inputs after every action, which would lose them on a validation error.
-  const [v, setV] = useState<Record<string, string>>({ contactPreference: "email" });
+  const [v, setV] = useState<Record<string, string>>({ contactPreference: "email", ...(initialArea && (AREAS as readonly string[]).includes(initialArea) && { area: initialArea }) });
+  const [nudge, setNudge] = useState<number | null>(null);
+  const mounted = useRef(false);
   const bind = (name: string) => ({ name, value: v[name] ?? "", onChange: (e: { target: { value: string } }) => setV((d) => ({ ...d, [name]: e.target.value })) });
   const pref = v.contactPreference;
   const setPref = (x: string) => setV((d) => ({ ...d, contactPreference: x }));
@@ -32,7 +42,9 @@ export function IntakeForm({ idempotencyKey }: { idempotencyKey: string }) {
     if (state?.step) setStep(state.step);
   }, [state]);
   useEffect(() => {
-    headingRef.current?.focus();
+    // Move focus to the new question when the step changes, but not on first load.
+    if (mounted.current) headingRef.current?.focus();
+    mounted.current = true;
   }, [step]);
 
   const next = () => {
@@ -46,20 +58,27 @@ export function IntakeForm({ idempotencyKey }: { idempotencyKey: string }) {
   const error = localError ?? state?.error ?? null;
   const fieldError = (name: string) => (state?.field === name && state.step === step ? state.error ?? null : null);
 
-  return (
-    <form action={action} className="flex flex-col gap-6" noValidate>
-      <ol className="flex gap-2" aria-label="Progress">
-        {STEPS.map((label, i) => (
-          <li key={label} className="flex-1">
-            <span className={cn("block h-1 rounded-full transition-colors", i + 1 <= step ? "bg-accent" : "bg-border")} />
-            <span className={cn("mt-2 block text-xs", i + 1 === step ? "font-semibold text-text" : "text-subtle")} aria-current={i + 1 === step ? "step" : undefined}>
-              <span className="sr-only">Step {i + 1} of 3: </span>{label}
-            </span>
-          </li>
-        ))}
-      </ol>
+  const enough = problem.trim().length >= 20;
+  const stepStates = (i: number): WaypointState => (i + 1 < step ? "done" : i + 1 === step ? "current" : "todo");
 
-      <h2 ref={headingRef} tabIndex={-1} className="text-[26px] leading-tight outline-none sm:text-[32px]">
+  return (
+    <div className="grid gap-8 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-14">
+      <aside className="hidden lg:block">
+        <div className="sticky top-24">
+          <Waypoints orientation="vertical" label="Your progress" steps={[...STEPS.map((l, i) => ({ label: l, state: stepStates(i), detail: i === 1 ? "Optional" : undefined })), { label: "Sent to us", state: "todo" as const }]} />
+          <ul className="mt-10 flex flex-col gap-3 border-t border-border pt-6 text-sm text-muted">
+            <li className="flex gap-2.5"><UserRound className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden /> Read by a person on our team</li>
+            <li className="flex gap-2.5"><Lock className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden /> Private, never on a mailing list</li>
+            <li className="flex gap-2.5"><Trash2 className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden /> Deleted whenever you ask</li>
+          </ul>
+        </div>
+      </aside>
+    <form action={action} className="flex flex-col gap-6 rounded-[22px] border border-border bg-surface p-5 shadow-md sm:p-9" noValidate>
+      <div className="lg:hidden">
+        <Waypoints label="Your progress" steps={STEPS.map((l, i) => ({ label: l, state: stepStates(i) }))} />
+      </div>
+      <p className="caption-mono -mb-3 text-subtle">Step {step} of 3</p>
+      <h2 ref={headingRef} tabIndex={-1} className="text-[28px] leading-[1.08] tracking-[-0.03em] outline-none sm:text-[38px]">
         {step === 1 ? "What would you like to improve in your business?" : step === 2 ? "Help us picture it." : "Where should we reply?"}
       </h2>
 
@@ -74,12 +93,23 @@ export function IntakeForm({ idempotencyKey }: { idempotencyKey: string }) {
               value={problem}
               onChange={(e) => setProblem(e.target.value)}
               maxLength={5000}
-              className="min-h-48 text-base leading-7"
-              placeholder="For example: we take orders by phone and email, then retype them into our accounting system, and things get missed when we’re busy…"
+              className="min-h-52 rounded-xl px-4 py-3.5 text-[17px] leading-8"
+              placeholder="In your own words, as if you were telling a colleague…"
             />
           )}
         </Field>
-        <p className="self-end text-xs text-subtle tabular-nums" aria-live="polite">{problem.length > 4500 ? `${5000 - problem.length} characters left` : ""}</p>
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+          <p className={cn("flex items-center gap-1.5 transition-colors", enough ? "text-strong" : "text-subtle")} aria-live="polite">
+            {enough ? <><CircleCheck className="size-3.5" aria-hidden /> That’s enough to start. Add more if you like.</> : "A couple of sentences is plenty."}
+          </p>
+          <p className="text-subtle tabular-nums">{problem.length > 4500 ? `${5000 - problem.length} characters left` : ""}</p>
+        </div>
+        <div className="mt-2 rounded-xl border border-dashed border-border bg-surface-2/50 p-3">
+          <button type="button" onClick={() => setNudge((n) => (n === null ? 0 : (n + 1) % NUDGES.length))} className="flex items-center gap-2 text-sm font-medium text-accent-text underline-offset-4 hover:underline">
+            <Lightbulb className="size-4" aria-hidden /> {nudge === null ? "Not sure how to put it? See an example" : "Show another example"}
+          </button>
+          {nudge !== null && <p className="mt-2 text-sm text-muted animate-rise" aria-live="polite"><span className="caption-mono mr-2 text-subtle">Example</span>“{NUDGES[nudge]}”</p>}
+        </div>
       </div>
 
       <div hidden={step !== 2} className="flex flex-col gap-5">
@@ -151,12 +181,13 @@ export function IntakeForm({ idempotencyKey }: { idempotencyKey: string }) {
         {step < 3 ? (
           <div className="flex items-center gap-2">
             {step === 2 && <Button type="button" variant="ghost" onClick={() => setStep(3)}>Skip</Button>}
-            <Button type="button" variant="primary" size="lg" onClick={next}>Continue <ArrowRight className="size-4" aria-hidden /></Button>
+            <Button type="button" variant="primary" size="lg" className="rounded-full px-6" onClick={next} trailing={<ArrowRight className="size-4" />}>Continue</Button>
           </div>
         ) : (
-          <Button type="submit" variant="primary" size="lg" loading={pending}>Send my problem</Button>
+          <Button type="submit" variant="primary" size="lg" className="rounded-full px-6" loading={pending} trailing={<ArrowRight className="size-4" />}>{pending ? "Sending…" : "Send my problem"}</Button>
         )}
       </div>
     </form>
+    </div>
   );
 }

@@ -23,7 +23,7 @@ function Steps() {
     <ol className="relative mt-10 flex flex-col gap-6 before:absolute before:top-5 before:bottom-5 before:left-[21px] before:w-0.5 before:bg-gradient-to-b before:from-accent before:to-accent-bright/20">
       {SITE.bookingSteps.map((s) => (
         <li key={s.title} className="relative flex items-center gap-4">
-          <IconBadge icon={s.icon} tone="solid" className="ring-4 ring-bg" />
+          <IconBadge icon={s.icon} tone="solid" className="rounded-full ring-4 ring-[var(--bg)]" />
           <div>
             <p className="font-semibold text-heading">{s.title}</p>
             <p className="text-sm text-muted">{s.text}</p>
@@ -45,8 +45,8 @@ export default async function Book({ searchParams }: { searchParams: Promise<{ r
     // No calendar configured: never show a broken button. Offer what works.
     return (
       <section className="mx-auto max-w-3xl px-4 pt-12 pb-20 sm:px-6 sm:pt-16" aria-labelledby="h-book">
-        <Eyebrow>Book a call</Eyebrow>
-        <h1 id="h-book" className="mt-3 text-[34px] leading-tight sm:text-[46px]">Let’s find a time to talk.</h1>
+        <Eyebrow index="→">Book a call</Eyebrow>
+        <h1 id="h-book" className="mt-5 text-[40px] leading-[1.02] tracking-[-0.035em] sm:text-[60px]">Let’s find a time <span className="accent-serif text-signal">to talk.</span></h1>
         {s ? (
           <>
             <p className="mt-4 text-lg text-muted">Online booking isn’t open right now. Ask us and we’ll contact you to arrange a time.</p>
@@ -56,7 +56,7 @@ export default async function Book({ searchParams }: { searchParams: Promise<{ r
           <>
             <p className="mt-4 text-lg text-muted">Start by telling us briefly what’s not working. Then we’ll contact you to arrange a conversation.</p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <ButtonLink href="/start" variant="primary" size="lg" icon={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
+              <ButtonLink href="/start" variant="primary" size="lg" className="h-12 rounded-full px-6" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
               <p className="text-sm text-muted">Or email <Email /></p>
             </div>
           </>
@@ -76,10 +76,10 @@ export default async function Book({ searchParams }: { searchParams: Promise<{ r
   return (
     <section className="px-3 pt-4 pb-6 sm:px-5" aria-labelledby="h-book">
       {s && <BookingOpened refId={ref!} />}
-      <div className="theme-ink brand-hero hero-grid mx-auto grid max-w-7xl gap-12 rounded-3xl px-6 py-14 sm:px-12 lg:grid-cols-[0.8fr_1.2fr] lg:py-16">
+      <div className="theme-ink brand-hero hero-grid mx-auto grid max-w-7xl gap-12 rounded-[28px] px-6 py-14 sm:px-12 lg:grid-cols-[0.8fr_1.2fr] lg:py-16">
         <div>
-          <Eyebrow>Book a call</Eyebrow>
-          <h1 id="h-book" className="mt-3 text-[36px] leading-tight sm:text-[50px]">{s ? `Pick a time, ${s.firstName}.` : "Pick a time that suits you."}</h1>
+          <Eyebrow index="→">Book a call</Eyebrow>
+          <h1 id="h-book" className="mt-5 text-[38px] leading-[1.02] tracking-[-0.035em] sm:text-[54px]">{s ? <>Pick a time, <span className="accent-serif text-signal">{s.firstName}.</span></> : <>Pick a time that <span className="accent-serif text-signal">suits you.</span></>}</h1>
           <p className="mt-4 text-lg text-muted">{s ? "We’ll have read what you sent before we speak." : "30 minutes, online. The meeting link arrives with your calendar invite."}</p>
           <Steps />
           {!s && <p className="mt-10 text-sm text-subtle">Rather write it down first? <a href="/start" className="font-medium text-accent-text hover:underline">{SITE.cta}</a></p>}

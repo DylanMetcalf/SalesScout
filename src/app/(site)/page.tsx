@@ -1,39 +1,16 @@
-import { ArrowRight, Check, CornerDownRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { SITE } from "@/content/site";
 import { ButtonLink } from "@/components/ui/button";
 import { CtaBand, Eyebrow, Section, SectionHead } from "@/components/site/chrome";
-import { IconBadge } from "@/components/site/visuals";
+import { HeroRoute } from "@/components/site/hero-route";
+import { CategoryGrid, ExampleOutput, PrivacyStrip, ProcessRoute } from "@/components/site/home-sections";
 import { siteUrl } from "@/lib/site-url";
 
 export const metadata = {
-  title: { absolute: `${SITE.name}: tell us what’s not working` },
+  title: { absolute: `${SITE.name}: your business has a better way forward` },
   description: "Tell us what’s slowing your business down. We’ll help you understand the problem and find a practical way forward with software, AI or automation.",
   alternates: { canonical: "/" },
 };
-
-/** Labelled example of the conversation: what someone says, and what we'd look into. Not a result. */
-function ExampleCard() {
-  return (
-    <figure className="theme-paper rounded-2xl bg-surface p-6 shadow-[0_30px_60px_-30px_rgb(0_0_0/0.6)] sm:p-7">
-      <figcaption className="text-xs font-semibold tracking-[0.12em] text-subtle uppercase">Example</figcaption>
-      <p className="mt-4 text-sm font-medium text-muted">In their own words</p>
-      <blockquote className="mt-1.5 border-l-2 border-signal pl-4 font-display text-[19px] leading-snug text-heading">
-        “{SITE.example.said}”
-      </blockquote>
-      <p className="mt-6 flex items-center gap-1.5 text-sm font-medium text-muted">
-        <CornerDownRight className="size-4 text-accent" aria-hidden /> What we’d explore together
-      </p>
-      <ul className="mt-2 flex flex-col gap-2">
-        {SITE.example.explore.map((e) => (
-          <li key={e} className="flex items-start gap-2.5 rounded-lg bg-surface-2 px-3 py-2.5 text-[15px] text-text">
-            <Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-            {e}
-          </li>
-        ))}
-      </ul>
-    </figure>
-  );
-}
 
 export default function Home() {
   // Only facts we can stand behind: who we are, where to find us, how to reach us.
@@ -41,83 +18,82 @@ export default function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(org).replace(/</g, "\\u003c") }} />
-      <section className="px-3 pt-4 sm:px-5" aria-labelledby="h-hero">
-        <div className="theme-ink brand-hero hero-grid mx-auto grid max-w-7xl items-center gap-12 overflow-hidden rounded-3xl px-6 py-16 sm:px-12 sm:py-24 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-          <div className="animate-rise">
-            <Eyebrow>{SITE.hero.eyebrow}</Eyebrow>
-            <h1 id="h-hero" className="mt-4 text-[40px] leading-[1.04] text-balance sm:text-[60px]">{SITE.hero.title}</h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-muted">{SITE.hero.body}</p>
-            <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <ButtonLink href="/start" variant="primary" size="lg" icon={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
-              <ButtonLink href="/book" variant="ghost" size="lg">Book a conversation</ButtonLink>
+
+      <section aria-labelledby="h-hero" className="relative overflow-hidden">
+        <div aria-hidden className="paper-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_20%,transparent_75%)]" />
+        <div className="relative mx-auto max-w-6xl px-4 pt-14 pb-10 sm:px-6 sm:pt-24">
+          <Eyebrow index="00" className="animate-rise">{SITE.hero.eyebrow}</Eyebrow>
+          <h1 id="h-hero" className="mt-6 max-w-5xl text-[46px] leading-[0.98] tracking-[-0.04em] animate-rise sm:text-[84px] lg:text-[104px]">
+            Your business has a better <span className="accent-serif text-signal">way forward.</span>
+          </h1>
+          <div className="mt-10 grid gap-10 animate-rise [animation-delay:120ms] lg:grid-cols-[1.2fr_1fr] lg:items-end">
+            <div>
+              <p className="max-w-xl text-lg leading-8 text-muted sm:text-xl sm:leading-9">{SITE.hero.body}</p>
+              <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
+                <ButtonLink href="/start" variant="primary" size="lg" className="h-12 rounded-full px-6 text-[16px]" trailing={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
+                <ButtonLink href="/book" variant="ghost" size="lg" className="h-12 rounded-full px-5">Book a conversation</ButtonLink>
+              </div>
             </div>
-            <p className="mt-5 text-sm text-subtle">{SITE.hero.note}</p>
+            <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-border bg-border text-sm lg:justify-self-end">
+              {[["Time", "About 5 minutes"], ["You need", "Your own words"], ["Commitment", "None"]].map(([k, v]) => (
+                <div key={k} className="bg-surface/80 px-4 py-3">
+                  <dt className="caption-mono text-subtle">{k}</dt>
+                  <dd className="mt-1 font-medium text-heading">{v}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          <div className="animate-rise [animation-delay:120ms]">
-            <ExampleCard />
-          </div>
+        </div>
+        <div className="relative mx-auto max-w-6xl px-3 pb-8 animate-rise [animation-delay:240ms] sm:px-6">
+          <HeroRoute />
         </div>
       </section>
 
       <Section id="solve">
-        <SectionHead id="h-solve" eyebrow="What we solve" title="Sound familiar?" lead="If something in your business takes too long, goes wrong too often or depends on someone remembering, it’s worth telling us about." />
-        <ul className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border lg:grid-cols-4">
-          {SITE.solve.map((s) => (
-            <li key={s.title} className="flex flex-col gap-4 bg-surface p-4 transition-colors hover:bg-surface-2/60 sm:p-6">
-              <IconBadge icon={s.icon} />
-              <div>
-                <h3 className="font-semibold text-heading">{s.title}</h3>
-                <p className="mt-1 text-[15px] text-muted">{s.text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-6 text-[15px] text-muted">Something else? That’s fine. <a href="/start" className="font-medium text-accent-text underline-offset-4 hover:underline">Describe it in your own words</a>.</p>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <SectionHead id="h-solve" index="01" eyebrow="What we solve" title={<>Sound <span className="accent-serif text-signal">familiar?</span></>} lead="If something takes too long, goes wrong too often or depends on someone remembering, it’s worth telling us about." />
+          <p className="max-w-xs text-sm text-muted lg:pb-2">Pick one to start with it selected, or just describe your own. You never have to choose a category.</p>
+        </div>
+        <CategoryGrid />
       </Section>
 
       <Section id="how" band>
-        <SectionHead id="h-how" eyebrow="How it works" title="Three steps. You only need to do the first." center />
-        <ol className="relative mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
-          <span aria-hidden className="absolute top-7 right-[16%] left-[16%] hidden h-px bg-gradient-to-r from-accent/10 via-accent/50 to-accent/10 md:block" />
-          {SITE.steps.map((s, i) => (
-            <li key={s.title} className="relative flex flex-col items-center text-center">
-              <span className="relative flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-bright text-accent-fg shadow-[0_10px_24px_-12px_var(--accent)] ring-8 ring-surface-2">
-                <s.icon className="size-6" aria-hidden />
-              </span>
-              <p className="mt-5 text-xs font-semibold tracking-[0.12em] text-subtle uppercase">Step {i + 1}</p>
-              <h3 className="mt-1 font-display text-[22px] font-[650] text-heading">{s.title}</h3>
-              <p className="mt-2 max-w-xs text-[15px] text-muted">{s.text}</p>
-            </li>
-          ))}
-        </ol>
-        <div className="mt-14 flex justify-center">
-          <ButtonLink href="/start" variant="primary" size="lg" icon={<ArrowRight className="size-4" />}>{SITE.cta}</ButtonLink>
-        </div>
+        <SectionHead id="h-how" index="02" eyebrow="How it works" title={<>Three steps. You only do <span className="accent-serif text-signal">the first.</span></>} />
+        <ProcessRoute />
       </Section>
 
-      <Section id="approach">
-        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+      <Section id="example">
+        <SectionHead id="h-example" index="03" eyebrow="What you get" title={<>From a few sentences to a <span className="accent-serif text-signal">clear picture.</span></>} lead="After we’ve read your problem, we write up what we understand, what we’d ask, and where a solution might lie, so the conversation starts in the right place." />
+        <ExampleOutput />
+      </Section>
+
+      <Section id="approach" band>
+        <div className="grid gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
           <div>
-            <SectionHead id="h-approach" eyebrow="How we work" title="Clear thinking before any code." lead="Most problems aren’t solved by more software. They’re solved by understanding the work properly, then building only what helps." />
-            <ul className="mt-8 flex flex-col gap-3 text-[15px]">
-              {SITE.expectations.map((e) => (
-                <li key={e} className="flex items-start gap-2.5"><Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />{e}</li>
-              ))}
-            </ul>
+            <Eyebrow index="04">How we work</Eyebrow>
+            <h2 id="h-approach" className="mt-4 text-[34px] leading-[1.05] tracking-[-0.03em] sm:text-[48px]">
+              We’ll tell you if software <span className="accent-serif text-signal">isn’t the answer.</span>
+            </h2>
+            <p className="mt-5 max-w-lg text-lg leading-8 text-muted">Most problems aren’t solved by more software. They’re solved by understanding the work properly, then building only what helps.</p>
           </div>
-          <ul className="grid gap-4 sm:grid-cols-2">
-            {SITE.approach.map((a) => (
-              <li key={a.title} className="rounded-2xl border border-border bg-surface p-6">
-                <IconBadge icon={a.icon} tone="solid" />
-                <h3 className="mt-4 font-semibold text-heading">{a.title}</h3>
-                <p className="mt-1 text-[15px] text-muted">{a.text}</p>
+          <ol className="flex flex-col">
+            {SITE.approach.map((a, i) => (
+              <li key={a.title} className="reveal grid grid-cols-[auto_1fr] gap-x-5 border-t border-border py-6 first:border-t-0 first:pt-0">
+                <span className="caption-mono pt-1 text-signal-text">{String(i + 1).padStart(2, "0")}</span>
+                <div>
+                  <h3 className="font-display text-[21px] font-[620] tracking-[-0.02em] text-heading">{a.title}</h3>
+                  <p className="mt-1 text-[15px] text-muted">{a.text}</p>
+                </div>
               </li>
             ))}
-          </ul>
+          </ol>
         </div>
+        <PrivacyStrip />
       </Section>
 
-      <CtaBand />
+      <div className="pt-6">
+        <CtaBand />
+      </div>
     </>
   );
 }

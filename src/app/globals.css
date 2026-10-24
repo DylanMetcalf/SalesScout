@@ -1,106 +1,128 @@
 @import "tailwindcss";
 
 /*
- * Sales Scout design tokens.
- * Warm, paper-like neutrals with a single deep "scout green" accent.
- * Status colours are reserved for meaning (fit levels, knowledge, CRM state).
- */
-/*
- * Sales Scout tokens — "Scout Night".
- * Navy ink for structure, a calm teal for action, and one amber signal for
- * "needs you" moments. Soft cool-grey workspace, never stark white.
+ * Sales Scout tokens: "Field Notes".
+ * Warm paper and deep ink, cobalt for action, vermilion for the route (the
+ * brand's signature line and waypoints), and eight category hues that give
+ * each kind of business problem its own recognisable colour. Status colours
+ * are reserved for meaning. Every text pairing is checked for WCAG AA.
  */
 :root {
-  --bg: #eef1f6;
-  --surface: #fcfdfe;
-  --surface-2: #f2f5f9;
-  --surface-3: #e3e8f0;
-  --border: #dbe1ea;
-  --border-strong: #c3ccd9;
-  --text: #18213a;
-  --text-muted: #4d5874;
-  --text-subtle: #5e667b;
-  --heading: #16203a;
+  --bg: #f4f1ea;
+  --surface: #fffdf8;
+  --surface-2: #eeeae1;
+  --surface-3: #e3ded2;
+  --border: #ddd7cb;
+  --border-strong: #c6bfb0;
+  --text: #16161d;
+  --text-muted: #4a4a55;
+  --text-subtle: #5f5e68;
+  --heading: #111118;
 
-  --brand-tile: #16203a;
-  --brand-tile-fg: #f4f6fb;
+  --brand-tile: #16161d;
+  --brand-tile-fg: #fffdf8;
   /* Where Sales Scout shows its reasoning. */
-  --insight: #e7f4f4;
-  --insight-border: #b5dedd;
-  --sidebar: #16203a;
+  --insight: #eef0ff;
+  --insight-border: #cfd5ff;
+  --sidebar: #16161d;
 
-  --brand-deep: #16203a;
-  --accent: #0f8285;
-  --accent-bright: #19a7a3;
-  --accent-hover: #0b6b6e;
-  --accent-soft: #dcf1f0;
-  --accent-text: #0b6669;
+  --brand-deep: #121218;
+  --accent: #2f45e0;
+  --accent-bright: #5b6cff;
+  --accent-hover: #2436c0;
+  --accent-soft: #e4e7ff;
+  --accent-text: #2638c8;
   --accent-fg: #ffffff;
 
-  --signal: #e8833a;
-  --signal-soft: #fcebdc;
-  --signal-text: #9a4d12;
+  /* The route: the brand's signature line, waypoints and "look here" moments. */
+  --signal: #e8492a;
+  --signal-soft: #fde3d9;
+  --signal-text: #a3361a;
 
-  --strong: #1b794a;
-  --strong-soft: #def2e6;
-  --moderate: #985f06;
-  --moderate-soft: #fbefd6;
-  --weak: #b83d2c;
-  --weak-soft: #fbe6e2;
-  --info: #3b5bd9;
-  --info-soft: #e5ebfc;
-  --violet: #7650c7;
-  --violet-soft: #efe8fb;
-  --neutral-soft: #e9edf3;
+  --strong: #1d7449;
+  --strong-soft: #e0efe5;
+  --moderate: #8a5604;
+  --moderate-soft: #f6ead2;
+  --weak: #b0352a;
+  --weak-soft: #f8e2dd;
+  --info: #1f6690;
+  --info-soft: #e1edf4;
+  --violet: #6c45c4;
+  --violet-soft: #ece6f8;
+  --neutral-soft: #ebe7de;
 
-  --shadow-sm: 0 1px 2px rgb(22 32 58 / 0.06);
-  --shadow-md: 0 1px 2px rgb(22 32 58 / 0.05), 0 8px 20px rgb(22 32 58 / 0.07);
-  --shadow-lg: 0 2px 6px rgb(22 32 58 / 0.06), 0 20px 48px rgb(22 32 58 / 0.14);
-  --ring: 0 0 0 3px color-mix(in srgb, var(--accent-bright) 35%, transparent);
+  /* Category hues. Solids are for graphics; text uses the darkened tone on the soft tint. */
+  --hue-cobalt: #2f45e0;
+  --hue-vermilion: #e8492a;
+  --hue-jade: #11845e;
+  --hue-saffron: #b97c00;
+  --hue-orchid: #8a3fcf;
+  --hue-sky: #1673b3;
+  --hue-rose: #c8335f;
+  --hue-olive: #5c7417;
+
+  --shadow-sm: 0 1px 2px rgb(22 22 29 / 0.06);
+  --shadow-md: 0 1px 2px rgb(22 22 29 / 0.05), 0 10px 24px -6px rgb(22 22 29 / 0.10);
+  --shadow-lg: 0 2px 6px rgb(22 22 29 / 0.06), 0 28px 56px -12px rgb(22 22 29 / 0.20);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--accent-bright) 40%, transparent);
+
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-spring: cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+  --dur-slow: 420ms;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0d1220;
-    --surface: #141b2d;
-    --surface-2: #19223a;
-    --surface-3: #212c47;
-    --border: #263150;
-    --border-strong: #34416a;
-    --text: #e6eaf4;
-    --text-muted: #a5aec7;
-    --text-subtle: #79839f;
-    --heading: #f3f5fb;
-    --brand-tile: #2fc5c0;
-    --brand-tile-fg: #0b1426;
-    --insight: #112a33;
-    --insight-border: #1f4a52;
-    --sidebar: #0a0f1c;
-    --brand-deep: #16203a;
-    --accent: #2fc5c0;
-    --accent-bright: #6be0db;
-    --accent-hover: #4fd3ce;
-    --accent-soft: #123438;
-    --accent-text: #7fe3de;
-    --accent-fg: #06191b;
-    --signal: #f29a52;
-    --signal-soft: #3d2711;
-    --signal-text: #ffc189;
-    --strong: #5fd896;
-    --strong-soft: #143524;
-    --moderate: #f0b450;
-    --moderate-soft: #36290f;
-    --weak: #f07a6e;
-    --weak-soft: #3c1b18;
-    --info: #8fa8ff;
-    --info-soft: #1b2547;
-    --violet: #c09cf2;
-    --violet-soft: #2b1f40;
-    --neutral-soft: #1c2540;
+    --bg: #111116;
+    --surface: #1a1a21;
+    --surface-2: #212129;
+    --surface-3: #2a2a34;
+    --border: #2d2d38;
+    --border-strong: #3d3d4a;
+    --text: #f2efe8;
+    --text-muted: #bab6ad;
+    --text-subtle: #969289;
+    --heading: #fbf9f4;
+    --brand-tile: #fffdf8;
+    --brand-tile-fg: #16161d;
+    --insight: #1d2040;
+    --insight-border: #313768;
+    --sidebar: #0c0c10;
+    --brand-deep: #0c0c10;
+    --accent: #8f9bff;
+    --accent-bright: #b3bbff;
+    --accent-hover: #a7b1ff;
+    --accent-soft: #23284f;
+    --accent-text: #aab3ff;
+    --accent-fg: #0f1030;
+    --signal: #ff7a52;
+    --signal-soft: #3f2219;
+    --signal-text: #ffb59c;
+    --strong: #63d39a;
+    --strong-soft: #15301f;
+    --moderate: #eeb24f;
+    --moderate-soft: #33260f;
+    --weak: #f58474;
+    --weak-soft: #3a1c18;
+    --info: #78bde6;
+    --info-soft: #152a38;
+    --violet: #c0a2f5;
+    --violet-soft: #2a2140;
+    --neutral-soft: #24242d;
+    --hue-cobalt: #8f9bff;
+    --hue-vermilion: #ff7a52;
+    --hue-jade: #45c995;
+    --hue-saffron: #f0b93e;
+    --hue-orchid: #c58bf2;
+    --hue-sky: #5cb8f0;
+    --hue-rose: #f27a9c;
+    --hue-olive: #a9c55a;
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 20px rgb(0 0 0 / 0.4);
-    --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.3), 0 20px 48px rgb(0 0 0 / 0.55);
+    --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 24px -6px rgb(0 0 0 / 0.45);
+    --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.3), 0 28px 56px -12px rgb(0 0 0 / 0.6);
     color-scheme: dark;
   }
 }
@@ -109,6 +131,8 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --font-display: "Bricolage Grotesque Variable", var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Used sparingly, in italic, for the one word in a headline that carries the feeling. */
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -146,6 +170,14 @@
   --color-heading: var(--heading);
   --color-accent-bright: var(--accent-bright);
   --color-brand-deep: var(--brand-deep);
+  --color-hue-cobalt: var(--hue-cobalt);
+  --color-hue-vermilion: var(--hue-vermilion);
+  --color-hue-jade: var(--hue-jade);
+  --color-hue-saffron: var(--hue-saffron);
+  --color-hue-orchid: var(--hue-orchid);
+  --color-hue-sky: var(--hue-sky);
+  --color-hue-rose: var(--hue-rose);
+  --color-hue-olive: var(--hue-olive);
 
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
@@ -155,6 +187,8 @@
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+  --radius-2xl: 22px;
+  --radius-3xl: 28px;
 
   /* Type scale: never smaller than 12px, body at 14.5px for calm reading. */
   --text-xs: 12px;
@@ -175,7 +209,7 @@
   --text-4xl--line-height: 44px;
 
   --animate-fade-in: fade-in 180ms ease-out both;
-  --animate-rise: rise 220ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-rise: rise 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-slide-in: slide-in 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
   --animate-check-pop: check-pop 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
@@ -281,77 +315,80 @@
  * version automatically. .brand-hero adds the Sales Scout gradient.
  */
 .theme-ink {
-  --bg: #16203a;
-  --surface: #1c2744;
-  --surface-2: #22304f;
-  --surface-3: #2a3a5e;
-  --border: #2b3a5c;
-  --border-strong: #3a4c74;
-  --text: #eef1f8;
-  --text-muted: #b6bfd5;
-  --text-subtle: #8c96b2;
-  --heading: #ffffff;
-  --brand-tile: #2fc5c0;
-  --brand-tile-fg: #0b1426;
-  --accent: #4fd1cb;
-  --accent-bright: #8ae6e1;
-  --accent-hover: #6fdcd6;
-  --accent-soft: #1f3f55;
-  --accent-text: #9ceee9;
-  --accent-fg: #06191b;
-  --insight: #1d3550;
-  --insight-border: #2f5470;
-  --strong: #6fe0a4;
-  --strong-soft: #1d4a3e;
-  --signal-soft: #4a3320;
-  --signal-text: #ffc189;
-  --neutral-soft: #243354;
-  --ring: 0 0 0 3px rgb(138 230 225 / 0.35);
+  --bg: #121218;
+  --surface: #1b1b23;
+  --surface-2: #23232d;
+  --surface-3: #2c2c38;
+  --border: #2e2e3a;
+  --border-strong: #42424f;
+  --text: #f2efe8;
+  --text-muted: #bab6ad;
+  --text-subtle: #969289;
+  --heading: #fffdf8;
+  --brand-tile: #fffdf8;
+  --brand-tile-fg: #16161d;
+  --accent: #8f9bff;
+  --accent-bright: #b3bbff;
+  --accent-hover: #a7b1ff;
+  --accent-soft: #262a52;
+  --accent-text: #b3bbff;
+  --accent-fg: #0f1030;
+  --insight: #1d2040;
+  --insight-border: #313768;
+  --signal: #ff7a52;
+  --strong: #63d39a;
+  --strong-soft: #173a29;
+  --signal-soft: #3f2219;
+  --signal-text: #ffb59c;
+  --neutral-soft: #262630;
+  --ring: 0 0 0 3px rgb(179 187 255 / 0.4);
   color: var(--text);
   color-scheme: dark;
 }
 /* The opposite scope: a light card inside a dark brand area (e.g. a form on a hero). */
 .theme-paper {
-  --surface: #fcfdfe;
-  --surface-2: #f2f5f9;
-  --surface-3: #e3e8f0;
-  --border: #dbe1ea;
-  --border-strong: #c3ccd9;
-  --text: #18213a;
-  --text-muted: #4d5874;
-  --text-subtle: #5e667b;
-  --heading: #16203a;
-  --accent: #0f8285;
-  --accent-bright: #19a7a3;
-  --accent-hover: #0b6b6e;
-  --accent-soft: #dcf1f0;
-  --accent-text: #0b6669;
+  --surface: #fffdf8;
+  --surface-2: #eeeae1;
+  --surface-3: #e3ded2;
+  --border: #ddd7cb;
+  --border-strong: #c6bfb0;
+  --text: #16161d;
+  --text-muted: #4a4a55;
+  --text-subtle: #5f5e68;
+  --heading: #111118;
+  --accent: #2f45e0;
+  --accent-bright: #5b6cff;
+  --accent-hover: #2436c0;
+  --accent-soft: #e4e7ff;
+  --accent-text: #2638c8;
   --accent-fg: #ffffff;
-  --weak: #b83d2c;
-  --weak-soft: #fbe6e2;
-  --strong: #1b794a;
-  --strong-soft: #def2e6;
-  --moderate: #985f06;
-  --moderate-soft: #fbefd6;
-  --insight: #e7f4f4;
-  --insight-border: #b5dedd;
-  --signal-soft: #fcebdc;
-  --signal-text: #9a4d12;
-  --neutral-soft: #e9edf3;
-  --ring: 0 0 0 3px rgb(25 167 163 / 0.35);
+  --signal: #e8492a;
+  --weak: #b0352a;
+  --weak-soft: #f8e2dd;
+  --strong: #1d7449;
+  --strong-soft: #e0efe5;
+  --moderate: #8a5604;
+  --moderate-soft: #f6ead2;
+  --insight: #eef0ff;
+  --insight-border: #cfd5ff;
+  --signal-soft: #fde3d9;
+  --signal-text: #a3361a;
+  --neutral-soft: #ebe7de;
+  --ring: 0 0 0 3px rgb(91 108 255 / 0.4);
   color: var(--text);
   color-scheme: light;
 }
 .sidebar-brand {
-  background: linear-gradient(180deg, #18233f 0%, #111a30 100%);
+  background: #16161d;
 }
+/* Ink with two quiet glows: cobalt (the work) and vermilion (the route). Hero moments only. */
 .brand-hero {
   background:
-    radial-gradient(90% 120% at 100% 0%, rgb(47 197 192 / 0.26), transparent 60%),
-    radial-gradient(60% 90% at 0% 100%, rgb(232 131 58 / 0.12), transparent 60%),
-    linear-gradient(135deg, #16203a 0%, #1b2c52 55%, #144858 100%);
+    radial-gradient(70% 90% at 100% 0%, rgb(47 69 224 / 0.32), transparent 60%),
+    radial-gradient(50% 70% at 0% 100%, rgb(232 73 42 / 0.16), transparent 60%),
+    #121218;
 }
-/* Faint technical grid behind website heroes. */
+/* Faint survey grid behind heroes: dots at the intersections, like graph paper. */
 .hero-grid {
   position: relative;
   isolation: isolate;
@@ -362,11 +399,64 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image:
-    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse 80% 90% at 75% 20%, #000 10%, transparent 75%);
+  background-image: radial-gradient(rgb(255 255 255 / 0.13) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 80% 90% at 70% 30%, #000 10%, transparent 75%);
+}
+/* The same grid on paper, for light sections. */
+.paper-grid {
+  background-image: radial-gradient(rgb(22 22 29 / 0.11) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+}
+/* Category tint: set --hue on an element to colour its card, icon and text in one go. */
+.hue {
+  --hue: var(--hue-cobalt);
+  --hue-soft: color-mix(in srgb, var(--hue) 11%, var(--surface));
+  --hue-line: color-mix(in srgb, var(--hue) 32%, var(--surface));
+  --hue-ink: color-mix(in srgb, var(--hue) 78%, #000);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hue {
+    --hue-ink: color-mix(in srgb, var(--hue) 85%, #fff);
+    --hue-soft: color-mix(in srgb, var(--hue) 14%, var(--surface));
+  }
+}
+.theme-ink .hue {
+  --hue-ink: color-mix(in srgb, var(--hue) 70%, #fff);
+  --hue-soft: color-mix(in srgb, var(--hue) 16%, var(--surface));
+  --hue-line: color-mix(in srgb, var(--hue) 40%, var(--surface));
+}
+/* The route line draws itself once when it comes into view. */
+@keyframes route-draw {
+  from { stroke-dashoffset: var(--route-len, 1200); }
+  to { stroke-dashoffset: 0; }
+}
+.route-draw {
+  stroke-dasharray: var(--route-len, 1200);
+  animation: route-draw 1.6s var(--ease-out) both;
+}
+@keyframes waypoint-pulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+.waypoint-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: waypoint-pulse 2.4s var(--ease-out) infinite;
+}
+/* A serif italic accent word inside a display headline. */
+.accent-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+/* Monospaced technical captions: figure numbers, metadata. */
+.caption-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .needle-seek {
   transform-origin: 16px 16px;
@@ -399,13 +489,13 @@
     @bottom-right {
       content: "Page " counter(page) " of " counter(pages);
       font: 8.5pt/1 var(--font-sans, sans-serif);
-      color: #5e667b;
+      color: #5f5e68;
     }
   }
   html,
   body {
     background: #fff !important;
-    color: #18213a;
+    color: #16161d;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -423,5 +513,27 @@
   /* Fixed-position dialogs repeat on every printed page; briefs print from their own page instead. */
   dialog {
     display: none !important;
+  }
+}
+
+/* Scroll-linked lift where supported. Movement only, never opacity: content is always visible
+   (printing, crawlers and screenshots never scroll). */
+@keyframes lift {
+  from { transform: translateY(18px); }
+  to { transform: none; }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: lift linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+    .route-on-view {
+      stroke-dasharray: var(--route-len, 1200);
+      animation: route-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 45%;
+    }
   }
 }

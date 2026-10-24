@@ -15,6 +15,9 @@ import { formatDate, relativeDay, timeAgo } from "@/lib/format";
 export const metadata = { title: "Opportunities" };
 export const dynamic = "force-dynamic";
 
+/** Stage colour on each row's left edge, from the same semantic tones as the stage badges. */
+const EDGE = { info: "border-l-info", accent: "border-l-accent", moderate: "border-l-moderate", violet: "border-l-violet", strong: "border-l-strong", neutral: "border-l-border-strong", weak: "border-l-weak" } as const;
+
 const FILTERS: { key: string; label: string }[] = [{ key: "open", label: "Open" }, { key: "", label: "All" }, ...STAGES.map((s) => ({ key: s, label: STAGE_META[s].label }))];
 
 export default async function Opportunities({ searchParams }: { searchParams: Promise<{ q?: string; stage?: string }> }) {
@@ -26,17 +29,18 @@ export default async function Opportunities({ searchParams }: { searchParams: Pr
   const n = (s: Stage[]) => s.reduce((a, k) => a + (ov.byStage[k] ?? 0), 0);
   const total = n([...STAGES]);
   const tiles = [
-    { label: "New", value: n(["new"]), href: "?stage=new", hint: "to read" },
-    { label: "Calls requested", value: ov.callsRequested, href: "?stage=open", hint: "waiting for you" },
-    { label: "In discovery", value: n(["reviewing", "discovery"]), href: "?stage=discovery", hint: "being understood" },
-    { label: "Proposals", value: n(["proposal"]), href: "?stage=proposal", hint: "in progress" },
-    { label: "Active projects", value: n(["accepted", "building"]), href: "?stage=building", hint: "accepted or building" },
-    { label: "Delivered", value: n(["delivered"]), href: "?stage=delivered", hint: "completed" },
+    { label: "New", value: n(["new"]), href: "?stage=new", hint: "to read", rule: "bg-info" },
+    { label: "Calls requested", value: ov.callsRequested, href: "?stage=open", hint: "waiting for you", rule: "bg-signal" },
+    { label: "In discovery", value: n(["reviewing", "discovery"]), href: "?stage=discovery", hint: "being understood", rule: "bg-accent" },
+    { label: "Proposals", value: n(["proposal"]), href: "?stage=proposal", hint: "in progress", rule: "bg-violet" },
+    { label: "Active projects", value: n(["accepted", "building"]), href: "?stage=building", hint: "accepted or building", rule: "bg-strong" },
+    { label: "Delivered", value: n(["delivered"]), href: "?stage=delivered", hint: "completed", rule: "bg-text" },
   ];
 
   return (
     <Page width="wide">
       <PageHeader
+        eyebrow={<span className="caption-mono text-subtle">Workspace · Inbound</span>}
         title="Opportunities"
         description="Every business problem that came in, from first message to delivered project."
         actions={<Link href="/" target="_blank" className={buttonClass("ghost")}>View the website <ArrowUpRight className="size-4" aria-hidden /></Link>}
@@ -56,10 +60,11 @@ export default async function Opportunities({ searchParams }: { searchParams: Pr
           <ul className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3 xl:grid-cols-6" aria-label="Overview">
             {tiles.map((t) => (
               <li key={t.label} className="bg-surface">
-                <Link href={t.href} className="block px-4 py-3.5 transition-colors hover:bg-surface-2">
-                  <span className="block text-xs text-muted">{t.label}</span>
-                  <span className="mt-0.5 block font-display text-[26px] leading-none font-[650] tabular-nums text-heading">{t.value}</span>
-                  <span className="mt-1 block text-xs text-subtle">{t.hint}</span>
+                <Link href={t.href} className="group relative block px-4 pt-4 pb-3.5 transition-colors hover:bg-surface-2">
+                  <span aria-hidden className={cn("absolute inset-x-4 top-0 h-[3px] origin-left scale-x-[0.25] rounded-b transition-transform duration-300 group-hover:scale-x-100", t.rule)} />
+                  <span className="caption-mono block text-subtle">{t.label}</span>
+                  <span className="mt-2 block font-display text-[34px] leading-none font-[650] tracking-[-0.03em] tabular-nums text-heading">{t.value}</span>
+                  <span className="mt-1.5 block text-xs text-subtle">{t.hint}</span>
                 </Link>
               </li>
             ))}
@@ -94,7 +99,7 @@ export default async function Opportunities({ searchParams }: { searchParams: Pr
                   <ul className="divide-y divide-border">
                     {rows.map((r) => (
                       <li key={r.id}>
-                        <Link href={`/opportunities/${r.id}`} className="grid gap-2 px-5 py-4 transition-colors hover:bg-surface-2/70 sm:grid-cols-[1fr_auto] sm:gap-6">
+                        <Link href={`/opportunities/${r.id}`} className={cn("grid gap-2 border-l-[3px] px-5 py-4 transition-colors hover:bg-surface-2/70 sm:grid-cols-[1fr_auto] sm:gap-6", EDGE[STAGE_META[r.stage].tone])}>
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="font-semibold text-heading">{r.companyName || r.name}</span>

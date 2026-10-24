@@ -15,6 +15,7 @@ import { ActivityPanel, AiTaskButton, CreateDocButton, DeleteOpportunity, Detail
 import { OpportunityTabs } from "@/components/opportunities/tabs";
 import { Block, Label, List, Origin, SourceLink } from "@/components/opportunities/parts";
 import { cn } from "@/components/ui/cn";
+import { Waypoints } from "@/components/brand/waypoints";
 
 export const metadata = { title: "Opportunity", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -177,6 +178,23 @@ function CompanyTab({ o, canAi }: { o: Opportunity; canAi: boolean }) {
   );
 }
 
+const ROUTE = ["new", "reviewing", "discovery", "proposal", "accepted", "building", "delivered"] as const;
+
+/** Where this opportunity is on its route. Closed ones (lost, declined, archived) say so instead. */
+function StageRoute({ stage }: { stage: Opportunity["stage"] }) {
+  const at = ROUTE.indexOf(stage as (typeof ROUTE)[number]);
+  if (at === -1) return <p className="caption-mono mb-6 text-subtle">Closed · {STAGE_META[stage].label}</p>;
+  return (
+    <div className="mb-8 overflow-x-auto rounded-lg border border-border bg-surface px-5 pt-4 pb-3 scrollbar-thin">
+      <Waypoints
+        label="Stage progress"
+        className="min-w-[640px]"
+        steps={ROUTE.map((s, i) => ({ label: STAGE_META[s].label, state: i < at ? "done" : i === at ? (s === "delivered" ? "done" : "current") : "todo" }))}
+      />
+    </div>
+  );
+}
+
 const PROPOSAL_STATUS: [string, string][] = [["draft", "Draft"], ["ready", "Ready to send"], ["sent", "Sent (by you)"], ["accepted", "Accepted"], ["declined", "Declined"]];
 const PROJECT_STATUS: [string, string][] = [["not_started", "Not started"], ["in_progress", "In progress"], ["on_hold", "On hold"], ["delivered", "Delivered"]];
 
@@ -283,6 +301,8 @@ export default async function OpportunityPage({ params, searchParams }: { params
         </div>
         <div className="flex shrink-0 items-center gap-2"><StageSelect id={o.id} stage={o.stage} /></div>
       </header>
+
+      <StageRoute stage={o.stage} />
 
       {!canAi && <Notice tone="moderate" className="mb-6">AI isn’t connected, so analysis, research and drafts are unavailable. Everything else works. Connect it in Settings.</Notice>}
 
