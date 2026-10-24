@@ -110,8 +110,13 @@ export function bookingLink(o: Pick<Opportunity, "name" | "email">, reference: s
 
 // Generation --------------------------------------------------------------------
 
-type Deps = { write?: (ctx: AiContext, input: BriefingInput) => Promise<Briefing>; ctx?: AiContext | null; email?: typeof sendBriefingEmail };
+type Deps = { write?: (ctx: AiContext, input: BriefingInput) => Promise<Briefing>; ctx?: AiContext | null; email?: typeof sendBriefingEmail; force?: boolean };
 const inFlight = new Set<string>();
+
+export function isGenerating(opportunityId: string) {
+  const b = briefingFor(opportunityId);
+  return Boolean(b && inFlight.has(b.id));
+}
 
 function setStatus(id: string, patch: Partial<typeof t.briefings.$inferInsert>) {
   db.update(t.briefings).set({ ...patch, updatedAt: new Date() }).where(eq(t.briefings.id, id)).run();
@@ -124,8 +129,10 @@ function setStatus(id: string, patch: Partial<typeof t.briefings.$inferInsert>) 
  */
 export async function runBriefing(opportunityId: string, token: string | null, deps: Deps = {}) {
   const b = briefingFor(opportunityId);
-  if (!b || b.status === "ready" || inFlight.has(b.id)) return briefingFor(opportunityId);
+  if (!b || inFlight.has(b.id) || (b.status === "ready" && !deps.force)) return briefingFor(opportunityId);
   inFlight.add(b.id);
+  // Regenerating a ready briefing: the customer keeps seeing the current version until a new one validates.
+  const keep = b.status === "ready" && b.content;
   const write = deps.write ?? writeBriefing;
   const o = getOpportunity(opportunityId);
   const ctx = deps.ctx !== undefined ? deps.ctx : operatorContext();
@@ -135,7 +142,7 @@ export async function runBriefing(opportunityId: string, token: string | null, d
     let content: Briefing | null = null;
     let lastError: unknown = null;
     for (let attempt = 0; attempt < 2 && !content; attempt++) {
-      setStatus(b.id, { status: "generating", attempts: (briefingFor(opportunityId)?.attempts ?? 0) + 1, error: null });
+      setStatus(b.id, { ...(keep ? {} : { status: "generating" as const }), attempts: (briefingFor(opportunityId)?.attempts ?? 0) + 1, error: null });
       try {
         content = await write(ctx, input);
       } catch (err) {
@@ -150,6 +157,11 @@ export async function runBriefing(opportunityId: string, token: string | null, d
   } catch (err) {
     const manual = err instanceof AiUnavailableError;
     const message = (err instanceof Error ? err.message : "Unknown error").slice(0, 300);
+    if (keep) {
+      setStatus(b.id, { error: `Regeneration failed, so the previous version was kept: ${message}` });
+      logActivity(opportunityId, `Briefing regeneration failed; the customer still sees the previous version (${message})`, "system");
+      return briefingFor(opportunityId);
+    }
     setStatus(b.id, { status: manual ? "manual" : "failed", error: message });
     logActivity(opportunityId, manual ? `Briefing not generated automatically (${message}). Prepare it by hand or retry.` : `Briefing generation failed: ${message}`, "system");
     await notifyOperatorOfFailure(o, b.reference, message).catch((e) => console.error("[briefing] operator alert failed", e));
@@ -164,10 +176,22 @@ const dailyLimit = () => Number(process.env.BRIEFING_DAILY_LIMIT) || 30;
 
 /** Starts generation without holding up the visitor's request. */
 export function startBriefing(opportunityId: string, token: string | null) {
-  if (!rateLimit("auto-briefing", dailyLimit(), 86_400_000)) {
+  const o = getOpportunity(opportunityId);
+  const domain = o.email.split("@")[1] ?? "";
+  // Per person and per organisation first, so a few abusers can't use up the shared daily allowance.
+  const limited = !rateLimit(`auto-briefing-email:${o.email}`, 3, 86_400_000)
+    ? "This email address has had several briefings today."
+    : !rateLimit(`auto-briefing-domain:${domain}`, 10, 86_400_000)
+      ? "This email domain has had many briefings today."
+      : !rateLimit("auto-briefing", dailyLimit(), 86_400_000)
+        ? "The daily limit for automatic briefings has been reached."
+        : null;
+  if (limited) {
     const b = briefingFor(opportunityId);
-    if (b) setStatus(b.id, { status: "manual", error: "Daily limit for automatic briefings reached." });
-    logActivity(opportunityId, "Daily limit for automatic briefings reached: prepare this one by hand or retry tomorrow.", "system");
+    if (b) setStatus(b.id, { status: "manual", error: limited });
+    logActivity(opportunityId, `${limited} Prepare this one by hand or retry later.`, "system");
+    // One alert a day is enough to know the cap is being hit.
+    if (rateLimit("auto-briefing-cap-alert", 1, 86_400_000)) void notifyOperatorOfFailure(o, briefingFor(opportunityId)?.reference ?? "", limited).catch(() => {});
     return;
   }
   void runBriefing(opportunityId, token).catch((err) => console.error("[briefing] unexpected", err));
@@ -186,20 +210,23 @@ export function customerEmailConfigured() {
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export function briefingEmail(o: Pick<Opportunity, "name" | "companyName">, b: Pick<BriefingRow, "reference" | "expiresAt"> & { content: Briefing | null }, link: string) {
-  const first = o.name.split(/\s+/)[0];
-  const title = b.content?.title ?? "Your Business Problem & Solution Briefing";
+/**
+ * The customer email. Its wording is fixed: no name, company or AI-written text, because the address
+ * comes from a public form and we mustn't let anyone send their words from our domain.
+ */
+export function briefingEmail(b: Pick<BriefingRow, "reference" | "expiresAt">, link: string) {
   const until = b.expiresAt ? b.expiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : null;
   const text = [
-    `Hi ${first},`,
+    "Hello,",
     "",
-    `Your Business Problem & Solution Briefing${o.companyName ? ` for ${o.companyName}` : ""} is ready: "${title}".`,
-    "It's our initial read of the problem you described and one direction we think is worth exploring.",
+    "Your Sales Scout Business Problem & Solution Briefing is ready. It's our initial read of the problem you described on our website, and one direction we think is worth exploring.",
     "",
     `View your briefing (private link${until ? `, works until ${until}` : ""}):`,
     link,
     "",
-    "If it rings true, the next step is a short conversation to check our understanding and talk through how to take it forward.",
+    "If it rings true, the next step is a short conversation to check our understanding and talk through how to take it forward. You'll find the booking link inside the briefing.",
+    "",
+    "Didn't ask for this? Someone may have typed your address by mistake. You can ignore this email, or reply and we'll delete the request.",
     "",
     `Reference: ${b.reference}`,
     "Sales Scout, a Mea Creo service",
@@ -212,15 +239,16 @@ export function briefingEmail(o: Pick<Opportunity, "name" | "companyName">, b: P
 <td style="width:28px;height:28px;background:#16161d;border-radius:7px;text-align:center;color:#fffdf8;font-weight:700;font-size:15px;line-height:28px">S</td>
 <td style="padding-left:10px;font-weight:700;font-size:15px">Sales Scout</td></tr></table></td></tr>
 <tr><td style="padding:16px 32px 0;font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;color:#a3361a;text-transform:uppercase">Business Problem &amp; Solution Briefing · ${esc(b.reference)}</td></tr>
-<tr><td style="padding:10px 32px 0;font-size:26px;line-height:1.15;font-weight:700;letter-spacing:-.02em">Your briefing is ready, ${esc(first)}.</td></tr>
-<tr><td style="padding:14px 32px 0;font-size:15px;line-height:1.6;color:#4a4a55">“${esc(title)}”. Our initial read of the problem you described${o.companyName ? ` for ${esc(o.companyName)}` : ""}, and one direction we think is worth exploring.</td></tr>
+<tr><td style="padding:10px 32px 0;font-size:26px;line-height:1.15;font-weight:700;letter-spacing:-.02em">Your briefing is ready.</td></tr>
+<tr><td style="padding:14px 32px 0;font-size:15px;line-height:1.6;color:#4a4a55">Our initial read of the problem you described on our website, and one direction we think is worth exploring.</td></tr>
 <tr><td style="padding:24px 32px 4px"><a href="${esc(link)}" style="display:inline-block;background:#c2381a;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 22px;border-radius:999px">View my briefing</a></td></tr>
 <tr><td style="padding:8px 32px 0;font-size:12px;color:#5f5e68">A private link for you${until ? `, working until ${esc(until)}` : ""}. Please don’t forward it.</td></tr>
-<tr><td style="padding:22px 32px 28px;font-size:14px;line-height:1.6;color:#4a4a55;border-top:1px solid #eeeae1">If it rings true, the next step is a short conversation to check our understanding and talk through how to take it forward. You’ll find the booking link inside the briefing.</td></tr>
+<tr><td style="padding:22px 32px 0;font-size:14px;line-height:1.6;color:#4a4a55;border-top:1px solid #eeeae1">If it rings true, the next step is a short conversation to check our understanding and talk through how to take it forward. You’ll find the booking link inside the briefing.</td></tr>
+<tr><td style="padding:14px 32px 28px;font-size:12px;line-height:1.6;color:#5f5e68">Didn’t ask for this? Someone may have typed your address by mistake. You can ignore this email, or reply and we’ll delete the request.</td></tr>
 </table>
 <p style="font-size:12px;color:#5f5e68;margin:16px 0 0">Sales Scout, a Mea Creo service · ${esc(SITE.contactEmail)}</p>
 </td></tr></table></body></html>`;
-  return { subject: `Your briefing is ready: ${title}`, text, html };
+  return { subject: "Your Sales Scout briefing is ready", text, html };
 }
 
 export async function sendBriefingEmail(o: Opportunity, b: BriefingRow, token: string) {
@@ -229,7 +257,7 @@ export async function sendBriefingEmail(o: Opportunity, b: BriefingRow, token: s
     return;
   }
   try {
-    const msg = briefingEmail(o, b, `${siteUrl()}/b/${token}`);
+    const msg = briefingEmail(b, `${siteUrl()}/b/${token}`);
     await sendEmail({ to: o.email, ...msg, replyTo: process.env.ENQUIRY_EMAIL || SITE.contactEmail });
     setStatus(b.id, { emailStatus: "sent", emailSentAt: new Date(), emailError: null });
     logActivity(o.id, "Briefing link emailed to the customer", "system");

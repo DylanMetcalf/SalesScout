@@ -69,7 +69,7 @@ export function BriefingPanel({ id, b }: { id: string; b: BriefingSummary | null
         <Badge tone={live ? "accent" : "neutral"}>{b.revokedAt ? "Link revoked" : live ? `Link valid until ${formatDate(b.expiresAt!)}` : "Link expired"}</Badge>
       </div>
       <dl className="grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
-        <div className="flex gap-2"><dt className="text-subtle">Views</dt><dd>{b.viewCount ? `${b.viewCount} (last ${timeAgo(b.lastViewedAt!)})` : "Not opened yet"}</dd></div>
+        <div className="flex gap-2"><dt className="text-subtle">Opened</dt><dd>{b.viewCount ? `${b.viewCount} time${b.viewCount === 1 ? "" : "s"} (last ${timeAgo(b.lastViewedAt!)})` : "Not opened yet"}</dd></div>
         <div className="flex gap-2"><dt className="text-subtle">Updated</dt><dd>{timeAgo(b.updatedAt)}{b.attempts ? ` · ${b.attempts} attempt${b.attempts === 1 ? "" : "s"}` : ""}</dd></div>
         {b.emailError && <div className="flex gap-2 sm:col-span-2"><dt className="text-subtle">Email</dt><dd className="text-muted">{b.emailError}</dd></div>}
         {b.error && <div className="flex gap-2 sm:col-span-2"><dt className="text-subtle">Problem</dt><dd className="text-weak">{b.error}</dd></div>}

@@ -1,6 +1,6 @@
 "use server";
 
-import { accessByToken } from "@/lib/opportunities/briefings";
+import { accessByToken, recordView } from "@/lib/opportunities/briefings";
 import { requestCallFor } from "@/lib/opportunities/service";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { clientIp } from "@/lib/security/client-ip";
@@ -12,4 +12,11 @@ export async function briefingCallRequestAction(token: string) {
   if (a.state === "unavailable") return { ok: false };
   requestCallFor(a.opportunity.id);
   return { ok: true };
+}
+
+/** Counted from the page itself, so email link scanners that only fetch the URL don't register as opens. */
+export async function recordBriefingViewAction(token: string) {
+  if (!rateLimit(`briefing-view:${await clientIp()}`, 60, 3_600_000)) return;
+  const a = accessByToken(token);
+  if (a.state === "ready") recordView(a.briefing.id);
 }

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Clock, Mail, Waypoints as RouteIcon } from "lucide-react";
-import { accessByToken, bookingLink, recordView } from "@/lib/opportunities/briefings";
+import { accessByToken, bookingLink } from "@/lib/opportunities/briefings";
 import type { Briefing } from "@/lib/opportunities/types";
 import { SITE } from "@/content/site";
 import { Logo, LogoMark } from "@/components/ui/logo";
 import { BriefingDocument, DiscussCta, SECTIONS } from "@/components/briefing/document";
-import { CallRequestButton, RefreshWhilePreparing } from "@/components/briefing/client";
+import { CallRequestButton, CountView, RefreshWhilePreparing } from "@/components/briefing/client";
 
 // Generic title: nothing about the customer or their problem in the tab, history or any share preview.
 export const metadata: Metadata = { title: "Your briefing", robots: { index: false, follow: false, nocache: true } };
@@ -81,12 +81,12 @@ export default async function BriefingPage({ params }: { params: Promise<{ token
     );
   }
 
-  recordView(a.briefing.id);
   const b = a.briefing.content as Briefing; // ready briefings always carry validated content
   const preparedFor = o.companyName ? `${o.name}, ${o.companyName}` : o.name;
 
   return (
     <Shell reference={a.briefing.reference}>
+      <CountView token={token} />
       <div className="briefing-protect">
         <section className="relative overflow-hidden border-b border-border" aria-labelledby="h-title">
           <div aria-hidden className="paper-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_80%_at_70%_0%,#000_15%,transparent_70%)]" />

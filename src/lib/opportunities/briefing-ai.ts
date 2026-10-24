@@ -92,7 +92,7 @@ export function briefingPrompt(i: BriefingInput) {
     i.region && `Region: ${i.region}`,
   ].filter(Boolean);
   // Neutralise anything that looks like our own delimiters inside their text.
-  return `<submission>\n${lines.join("\n").replace(/<\/?submission>/gi, "")}\n</submission>\n\nWrite the briefing.`;
+  return `<submission>\n${lines.join("\n").replace(/<\s*\/?\s*submission\b[^>]*>/gi, "")}\n</submission>\n\nWrite the briefing.`;
 }
 
 const clip = (v: string, max: number) => {

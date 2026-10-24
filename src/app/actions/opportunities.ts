@@ -11,7 +11,7 @@ import { normaliseUrl } from "@/lib/security/url";
 import { deleteOpportunity, getOpportunity, logActivity, setStage, snapshotDocument, touch } from "@/lib/opportunities/service";
 import { AI_TASKS, startAiTask, type AiTask } from "@/lib/opportunities/jobs";
 import { BRIEF_FIELDS, DOC_KINDS, PROJECT_FIELDS, PROPOSAL_FIELDS, STAGES, type DocKind } from "@/lib/opportunities/types";
-import { briefingFor, createBriefing, issueLink, revokeLink, runBriefing, sendBriefingEmail } from "@/lib/opportunities/briefings";
+import { briefingFor, createBriefing, isGenerating, issueLink, revokeLink, runBriefing, sendBriefingEmail } from "@/lib/opportunities/briefings";
 import { siteUrl } from "@/lib/site-url";
 import { attempt } from "./result";
 
@@ -207,12 +207,15 @@ export async function retryBriefingAction(id: string) {
   return attempt(async () => {
     const admin = await assertAdmin();
     getOpportunity(id);
+    if (isGenerating(id)) throw new Error("This briefing is already being written. Give it a minute, then refresh.");
     const { briefing } = createBriefing(id);
-    db.update(t.briefings).set({ status: "queued", content: null, error: null, updatedAt: new Date() }).where(eq(t.briefings.id, briefing.id)).run();
+    const before = briefing.updatedAt.getTime();
     logActivity(id, "Briefing regeneration requested", admin.email);
-    const done = await runBriefing(id, null);
+    // Ready briefings stay visible to the customer until the new version validates.
+    const done = await runBriefing(id, null, { force: true });
     refresh(id);
-    if (done?.status !== "ready") throw new Error(done?.error ?? "The briefing couldn't be generated.");
+    if (!done || done.status !== "ready" || done.error) throw new Error(done?.error ?? "The briefing couldn't be generated.");
+    if (done.updatedAt.getTime() === before) throw new Error("Nothing changed. Please try again.");
   });
 }
 
@@ -223,12 +226,10 @@ export async function newBriefingLinkAction(id: string, email: boolean) {
     const o = getOpportunity(id);
     const b = briefingFor(id);
     if (!b) throw new Error("There's no briefing for this opportunity yet. Generate one first.");
+    if (email && b.status !== "ready") throw new Error("The briefing isn't ready yet, so there's nothing to send.");
     const token = issueLink(b.id);
     logActivity(id, "Issued a new private briefing link (the previous link no longer works)", admin.email);
-    if (email) {
-      if (b.status !== "ready") throw new Error("The briefing isn't ready yet, so there's nothing to send.");
-      await sendBriefingEmail(o, briefingFor(id)!, token);
-    }
+    if (email) await sendBriefingEmail(o, briefingFor(id)!, token);
     refresh(id);
     return { url: `${siteUrl()}/b/${token}`, email: briefingFor(id)!.emailStatus };
   });

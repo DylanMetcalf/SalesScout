@@ -27,7 +27,7 @@ export default async function Received({ searchParams }: { searchParams: Promise
   const briefing = o ? briefingFor(o.id) : null;
   // This browser submitted it (cookie set at submission) and the link is still valid: show it here.
   const cookieToken = (await cookies()).get(BRIEFING_COOKIE)?.value;
-  const viewHref = briefing && cookieToken && briefing.tokenHash === hashToken(cookieToken) && !briefing.revokedAt ? `/b/${cookieToken}` : null;
+  const viewHref = briefing && cookieToken && briefing.tokenHash === hashToken(cookieToken) && !briefing.revokedAt && (briefing.expiresAt?.getTime() ?? 0) > Date.now() ? `/b/${cookieToken}` : null;
 
   return (
     <section className="mx-auto max-w-6xl px-4 pt-12 pb-20 sm:px-6 sm:pt-16" aria-labelledby="h-received">
